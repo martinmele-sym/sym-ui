@@ -175,6 +175,7 @@
   --component-card-secondary-default-shadow: var(--core-shadow-none);
   --component-card-secondary-default-padding: var(--core-spacing-24);
   --component-card-secondary-default-gap: var(--core-spacing-24);
+  --component-card-secondary-nested-in-primary-background: var(--core-color-legacy-neutral-subtle);
   --component-card-secondary-hover-shadow: var(--core-shadow-card);
   --component-card-secondary-active-border: var(--semantic-color-success-base);
   --component-card-secondary-selected-border: var(--semantic-color-primary-base);

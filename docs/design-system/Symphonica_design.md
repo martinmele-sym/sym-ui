@@ -1159,6 +1159,38 @@ Rules:
 
 ---
 
+### Card nesting and hierarchy
+
+Symphonica does **not** document arbitrary “cards inside cards.” The following rules define the **only** supported nesting pattern and prevent hierarchy inversions.
+
+#### Prohibited
+
+- **Do not nest a Primary Card inside a Secondary Card.**
+  - A Primary Card is a **top-level section container** (shadow, no border, main module).
+  - A nested Primary inside a Secondary breaks visual hierarchy, elevation, and the intended reading order (main surface inside a bordered “detail” surface).
+
+#### Permitted
+
+- **Secondary Card inside Primary Card** (or inside the white body of a Primary Card / equivalent primary module surface) is allowed.
+  - Matches use cases such as detail clusters, resource/API grids, and selectable tiles **within** a main section.
+
+#### Nested Secondary visual rule (contrast)
+
+- When a Secondary Card is rendered **inside** a Primary Card, its **surface background** must **not** stay the same as the parent white body (both would read as one flat white).
+- Use **`Core/Color/LegacyNeutral/Subtle`** for the nested Secondary Card **default background** so the inner card reads clearly against the Primary white.
+- Implementation token: `component.card.secondary.nestedInPrimary.background` (alias to Legacy Neutral / Subtle).
+- **Border**, **hover / active / selected** states, **grid variant** typography and spacing follow the normal Secondary Card rules unchanged unless otherwise specified.
+- Secondary Cards placed **directly** on the app body (`Semantic/Color/Secondary`) keep the default Secondary surface (**`Core/Color/Neutral/White`**) as today.
+
+#### Summary
+
+| Context | Primary nested in Secondary | Secondary nested in Primary |
+|--------|-----------------------------|-----------------------------|
+| Allowed | No | Yes |
+| Nested secondary background | — | `LegacyNeutral/Subtle` (tokenized) |
+
+---
+
 ### Card Typography
 
 #### Header / Title
@@ -1483,6 +1515,7 @@ Pills do not own:
 - Table action buttons must use icon button rules, not outlined icon-only button rules
 - Outlined icon-only buttons in Card Headers must not use circular icon button rules
 - Badge placement inside cards is owned by the Card, not by the Badge
+- **Card nesting:** do not place a **Primary Card** inside a **Secondary Card**; **Secondary inside Primary** is allowed, using **`component.card.secondary.nestedInPrimary.background`** for the nested surface (`LegacyNeutral/Subtle`). See **§5.5 — Card nesting and hierarchy**.
 
 ---
 
@@ -1737,6 +1770,7 @@ Figma → Code mapping:
 
 ## 12. Constraints for AI / Cursor
 - Body Content must use `layout.body.sectionGap` between top-level sections/cards
+- **Card nesting:** never nest a **Primary Card** inside a **Secondary Card**. **Secondary** may be nested **inside Primary**; use **`component.card.secondary.nestedInPrimary.background`** for nested default background (`LegacyNeutral/Subtle`). Standalone Secondary on app background keeps default white. See §5.5.
 - **App sidebar** (primary Symphonica menu): use **`component.nav.sidebar`** tokens and Material Icons Outlined per §5.8; **24px vertical spacing between leading icons** via `menuListGap` with **`itemPaddingY` 0**; map each domain row’s leading icon color via **`itemIcon.*`** aliases — do not substitute ad-hoc colors or reuse Tabs Top / Card Header pill styles for this shell; **collapsed sidebar must not show a scrollbar** (overflow hidden per §5.8)
 - Circular icon buttons inside **table** action columns and **table footer** load-more must use `component.button.icon.primary` (default hover: white), not `primaryCard`
 - Circular icon buttons on **white card surfaces** use `component.button.icon.primaryCard` / `dangerCard` (hover: `Semantic/Color/Secondary`)

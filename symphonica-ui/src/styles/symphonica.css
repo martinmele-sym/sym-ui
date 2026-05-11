@@ -332,6 +332,10 @@
   padding: var(--component-card-secondary-grid-padding);
 }
 
+.sym-card-secondary--nested-in-primary {
+  background-color: var(--component-card-secondary-nested-in-primary-background);
+}
+
 .sym-card-title {
   margin: 0;
   font-family: var(--core-typography-font-family-base);

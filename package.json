@@ -1,0 +1,11 @@
+{
+  "name": "mcp-test-viii",
+  "private": true,
+  "description": "Workspace root — run dev/build from here or from symphonica-ui/",
+  "scripts": {
+    "dev": "npm run dev --prefix symphonica-ui",
+    "build": "npm run build --prefix symphonica-ui",
+    "preview": "npm run preview --prefix symphonica-ui",
+    "tokens": "npm run tokens --prefix symphonica-ui"
+  }
+}
