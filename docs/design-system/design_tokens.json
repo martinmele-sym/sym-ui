@@ -1,0 +1,769 @@
+{
+  "meta": {
+    "name": "Symphonica Design System",
+    "version": "1.0.0",
+    "mode": "base",
+    "description": "Core, semantic and component tokens aligned with current Figma variables. Alerts, badges, filled, outlined and icon buttons are connected through semantic aliases.",
+    "llmImplementationNotes": {
+      "buttonOutlinedInteraction": "Outlined labeled buttons and outlined icon-only (card header) buttons: default state uses background, foreground, border. For hover and active, use the nested tokens component.button.outlined.[primary|danger|success].hover|active.(background|border|foreground). Background and border share the same semantic.action.* color (solid fill). Foreground aliases to the matching filled variant foreground (white on brand) for contrast. For disabled, use the nested .disabled object: background stays white, border and foreground use the semantic.action.*.disabled token. Do not apply semantic.action hover colors only to text/border while keeping a white background.",
+      "buttonIconCircularSurfaces": "Default circular icon buttons (component.button.icon.primary|danger) use neutral white hover background for table rows and similar dense rows on secondary app background. Inside Primary or Secondary card bodies (white card surface), use variant tokens component.button.icon.primaryCard or .dangerCard: hover background is semantic.color.secondary so the affordance reads on white without a harsh white chip. Table action columns and table footer load-more must keep the default variant, not primaryCard.",
+      "navTabsTopSecondaryCards": "Inside Secondary Card bodies, section switching uses Bootstrap nav.nav-tabs structure with class sym-nav-tabs-top. Tokens live under component.nav.tabs.top (track border, tab typography/spacing, inactive/inactiveHover/active/disabled). Inactive tab borders are transparent (no box). inactiveHover MUST use primary border on top/left/right (component.nav.tabs.top.inactiveHover.borderColor) plus borderBottomCover matching the hover background (neutral.100) so the tab edge masks the track—do not reuse inactive.borderColor on hover or the border stays invisible. Active tab: white background, primary border, borderBottomCover white, semantic.text.title. Track: bottom border primary. See Figma Bootstrap UI Kit tabs-top. Do not use Pills for this pattern inside secondary cards.",
+      "symphonicaAppSidebar": "Primary app navigation is the Symphonica sidebar (Guía de Estilos). Reference: https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7089-7392 Use component.nav.sidebar tokens only (expanded width aliases layout.apiExplorer.sidebarColumnWidth 330px; collapsed 64px). White surface, vertical padding px/py from tokens, Material Icons Outlined 24px leading per row, labels Montserrat 14 medium semantic.text.primary, trailing chevron_right in neutral.500. Vertical spacing between nav rows: menuListGap MUST be Core/Spacing/24 (24px clear between leading icons—use itemPaddingY 0 so gap is not inflated). Search row: 16px placeholder neutral.600, border neutral.400 (Bootstrap text field pattern). Horizontal gap icon–label: itemGap 16. Collapsed: hide labels/chevrons and search; center icons; no scrollbar on sidebar (overflow hidden on shell and nav); toggle menu_open (expanded) / menu (collapsed). Expanded: scroll only the nav list if needed, not the whole aside. Wordmark \"Symphonica\" uses semantic.text.title weight semibold for showcase; production may swap asset."
+    }
+  },
+  "principles": {
+    "clarity_over_creativity": true,
+    "explicit_feedback": true,
+    "strict_figma_consistency": true,
+    "token_driven": true,
+    "no_hardcoded_values": true,
+    "prefer_aliases_over_duplication": true,
+    "preserve_backward_compatibility": true
+  },
+  "tokens": {
+    "core": {
+      "color": {
+        "neutral": {
+          "white": "#FFFFFF",
+          "100": "#F8F9FA",
+          "200": "#E9ECEF",
+          "300": "#DEE2E6",
+          "400": "#CED4DA",
+          "500": "#ADB5BD",
+          "600": "#6C757D",
+          "700": "#495057",
+          "800": "#343A40",
+          "900": "#212529",
+          "black": "#000000"
+        },
+        "legacyNeutral": {
+          "strong": "#565656",
+          "medium": "#828282",
+          "soft": "#C4C4C4",
+          "subtle": "#F1F1F1"
+        },
+        "transparent": "rgba(255,255,255,0)"
+      },
+      "spacing": {
+        "0": "0px",
+        "4": "4px",
+        "8": "8px",
+        "12": "12px",
+        "16": "16px",
+        "20": "20px",
+        "24": "24px",
+        "32": "32px",
+        "40": "40px"
+      },
+      "size": {
+        "4": "4px",
+        "6": "6px",
+        "8": "8px",
+        "12": "12px",
+        "14": "14px",
+        "16": "16px",
+        "18": "18px",
+        "20": "20px",
+        "24": "24px",
+        "26": "26px",
+        "28": "28px",
+        "30": "30px",
+        "32": "32px",
+        "38": "38px",
+        "40": "40px",
+        "48": "48px",
+        "50": "50px",
+        "56": "56px"
+      },
+      "border": {
+        "radius": {
+          "sm": "4px",
+          "md": "8px",
+          "full": "999px"
+        },
+        "width": {
+          "hairline": "1px",
+          "focusRing": "2px"
+        },
+        "offset": {
+          "focusRing": "2px"
+        }
+      },
+      "focus": {
+        "ring": {
+          "width": "{alias:core.border.width.focusRing}",
+          "offset": "{alias:core.border.offset.focusRing}",
+          "color": "{alias:semantic.color.primary.base}"
+        }
+      },
+      "shadow": {
+        "none": "none",
+        "card": "0 4px 10px 0 rgba(0, 0, 0, 0.07)"
+      },
+      "typography": {
+        "fontFamily": {
+          "base": "Montserrat, sans-serif"
+        },
+        "fontWeight": {
+          "regular": 400,
+          "medium": 500,
+          "semibold": 600
+        },
+        "fontSize": {
+          "12": "12px",
+          "14": "14px",
+          "16": "16px",
+          "18": "18px",
+          "20": "20px",
+          "24": "24px",
+          "26": "26px",
+          "28": "28px"
+        },
+        "lineHeight": {
+          "tight": "1.3",
+          "solid": "1"
+        }
+      },
+      "motion": {
+        "duration": {
+          "fast": "120ms",
+          "base": "180ms",
+          "slow": "280ms"
+        },
+        "easing": {
+          "standard": "cubic-bezier(0.2, 0, 0, 1)",
+          "exit": "cubic-bezier(0.3, 0, 0.8, 0.15)"
+        }
+      }
+    },
+    "semantic": {
+      "color": {
+        "primary": {
+          "base": "#544CB9",
+          "light": "#DFE3FA"
+        },
+        "secondary": "#F6F3FF",
+        "dark": "{alias:core.color.neutral.900}",
+        "success": {
+          "base": "#2DCE89",
+          "light": "#D5F5E7",
+          "dark": "#005430"
+        },
+        "danger": {
+          "base": "#F5365C",
+          "light": "#FCC3CF",
+          "dark": "#7D0019"
+        },
+        "info": {
+          "base": "#11CDEF",
+          "light": "#B8F0FB",
+          "dark": "#044F5C"
+        },
+        "warning": {
+          "base": "#FB6340",
+          "light": "#FFF3CD",
+          "dark": "#C12501"
+        },
+        "process": {
+          "base": "#FFDC27",
+          "light": "#FDF1B3",
+          "dark": "#5F4F00"
+        }
+      },
+      "action": {
+        "primary": {
+          "hover": "#37308B",
+          "active": "#433AA5",
+          "disabled": "#908AD1"
+        },
+        "danger": {
+          "hover": "#DE3556",
+          "active": "#C72C4B",
+          "disabled": "#F87C95"
+        },
+        "success": {
+          "hover": "#27B678",
+          "active": "#1E9C66",
+          "disabled": "#76DFB2"
+        }
+      },
+      "text": {
+        "primary": "{alias:semantic.color.dark}",
+        "secondary": "{alias:core.color.legacyNeutral.strong}",
+        "title": "{alias:semantic.color.primary.base}",
+        "white": "{alias:core.color.neutral.white}"
+      }
+    },
+    "component": {
+      "alert": {
+        "primary": {
+          "background": "{alias:semantic.color.primary.light}",
+          "foreground": "{alias:semantic.color.dark}",
+          "border": "{alias:semantic.color.primary.base}"
+        },
+        "success": {
+          "background": "{alias:semantic.color.success.light}",
+          "foreground": "{alias:semantic.color.success.dark}",
+          "border": "{alias:semantic.color.success.base}"
+        },
+        "danger": {
+          "background": "{alias:semantic.color.danger.light}",
+          "foreground": "{alias:semantic.color.danger.dark}",
+          "border": "{alias:semantic.color.danger.base}"
+        },
+        "info": {
+          "background": "{alias:semantic.color.info.light}",
+          "foreground": "{alias:semantic.color.info.dark}",
+          "border": "{alias:semantic.color.info.base}"
+        },
+        "warning": {
+          "background": "{alias:semantic.color.warning.light}",
+          "foreground": "{alias:semantic.color.warning.dark}",
+          "border": "{alias:semantic.color.warning.base}"
+        }
+      },
+      "badge": {
+        "borderRadius": "{alias:core.border.radius.sm}",
+        "fontSize": "{alias:core.typography.fontSize.12}",
+        "fontWeight": "{alias:core.typography.fontWeight.medium}",
+        "textTransform": "uppercase",
+        "primary": {
+          "background": "{alias:semantic.color.primary.base}",
+          "foreground": "{alias:core.color.neutral.white}"
+        },
+        "secondary": {
+          "background": "{alias:semantic.color.secondary}",
+          "foreground": "{alias:semantic.color.primary.base}"
+        },
+        "success": {
+          "background": "{alias:semantic.color.success.light}",
+          "foreground": "{alias:semantic.color.success.dark}"
+        },
+        "danger": {
+          "background": "{alias:semantic.color.danger.light}",
+          "foreground": "{alias:semantic.color.danger.dark}"
+        },
+        "info": {
+          "background": "{alias:semantic.color.info.light}",
+          "foreground": "{alias:semantic.color.info.dark}"
+        },
+        "process": {
+          "background": "{alias:semantic.color.process.light}",
+          "foreground": "{alias:semantic.color.process.dark}"
+        },
+        "dark": {
+          "background": "{alias:semantic.color.dark}",
+          "foreground": "{alias:core.color.neutral.white}"
+        },
+        "light": {
+          "background": "{alias:core.color.legacyNeutral.subtle}",
+          "foreground": "{alias:semantic.color.dark}"
+        },
+        "warning": {
+          "background": "{alias:semantic.color.warning.light}",
+          "foreground": "{alias:semantic.color.warning.dark}"
+        },
+        "height": "{alias:core.size.28}"
+      },
+      "card": {
+        "header": {
+          "layout": {
+            "direction": "column",
+            "gap": "{alias:core.spacing.16}"
+          },
+          "top": {
+            "layout": {
+              "direction": "column",
+              "gap": "{alias:core.spacing.4}"
+            }
+          },
+          "bottom": {
+            "layout": {
+              "direction": "row",
+              "alignItems": "center",
+              "justifyContent": "space-between"
+            },
+            "leftGroup": {
+              "layout": {
+                "direction": "row",
+                "alignItems": "center",
+                "gap": "{alias:core.spacing.8}"
+              }
+            },
+            "rightGroup": {
+              "layout": {
+                "direction": "row",
+                "alignItems": "center",
+                "gap": "{alias:core.spacing.8}"
+              }
+            }
+          }
+        },
+        "primary": {
+          "background": "{alias:core.color.neutral.white}",
+          "border": "{alias:core.color.transparent}",
+          "borderRadius": "{alias:core.border.radius.md}",
+          "shadow": "{alias:core.shadow.card}",
+          "padding": "{alias:core.spacing.16}",
+          "gap": "{alias:core.spacing.16}"
+        },
+        "secondary": {
+          "default": {
+            "background": "{alias:core.color.neutral.white}",
+            "border": "{alias:core.color.neutral.500}",
+            "borderRadius": "{alias:core.border.radius.md}",
+            "shadow": "{alias:core.shadow.none}",
+            "padding": "{alias:core.spacing.24}",
+            "gap": "{alias:core.spacing.24}"
+          },
+          "hover": {
+            "shadow": "{alias:core.shadow.card}"
+          },
+          "active": {
+            "border": "{alias:semantic.color.success.base}"
+          },
+          "selected": {
+            "border": "{alias:semantic.color.primary.base}"
+          },
+          "grid": {
+            "padding": "{alias:core.spacing.16}",
+            "gap": "{alias:core.spacing.16}",
+            "maxItemsPerRow": 4,
+            "maxColumns": 3,
+            "title": {
+              "fontSize": "{alias:core.typography.fontSize.16}",
+              "fontWeight": "{alias:core.typography.fontWeight.semibold}",
+              "foreground": "{alias:semantic.text.title}"
+            }
+          }
+        },
+        "subtitleLabel": {
+          "background": "{alias:semantic.color.secondary}",
+          "foreground": "{alias:semantic.text.title}",
+          "borderRadius": "{alias:core.border.radius.sm}",
+          "height": "{alias:core.size.40}",
+          "fontSize": "{alias:core.typography.fontSize.14}",
+          "fontWeight": "{alias:core.typography.fontWeight.semibold}",
+          "variants": {
+            "textOnly": true,
+            "withSwitch": true
+          }
+        }
+      },
+      "table": {
+        "header": {
+          "sortable": true,
+          "height": "{alias:core.size.40}",
+          "icon": {
+            "size": "{alias:core.size.16}",
+            "color": "{alias:semantic.color.primary.base}",
+            "gap": "{alias:core.spacing.8}"
+          },
+          "background": "{alias:semantic.color.secondary}",
+          "foreground": "{alias:semantic.text.primary}",
+          "fontSize": "{alias:core.typography.fontSize.14}",
+          "fontWeight": "{alias:core.typography.fontWeight.semibold}",
+          "borderBottom": {
+            "width": "1px",
+            "style": "solid",
+            "color": "{alias:core.color.neutral.300}"
+          }
+        },
+        "row": {
+          "height": "{alias:core.size.40}",
+          "default": {
+            "background": "{alias:core.color.neutral.white}",
+            "fontSize": "{alias:core.typography.fontSize.12}",
+            "foreground": "{alias:semantic.text.primary}"
+          },
+          "hover": {
+            "background": "{alias:core.color.legacyNeutral.subtle}",
+            "fontSize": "{alias:core.typography.fontSize.12}",
+            "foreground": "{alias:semantic.text.primary}"
+          },
+          "selected": {
+            "background": "{alias:semantic.color.primary.light}",
+            "foreground": "{alias:semantic.text.primary}"
+          },
+          "new": {
+            "background": "{alias:component.alert.success.background}",
+            "fontSize": "{alias:core.typography.fontSize.12}",
+            "foreground": "{alias:semantic.text.primary}"
+          },
+          "link": {
+            "foreground": "{alias:semantic.color.primary.base}",
+            "fontSize": "{alias:core.typography.fontSize.12}",
+            "fontWeight": "{alias:core.typography.fontWeight.regular}"
+          },
+          "borderBottom": {
+            "width": "1px",
+            "style": "solid",
+            "color": "{alias:core.color.neutral.300}"
+          }
+        },
+        "footer": {
+          "paddingTop": "{alias:core.spacing.16}",
+          "paddingBottom": "{alias:core.spacing.0}",
+          "loadMore": {
+            "size": "{alias:component.button.icon.size}",
+            "iconSize": "{alias:component.button.icon.iconSize}",
+            "borderRadius": "{alias:component.button.icon.borderRadius}",
+            "background": {
+              "default": "{alias:component.button.icon.primary.background.default}",
+              "hover": "{alias:component.button.icon.primary.background.hover}",
+              "active": "{alias:component.button.icon.primary.background.active}",
+              "disabled": "{alias:component.button.icon.primary.background.disabled}"
+            },
+            "icon": {
+              "default": "{alias:component.button.icon.primary.icon.default}",
+              "hover": "{alias:component.button.icon.primary.icon.hover}",
+              "active": "{alias:component.button.icon.primary.icon.active}",
+              "disabled": "{alias:component.button.icon.primary.icon.disabled}"
+            }
+          },
+          "counter": {
+            "foreground": "{alias:semantic.color.primary.base}",
+            "fontSize": "{alias:core.typography.fontSize.14}",
+            "fontWeight": "{alias:core.typography.fontWeight.medium}"
+          }
+        },
+        "cell": {
+          "paddingX": "{alias:core.spacing.16}",
+          "paddingY": "{alias:core.spacing.0}",
+          "verticalAlign": "middle",
+          "display": "table-cell",
+          "heightBehavior": "must-not-expand-row-height"
+        },
+        "layout": {
+          "borderCollapse": "collapse",
+          "tableLayout": "auto"
+        }
+      },
+      "pill": {
+        "fontSize": "{alias:core.typography.fontSize.14}",
+        "fontWeight": "{alias:core.typography.fontWeight.medium}",
+        "borderRadius": "{alias:core.border.radius.full}",
+        "paddingX": "{alias:core.spacing.12}",
+        "paddingY": "{alias:core.spacing.8}",
+        "states": {
+          "default": {
+            "background": "{alias:core.color.transparent}",
+            "foreground": "{alias:semantic.text.secondary}"
+          },
+          "hover": {
+            "background": "{alias:core.color.neutral.200}",
+            "foreground": "{alias:semantic.text.secondary}"
+          },
+          "active": {
+            "background": "{alias:semantic.color.primary.base}",
+            "foreground": "{alias:semantic.text.white}"
+          },
+          "disabled": {
+            "background": "{alias:core.color.transparent}",
+            "foreground": "{alias:core.color.neutral.500}"
+          }
+        }
+      },
+      "button": {
+        "size": {
+          "sm": {
+            "button": "{alias:core.size.32}",
+            "icon": "{alias:core.size.20}"
+          },
+          "md": {
+            "button": "{alias:core.size.38}",
+            "icon": "{alias:core.size.24}"
+          },
+          "lg": {
+            "button": "{alias:core.size.50}",
+            "icon": "{alias:core.size.32}"
+          }
+        },
+        "filled": {
+          "primary": {
+            "background": "{alias:semantic.color.primary.base}",
+            "foreground": "{alias:core.color.neutral.white}",
+            "border": "{alias:semantic.color.primary.base}",
+            "hover": "{alias:semantic.action.primary.hover}",
+            "active": "{alias:semantic.action.primary.active}",
+            "disabled": "{alias:semantic.action.primary.disabled}"
+          },
+          "danger": {
+            "background": "{alias:semantic.color.danger.base}",
+            "foreground": "{alias:core.color.neutral.white}",
+            "border": "{alias:semantic.color.danger.base}",
+            "hover": "{alias:semantic.action.danger.hover}",
+            "active": "{alias:semantic.action.danger.active}",
+            "disabled": "{alias:semantic.action.danger.disabled}"
+          },
+          "success": {
+            "background": "{alias:semantic.color.success.base}",
+            "foreground": "{alias:core.color.neutral.white}",
+            "border": "{alias:semantic.color.success.base}",
+            "hover": "{alias:semantic.action.success.hover}",
+            "active": "{alias:semantic.action.success.active}",
+            "disabled": "{alias:semantic.action.success.disabled}"
+          }
+        },
+        "outlined": {
+          "primary": {
+            "background": "{alias:core.color.neutral.white}",
+            "foreground": "{alias:semantic.color.primary.base}",
+            "border": "{alias:semantic.color.primary.base}",
+            "hover": {
+              "background": "{alias:semantic.action.primary.hover}",
+              "border": "{alias:semantic.action.primary.hover}",
+              "foreground": "{alias:component.button.filled.primary.foreground}"
+            },
+            "active": {
+              "background": "{alias:semantic.action.primary.active}",
+              "border": "{alias:semantic.action.primary.active}",
+              "foreground": "{alias:component.button.filled.primary.foreground}"
+            },
+            "disabled": {
+              "background": "{alias:core.color.neutral.white}",
+              "border": "{alias:semantic.action.primary.disabled}",
+              "foreground": "{alias:semantic.action.primary.disabled}"
+            }
+          },
+          "danger": {
+            "background": "{alias:core.color.neutral.white}",
+            "foreground": "{alias:semantic.color.danger.base}",
+            "border": "{alias:semantic.color.danger.base}",
+            "hover": {
+              "background": "{alias:semantic.action.danger.hover}",
+              "border": "{alias:semantic.action.danger.hover}",
+              "foreground": "{alias:component.button.filled.danger.foreground}"
+            },
+            "active": {
+              "background": "{alias:semantic.action.danger.active}",
+              "border": "{alias:semantic.action.danger.active}",
+              "foreground": "{alias:component.button.filled.danger.foreground}"
+            },
+            "disabled": {
+              "background": "{alias:core.color.neutral.white}",
+              "border": "{alias:semantic.action.danger.disabled}",
+              "foreground": "{alias:semantic.action.danger.disabled}"
+            }
+          },
+          "success": {
+            "background": "{alias:core.color.neutral.white}",
+            "foreground": "{alias:semantic.color.success.base}",
+            "border": "{alias:semantic.color.success.base}",
+            "hover": {
+              "background": "{alias:semantic.action.success.hover}",
+              "border": "{alias:semantic.action.success.hover}",
+              "foreground": "{alias:component.button.filled.success.foreground}"
+            },
+            "active": {
+              "background": "{alias:semantic.action.success.active}",
+              "border": "{alias:semantic.action.success.active}",
+              "foreground": "{alias:component.button.filled.success.foreground}"
+            },
+            "disabled": {
+              "background": "{alias:core.color.neutral.white}",
+              "border": "{alias:semantic.action.success.disabled}",
+              "foreground": "{alias:semantic.action.success.disabled}"
+            }
+          },
+          "iconOnly": {
+            "size": "{alias:component.button.size.sm.button}",
+            "iconSize": "{alias:component.button.size.sm.icon}"
+          }
+        },
+        "icon": {
+          "size": "{alias:core.size.30}",
+          "iconSize": "{alias:core.size.20}",
+          "borderRadius": "{alias:core.border.radius.full}",
+          "primary": {
+            "background": {
+              "default": "{alias:core.color.transparent}",
+              "hover": "{alias:core.color.neutral.white}",
+              "active": "{alias:semantic.action.primary.active}",
+              "disabled": "{alias:core.color.transparent}"
+            },
+            "icon": {
+              "default": "{alias:semantic.color.primary.base}",
+              "hover": "{alias:semantic.color.primary.base}",
+              "active": "{alias:core.color.neutral.white}",
+              "disabled": "{alias:semantic.action.primary.disabled}"
+            }
+          },
+          "danger": {
+            "background": {
+              "default": "{alias:core.color.transparent}",
+              "hover": "{alias:core.color.neutral.white}",
+              "active": "{alias:semantic.action.danger.active}",
+              "disabled": "{alias:core.color.transparent}"
+            },
+            "icon": {
+              "default": "{alias:semantic.color.danger.base}",
+              "hover": "{alias:semantic.color.danger.base}",
+              "active": "{alias:core.color.neutral.white}",
+              "disabled": "{alias:semantic.action.danger.disabled}"
+            }
+          },
+          "primaryCard": {
+            "background": {
+              "default": "{alias:core.color.transparent}",
+              "hover": "{alias:semantic.color.secondary}",
+              "active": "{alias:semantic.action.primary.active}",
+              "disabled": "{alias:core.color.transparent}"
+            },
+            "icon": {
+              "default": "{alias:semantic.color.primary.base}",
+              "hover": "{alias:semantic.color.primary.base}",
+              "active": "{alias:core.color.neutral.white}",
+              "disabled": "{alias:semantic.action.primary.disabled}"
+            }
+          },
+          "dangerCard": {
+            "background": {
+              "default": "{alias:core.color.transparent}",
+              "hover": "{alias:semantic.color.secondary}",
+              "active": "{alias:semantic.action.danger.active}",
+              "disabled": "{alias:core.color.transparent}"
+            },
+            "icon": {
+              "default": "{alias:semantic.color.danger.base}",
+              "hover": "{alias:semantic.color.danger.base}",
+              "active": "{alias:core.color.neutral.white}",
+              "disabled": "{alias:semantic.action.danger.disabled}"
+            }
+          }
+        }
+      },
+      "nav": {
+        "tabs": {
+          "top": {
+            "track": {
+              "borderBottomWidth": "{alias:core.border.width.hairline}",
+              "borderBottomStyle": "solid",
+              "borderBottomColor": "{alias:semantic.color.primary.base}"
+            },
+            "tab": {
+              "fontSize": "{alias:core.typography.fontSize.14}",
+              "fontWeight": "{alias:core.typography.fontWeight.medium}",
+              "fontFamily": "{alias:core.typography.fontFamily.base}",
+              "lineHeight": "{alias:core.typography.lineHeight.tight}",
+              "paddingX": "{alias:core.spacing.16}",
+              "paddingY": "{alias:core.spacing.8}",
+              "borderRadiusTop": "{alias:core.border.radius.sm}",
+              "gap": "{alias:core.spacing.4}"
+            },
+            "inactive": {
+              "background": "{alias:core.color.transparent}",
+              "foreground": "{alias:semantic.text.primary}",
+              "borderColor": "{alias:core.color.transparent}"
+            },
+            "inactiveHover": {
+              "background": "{alias:core.color.neutral.100}",
+              "foreground": "{alias:semantic.text.primary}",
+              "borderColor": "{alias:semantic.color.primary.base}",
+              "borderBottomCover": "{alias:core.color.neutral.100}"
+            },
+            "active": {
+              "background": "{alias:core.color.neutral.white}",
+              "foreground": "{alias:semantic.text.title}",
+              "borderColor": "{alias:semantic.color.primary.base}",
+              "borderBottomCover": "{alias:core.color.neutral.white}"
+            },
+            "disabled": {
+              "background": "{alias:core.color.transparent}",
+              "foreground": "{alias:core.color.neutral.500}"
+            }
+          }
+        },
+        "sidebar": {
+          "widthExpanded": "{alias:layout.apiExplorer.sidebarColumnWidth}",
+          "widthCollapsed": "64px",
+          "paddingX": "{alias:core.spacing.20}",
+          "paddingY": "{alias:core.spacing.24}",
+          "sectionGap": "{alias:core.spacing.24}",
+          "menuListGap": "{alias:core.spacing.24}",
+          "itemGap": "{alias:core.spacing.16}",
+          "itemPaddingY": "{alias:core.spacing.0}",
+          "itemPaddingX": "{alias:core.spacing.4}",
+          "itemRadius": "{alias:core.border.radius.sm}",
+          "iconSize": "{alias:core.size.24}",
+          "surfaceBackground": "{alias:core.color.neutral.white}",
+          "wordmarkFontSize": "{alias:core.typography.fontSize.18}",
+          "wordmarkFontWeight": "{alias:core.typography.fontWeight.semibold}",
+          "searchPlaceholderColor": "{alias:core.color.neutral.600}",
+          "searchBorderColor": "{alias:core.color.neutral.400}",
+          "searchFontSize": "{alias:core.typography.fontSize.16}",
+          "searchMinHeight": "{alias:core.size.38}",
+          "itemLabelFontSize": "{alias:core.typography.fontSize.14}",
+          "itemLabelFontWeight": "{alias:core.typography.fontWeight.medium}",
+          "itemHoverBackground": "{alias:core.color.neutral.100}",
+          "itemActiveBackground": "{alias:semantic.color.primary.light}",
+          "chevronColor": "{alias:core.color.neutral.500}",
+          "toggleIconColor": "{alias:semantic.text.secondary}",
+          "itemIcon": {
+            "home": "{alias:semantic.color.primary.base}",
+            "partyDomain": "{alias:semantic.action.primary.hover}",
+            "orderManagement": "{alias:semantic.action.primary.active}",
+            "productDomain": "{alias:semantic.color.info.base}",
+            "serviceDomain": "{alias:semantic.color.success.base}",
+            "workflowDomain": "{alias:semantic.color.danger.base}",
+            "resourceDomain": "{alias:semantic.color.warning.base}",
+            "integrationDomain": "{alias:semantic.color.process.dark}",
+            "global": "{alias:core.color.neutral.600}"
+          }
+        }
+      }
+    },
+    "layout": {
+      "body": {
+        "background": "{alias:semantic.color.secondary}",
+        "sectionGap": "{alias:core.spacing.24}"
+      },
+      "apiExplorer": {
+        "sidebarColumnWidth": "330px"
+      }
+    }
+  },
+  "aiConstraints": {
+    "enforceComponentOwnership": true,
+    "neverRenderTableOutsideCard": true,
+    "neverAddTitleToTable": true,
+    "cardOwnsHeaderAndLayout": true,
+    "tableOwnsDataAndStates": true,
+    "cardHeaderRightGroupOnlyForPrimaryAction": true,
+    "cardHeaderRightGroupMayBeEmpty": true,
+    "neverPlacePillsInCardHeaderRightGroup": true,
+    "neverPlaceFiltersInCardHeaderRightGroup": true,
+    "cardHeaderLeftGroupUsesOnePatternAtATime": true,
+    "neverMixPillsAndFiltersInCardHeader": true,
+    "neverMixPillsAndButtonGroupsInCardHeader": true,
+    "neverMixFiltersAndButtonGroupsInCardHeader": true,
+    "cardHeaderBottomRowMustNotRenderIfEmpty": true,
+    "cardHeaderPrimaryActionUsesFilledPrimaryButton": true,
+    "cardHeaderPrimaryActionUsesPlusIcon": true,
+    "cardHeaderUtilityActionsUseOutlinedIconOnlyButtons": true,
+    "cardHeaderUtilityActionsMustNotUseCircularIconButtons": true,
+    "neverMixBootstrapNavWithPills": true,
+    "secondaryCardBodySectionNavUsesNavTabsTopNotPills": true,
+    "navTabsTopInactiveHoverMustUsePrimaryBorderNotTransparentInactiveBorder": true,
+    "neverUseOutlinedIconOnlyForTableActions": true,
+    "tableActionCircularIconButtonsMustUseDefaultIconVariant": true,
+    "iconOnlyButtonsMustUseSizeTokens": true,
+    "pillsMustUseFixedFontSize": true,
+    "neverUseResponsiveTypographyForPills": true,
+    "neverInventStylesOutsideTokens": true,
+    "preferSemanticTokensOverCorePalette": true,
+    "preferComponentTokensForAlertsBadgesAndButtons": true,
+    "outlinedButtonHoverActiveUseExplicitSurfaceTokens": true,
+    "keepLegacyNeutralDuringMigration": true,
+    "treatBadgeWarningAsLegacyCompatibility": true,
+    "tableRowsMustUseFixedHeight": true,
+    "tableRowsMustUseBorderSeparators": true,
+    "tableCellsMustResetBootstrapVerticalPadding": true,
+    "nativeTableRowsMustApplyHeightToTrThAndTd": true,
+    "nativeTablesMustUseBorderCollapse": true,
+    "tableCellContentMustNotExpandRows": true,
+    "bodyContentMustUseSectionGap": true,
+    "symphonicaAppSidebarMustUseNavSidebarTokensAndMaterialOutlinedIcons": true,
+    "symphonicaSidebarCollapsedMustHideScrollbar": true
+  }
+}

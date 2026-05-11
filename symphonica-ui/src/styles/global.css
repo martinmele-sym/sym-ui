@@ -1,0 +1,15 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons+Outlined');
+@import './tokens.css';
+@import './symphonica.css';
+
+body {
+  margin: 0;
+  font-family: var(--core-typography-font-family-base);
+  background-color: var(--layout-body-background);
+}
+
+#root {
+  min-height: 100vh;
+}

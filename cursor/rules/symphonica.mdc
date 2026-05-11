@@ -1,0 +1,30 @@
+---
+description: Symphonica design system rules for this React app
+alwaysApply: true
+---
+
+When working on UI code, always use the project design system context:
+
+- @docs/design-system/Symphonica_design.md
+- @docs/design-system/design_tokens.json
+
+This is a React application using Bootstrap (or React-Bootstrap) as the structural foundation for Symphonica.
+
+Rules:
+- Preserve existing React functional patterns and hooks logic.
+- Do not rewrite complete screens or large component trees unless explicitly requested.
+- Do not introduce new dependencies (libraries) unless explicitly requested.
+- Do not introduce new visual styles (CSS/inline-styles) unless explicitly requested.
+
+- Bootstrap is part of the foundation of this design system.
+- Reuse Bootstrap utilities and layout structure (Rows, Cols, Containers) whenever possible.
+- Extend Bootstrap using Symphonica guidelines and tokens.
+- Do not replace Bootstrap with another UI framework (like Tailwind or Material UI).
+
+- Symphonica styles and tokens take precedence over default Bootstrap styles.
+- When a Bootstrap style conflicts with Symphonica, follow Symphonica.
+- Prefer Symphonica visual rules for typography, spacing, colors, borders, shadows and component behavior.
+
+- Use Symphonica tokens instead of hardcoded CSS values.
+- If using CSS-in-JS or Styled Components, map props strictly to @docs/design-system/design_tokens.json
+- For icons, strictly follow the Material Icons Outlined mapping defined in @Symphonica_design.md.
