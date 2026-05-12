@@ -828,6 +828,24 @@
   white-space: normal;
 }
 
+.sym-table tbody tr .sym-table-actions {
+  opacity: 0;
+  transition: opacity var(--core-motion-duration-fast) var(--core-motion-easing-standard);
+  pointer-events: none;
+}
+
+.sym-table tbody tr:hover .sym-table-actions,
+.sym-table tbody tr:focus-within .sym-table-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sym-table tbody tr .sym-table-actions {
+    transition-duration: 0ms;
+  }
+}
+
 .sym-table__sort {
   display: inline-flex;
   align-items: center;

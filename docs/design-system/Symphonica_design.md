@@ -698,6 +698,14 @@ State behavior:
 
 Actions column must use compact circular Icon Buttons.
 
+#### Row hover visibility
+
+- By default, action buttons in the Actions column **must not be visible** (use `opacity`, `visibility`, or an equivalent technique; do not remove controls from the tab order solely for visuals).
+- When the pointer is over **the table body row** that contains those actions, the buttons **must become visible**.
+- Prefer transitioning visibility with **`Core/Motion`** duration and easing tokens (e.g. `opacity` — do not animate `display`).
+- Respect **`prefers-reduced-motion`**: shorten or omit the visibility transition rather than enforcing full motion duration on users who request reduced motion.
+- For keyboard and assistive-tech use, ensure actions remain usable when the row or an action receives focus (e.g. show on **`:focus-within`** on the row, or an equivalent accessible pattern).
+
 Rules:
 - Table action buttons must use `component.button.icon`
 - Table action buttons must not use `component.button.outlined.iconOnly`
@@ -765,6 +773,7 @@ Item counter:
 - Rows must support keyboard navigation when interactive
 - Selected state must be perceivable without color only
 - Sortable headers must expose sort state accessibly
+- Actions column controls must follow **Row hover visibility**: hidden by default is visual-only; `:focus-within` on the row (or equivalent) must reveal buttons so keyboard and assistive-tech users can operate them
 
 ---
 
@@ -1773,6 +1782,7 @@ Figma → Code mapping:
 - **Card nesting:** never nest a **Primary Card** inside a **Secondary Card**. **Secondary** may be nested **inside Primary**; use **`component.card.secondary.nestedInPrimary.background`** for nested default background (`LegacyNeutral/Subtle`). Standalone Secondary on app background keeps default white. See §5.5.
 - **App sidebar** (primary Symphonica menu): use **`component.nav.sidebar`** tokens and Material Icons Outlined per §5.8; **24px vertical spacing between leading icons** via `menuListGap` with **`itemPaddingY` 0**; map each domain row’s leading icon color via **`itemIcon.*`** aliases — do not substitute ad-hoc colors or reuse Tabs Top / Card Header pill styles for this shell; **collapsed sidebar must not show a scrollbar** (overflow hidden per §5.8)
 - Circular icon buttons inside **table** action columns and **table footer** load-more must use `component.button.icon.primary` (default hover: white), not `primaryCard`
+- **Table Actions column (body rows):** action buttons hidden by default, visible on **row hover**; keep keyboard access (e.g. **`:focus-within`**). Use motion tokens for `opacity` transitions; respect **`prefers-reduced-motion`**. Table footer load-more is not covered by this pattern. See section 5.4, Table Action Column.
 - Circular icon buttons on **white card surfaces** use `component.button.icon.primaryCard` / `dangerCard` (hover: `Semantic/Color/Secondary`)
 - Inside **Secondary Card** bodies, use **Tabs Top** tokens (`component.nav.tabs.top`) for section navigation; Card Header rows still use **Pills** where specified — do not mix `nav-tabs` and pills in the same Card Header row
 - No hardcoded styles
