@@ -44,16 +44,19 @@ Includes:
 - Alerts
 - Badges
 - Buttons
+- Button Groups
 - Cards
   - Primary cards
   - Secondary cards
   - Card headers
-  - Subtitle labels
+  - Subtitle labels (Info / Success / Error role surfaces)
 - Tables
   - Header
   - Rows
   - Footer
 - Pills
+- Navigation — Tabs Top (Secondary Card body section switching)
+- Navigation — App Sidebar (primary shell menu)
 
 ---
 
@@ -90,6 +93,7 @@ Base unit: **4px**
 
 Scale:
 - 4 / 8 / 12 / 16 / 20 / 24 / 32 / 40
+- **7** / **13** — compact control internals only when referenced by component tokens (e.g. **`component.buttonGroup.segment`** padding aliases **`Core/Spacing/7`** and **`Core/Spacing/13`**); do not use as general layout rhythm outside documented components.
 
 Rules:
 - Always use tokens
@@ -149,6 +153,7 @@ Required weights:
 - Do not use responsive typography (`rem`, `em`, `vw`, `clamp`) unless explicitly defined
 - Do not rely on fallback fonts as primary rendering
 - Font loading must happen globally before component rendering
+- Line-height tokens (**`Core/Typography/LineHeight`**): **`tight`**, **`solid`**, **`relaxed`** — use **`relaxed`** only when a component token aliases it (e.g. **`component.buttonGroup.segment`** label line-height).
 
 ---
 
@@ -290,6 +295,8 @@ independent of specific color values.
 
 ## 5. Component Tokens
 
+References elsewhere in this specification use **§5.*n*** for the subsections below (**§5.1**–**§5.8**). **§5.3** covers labeled buttons and includes **Button Groups** under the same heading family.
+
 ---
 
 ### 5.1 Alerts
@@ -337,7 +344,7 @@ Rules:
 Note:
 `Badge/Warning` is legacy.
 
----
+Segmented **Button Group** numeric count pills are **not** this component: use **`component.buttonGroup.countBadge`** and §5.3 **Button Groups** — **14px** medium numerals, pill shape, **no** uppercase requirement.
 
 ### 5.3 Buttons
 
@@ -522,11 +529,65 @@ Icon:
 - Disabled → action disabled token (primary/danger per variant)
 
 ---
-## 5.4 Data Display — Tables
+
+### Button Groups
+
+A **button group** is a **composition** of standard Symphonica buttons under **`component.button`** (Bootstrap **`btn`** + Symphonica overrides). In the **canonical Card Header pattern**, the Guía de Estilos treats it as a **segmented primary control**: one continuous **primary** outline, **mutually exclusive segments**, and optional **numeric count pills** beside each label (see anatomy below). Other uses still merge adjacent **`btn`** siblings into one strip with **straight inner seams** and **rounding only on the outer ends**.
+
+Source (reference): [Guía de Estilos — Button Group](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7321-12060).
+
+#### Placement
+
+- Preferred **inside Cards**: **Primary Card Header** bottom-row **left group** when using the header **button-group pattern** — see §5.5 (**Button group pattern**).
+- Avoid detached groups floating without an owning card/header section unless an explicit layout spec overrides.
+
+#### Anatomy (Figma-aligned segmented pattern)
+
+- **Segments**: reference sets use **three** or **four** segments in one row; product may fix count per screen, but keep **one selected segment** at a time unless spec defines multi-select (default: single selection).
+- **Per segment**: primary **label** (Montserrat **16** / medium / line-height **1.5**) plus an optional trailing **count pill** (numeric only).
+- **Count pill**: pill radius (**`Core/Border/Radius/Full`**), background **`Semantic/Color/Secondary`**, numeral **`Semantic/Color/Primary`**, typography **`Core/Typography/FontSize/14`** + **`Core/Typography/FontWeight/Medium`** — **not** uppercase and **not** the global status-badge recipe in §5.2 (that remains **12px**, uppercase). Implement via **`component.buttonGroup.countBadge`**.
+- **Inside the segment**: horizontal gap between label and count pill **`component.buttonGroup.segment.labelBadgeGap`** (**`Core/Spacing/8`**); segment padding **`component.buttonGroup.segment.paddingX`** / **`paddingY`** (reference matches Guía frame proportions).
+- **Border**: shared **`Core/Border/Width/Hairline`** stroke in **`Semantic/Color/Primary`** around each segment; inner vertical edges align so the group reads as **one** segmented frame (Bootstrap **`btn-group`** border collapse / negative margin pattern).
+
+#### Selection visuals (primary segmented variant)
+
+- **Unselected segment**: interior **`Core/Color/Transparent`** (reads clear on the Card Header white surface); label and count numeral use **primary** foreground on **secondary** pill surface for the count only.
+- **Selected segment**: interior **`Semantic/Color/Primary`**; label **`Core/Color/Neutral/White`**; **count pill unchanged** (still **`Semantic/Color/Secondary`** surface + **primary** numeral), matching the reference component.
+
+#### Hover, active, disabled
+
+- **Unselected** segment, pointer hover / pressed: use **`component.button.outlined.primary.hover`** and **`component.button.outlined.primary.active`** for background, border, and label foreground (aligned with §5.3 outlined labeled buttons — solid semantic hover/active fills, white text on those states).
+- **Selected** segment: use **`component.button.filled.primary.hover`** and **`component.button.filled.primary.active`** for the segment shell; keep count pill colors as defined on **`component.buttonGroup.countBadge`** unless a future spec ties selected-state pills to white-on-primary (reference keeps secondary pills).
+- **Disabled**: not illustrated in Figma; map segment chrome to **`component.button.outlined.primary.disabled`** when unselected and **`component.button.filled.primary.disabled`** when selected; hide or dim counts per product rules without inventing new palette hex values.
+
+#### Composition and geometry (all button groups)
+
+- **Inner joins**: **square** perpendicular corners between neighbors — suppress **individual** **`border-radius`** on shared vertical edges mid-group so inner faces read as **straight** and borders do **not** “double-gap”.
+- **Outer ends**: the **leading** outer corner of the **first** segment and **trailing** outer corner of the **last** use **`component.buttonGroup.borderRadius.container`** (**`Core/Border/Radius/Sm`**).
+- **`component.buttonGroup.gap`**: **`Core/Spacing/0`** between siblings (abutting borders); Bootstrap overlap for **`btn-group`** stays an implementation detail — resolved spacing is **`component.buttonGroup.gap`** only.
+- **Sizes**: segmented header pattern uses dimensions implied by **`component.buttonGroup.segment`** + **`component.button.size.md`** row height alignment unless a spec chooses **sm** / **lg**.
+
+#### Icons
+
+- If a segmented control includes icons (not shown in the reference node), follow **§10 Iconography**: **Google Material Icons Outlined**, `<span class="material-icons-outlined">…</span>`.
+
+#### Tokens
+
+- **Shell**: **`component.buttonGroup.gap`**, **`component.buttonGroup.borderRadius.container`**.
+- **Segment layout / type**: **`component.buttonGroup.segment`** (`paddingX`, `paddingY`, label stack, **`labelBadgeGap`**).
+- **Count pill**: **`component.buttonGroup.countBadge`** (fills, type, radius, padding — aliases **`Semantic/Color/Secondary`**, **`Semantic/Color/Primary`**, **`Core/Typography/FontSize/14`**, **`Core/Border/Radius/Full`**).
+
+#### Structural note
+
+- Markup aligns with **`btn-group`** (or frameworks that wrap `ButtonGroup`); Symphonica tokens/style overrides apply on top — **rounded shell + square interior joins** as above.
+
+---
+
+### 5.4 Data Display — Tables
 
 Tables are structured components used to display tabular data with multiple interaction states.
 
-### Table Ownership
+#### Table Ownership
 
 Tables own:
 - Data structure
@@ -553,7 +614,7 @@ Rules:
 
 ---
 
-### Table Composition
+#### Table Composition
 
 A standard table card may contain:
 
@@ -569,7 +630,7 @@ Rules:
 
 ---
 
-### Table Header
+#### Table Header
 
 Table headers support sorting actions.
 
@@ -612,7 +673,7 @@ Sort interaction feedback:
 
 ---
 
-### Table Row Anatomy
+#### Table Row Anatomy
 
 Rows must use fixed-height anatomy. The visual height must not be produced by Bootstrap padding.
 
@@ -654,7 +715,7 @@ Implementation contract:
 - Content must not overflow row height
 
 
-### Table Native Rendering Contract
+#### Table Native Rendering Contract
 
 When using native HTML tables, row height must not rely on `tr` alone.
 
@@ -694,11 +755,11 @@ State behavior:
 
 ---
 
-### Table Action Column
+#### Table Action Column
 
 Actions column must use compact circular Icon Buttons.
 
-#### Row hover visibility
+##### Row hover visibility
 
 - By default, action buttons in the Actions column **must not be visible** (use `opacity`, `visibility`, or an equivalent technique; do not remove controls from the tab order solely for visuals).
 - When the pointer is over **the table body row** that contains those actions, the buttons **must become visible**.
@@ -730,7 +791,7 @@ Notes:
 
 ---
 
-### Table Footer
+#### Table Footer
 
 Tables may include a footer area used for pagination or progressive loading.
 
@@ -768,7 +829,7 @@ Item counter:
 
 ---
 
-### Accessibility
+#### Accessibility
 
 - Rows must support keyboard navigation when interactive
 - Selected state must be perceivable without color only
@@ -777,7 +838,7 @@ Item counter:
 
 ---
 
-## 5.5 Surface Components — Cards
+### 5.5 Surface Components — Cards
 
 Cards are surface containers used to group related content, actions, and data.
 
@@ -786,7 +847,7 @@ Symphonica defines two main card types:
 - Primary Cards
 - Secondary Cards
 
-### Card Header Section
+#### Card Header Section
 
 Primary cards may include a header section used for navigation, filters, or actions.
 
@@ -825,14 +886,14 @@ Constraints:
 - Header must not grow beyond content height
 - Must remain consistent across screens
 
-### Card Header Groups Usage
+#### Card Header Groups Usage
 
 Card Header bottom row is divided into two groups:
 
 - Left group: contextual navigation, filters, or grouped controls
 - Right group: primary action
 
-### Pattern Exclusivity Rules
+#### Pattern Exclusivity Rules
 
 The left group must use only ONE pattern at a time:
 
@@ -850,7 +911,7 @@ If multiple interaction types are required:
 - Use progressive disclosure (e.g. advanced filters expansion)
 - Do not overload the header with multiple patterns
 
-### Empty State Behavior
+#### Empty State Behavior
 
 If the left group is empty:
 
@@ -861,7 +922,7 @@ If the left group is empty:
 If both groups are empty:
 - The header bottom row must not be rendered
 
-#### Right Group
+##### Right Group
 
 The right group is reserved for the main page/section action.
 
@@ -876,11 +937,11 @@ Rules:
 - Do not move secondary actions into the right group
 - Do not place pills or filters in the right group
 
-#### Left Group
+##### Left Group
 
 The left group may use one of the following patterns.
 
-### Left Group Order Rules
+#### Left Group Order Rules
 
 Elements inside the left group must follow a strict order:
 
@@ -894,7 +955,7 @@ Rules:
 - Do not place filters before primary navigation elements
 - Maintain consistent ordering across all screens
 
-##### 1. Pills navigation pattern
+###### 1. Pills navigation pattern
 
 Structure:
 - Refresh outlined icon-only button
@@ -907,7 +968,7 @@ Rules:
 - Pills must use `component.pill`
 - Do not use Bootstrap nav tabs
 
-##### 2. Filters pattern
+###### 2. Filters pattern
 
 Structure:
 - Inputs and/or selects
@@ -921,7 +982,7 @@ Rules:
 - Advanced search may reveal an additional row below with more filter fields
 - Filter actions must use outlined icon-only buttons
 
-#### Filters Layout Constraints
+##### Filters Layout Constraints
 
 - Filter inputs must not overflow the header width
 - Filters must wrap to next line if space is insufficient
@@ -933,15 +994,17 @@ Rules:
 
 ---
 
-##### 3. Button group pattern
+###### 3. Button group pattern
 
 Structure:
-- Bootstrap Button Group
+- Bootstrap **`btn-group`**
+- **Segmented primary control** (Guía reference): one row of **3–4** segments; each segment = **label** + optional **count pill**; exactly **one** active segment for exclusive filters/views unless otherwise specified
 
 Rules:
-- Use only when the header requires grouped mutually related controls
-- Must follow Symphonica button rules
+- Use only when the header requires **mutually related, mutually exclusive** choices (e.g. status buckets with counts), not arbitrary unrelated actions
+- Must follow §5.3 **Button Groups** (selection paints, hover/active/disabled mapping, count pills vs §5.2 badges)
 - Must not be mixed with pills or filters unless explicitly defined
+- Outer group chrome: **`component.buttonGroup.gap`** and **`component.buttonGroup.borderRadius.container`**; segment interior and pills use **`component.buttonGroup.segment`** and **`component.buttonGroup.countBadge`**; outlined/filled **`component.button`** tokens supply interaction paints per §5.3
 
 Implementation mapping:
 
@@ -955,7 +1018,7 @@ Rules:
 - Do not create custom layout outside defined header structure
 - Do not flatten header sections into a single row
 
-### Primary Card Header with Pills
+#### Primary Card Header with Pills
 
 This pattern is used for main section headers inside Primary Cards.
 
@@ -1002,13 +1065,34 @@ Constraints:
 - Do not replace pills with buttons
 
 
-### Card Subtitle Label
+#### Card Subtitle Label
 
 Cards may include subtitle labels to separate groups of information inside the card content.
 
-Variants:
+Source (Figma): [Guía de Estilos — Subtitle Label](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7253-5143).
+
+##### Structural variants
+
 - Text only
 - Text with switch
+
+##### Role variants
+
+The label supports three **roles**. Pick the role by context (neutral framing vs positive vs critical).
+
+- **Copy / typography / optional leading icons** use **`component.card.subtitle.{info|success|error}.text`** and **`component.card.subtitle.{info|success|error}.icon`** (today both resolve to the same semantic colors as in Figma; split allows a different icon tint later without renaming).
+- **Strip (bar) surface** behind the row uses **`component.card.subtitleLabel.surface.{info|success|error}`** — keeps layout/chrome separate from subtitle copy tokens.
+
+| Role | Purpose (typical) | Strip surface (`subtitleLabel.surface.*`) | Text (`subtitle.*.text`) | Icon (`subtitle.*.icon`) |
+|------|-------------------|------------------------------------------|---------------------------|---------------------------|
+| **Info** | Default section framing | `Semantic/Color/Secondary` | `Semantic/Text/Title` | Same alias as text |
+| **Success** | Positive emphasis | `Semantic/Color/Success/Light` | `Semantic/Color/Success/Dark` | Same alias as text |
+| **Error** | Critical / blocking (Danger palette) | `Semantic/Color/Danger/Light` | `Semantic/Color/Danger/Dark` | Same alias as text |
+
+Rules:
+- **Info** is the default when no role is specified in markup.
+- **Error** uses the **Danger** semantic scale for strip + typography (aligned with Alerts/Badges).
+- Do not introduce a second parallel tree (e.g. legacy `roles.*.background`) for the same visuals; use **`subtitle` + `subtitleLabel.surface`** only.
 
 Switch rules:
 
@@ -1017,22 +1101,24 @@ Switch rules:
 - Use Bootstrap switch structure styled with Symphonica tokens
 - Switch must be aligned to the right side of the subtitle label
 - Switch height must not alter subtitle label height
+- The switch control keeps **standard primary / outlined switch** appearance; it does **not** take on Success or Error tint from the bar (matches Figma: Simple/Advanced chrome stays primary)
 
 Use cases:
 - Grouping metadata
 - Separating form/detail sections
 - Labeling content blocks inside a card
 
-Visual rules:
-- Background: `Semantic/Color/Secondary`
+Shared layout chrome (component `subtitleLabel`; all roles):
+
 - Border radius: `Core/Border/Radius/Sm`
 - Height: `Core/Size/40`
+- Typography scale: **`component.card.subtitleLabel.fontSize`** and **`component.card.subtitleLabel.fontWeight`**
 
-Typography:
+Typography (all roles):
+
 - Font family: Montserrat
-- Font size: `Core/Typography/FontSize/14`
-- Font weight: `Core/Typography/FontWeight/Semibold`
-- Color: `Semantic/Text/Title`
+- Font size and weight resolve from **`component.card.subtitleLabel.fontSize`** and **`fontWeight`**
+- Text and optional **Material Icons Outlined** in the bar must use **`component.card.subtitle.{role}.text`** and **`component.card.subtitle.{role}.icon`** respectively (implementations may inherit `color` on text nodes; icons should reference the **icon** token).
 
 Layout rules:
 - Text must be vertically centered
@@ -1040,9 +1126,13 @@ Layout rules:
 - Switch variant aligns title to the left and switch control to the right
 - Switch must not override subtitle label height
 
+Implementation notes:
+- Prefer explicit markup classes or props for role (`info` | `success` | `error`) so implementations do not confuse role with Badge or Alert variants.
+- Structural variant **with switch** composes orthogonally with any role.
+
 ---
 
-### Primary Cards
+#### Primary Cards
 
 Primary cards are used as main page containers.
 
@@ -1075,7 +1165,7 @@ Spacing rules (fixed):
 
 ---
 
-### Secondary Cards
+#### Secondary Cards
 
 Secondary cards are used for smaller content groups or selectable surfaces.
 
@@ -1091,22 +1181,22 @@ States:
 - Active
 - Selected
 
-#### Default
+##### Default
 
 - No shadow
 - Border visible
 - Border color: `Core/Color/Neutral/500`
 
-#### Hover
+##### Hover
 
 - Applies card shadow
 
-#### Active
+##### Active
 
 - No shadow
 - Border color: `Semantic/Color/Success/Base`
 
-#### Selected
+##### Selected
 
 - No shadow
 - Border color: `Semantic/Color/Primary`
@@ -1123,7 +1213,7 @@ Selected and active states must not be visually overridden by hover.
 
 ---
 
-### Secondary Card Grid Variant
+#### Secondary Card Grid Variant
 
 Secondary cards may be used as compact grid/gallery items.
 
@@ -1160,7 +1250,7 @@ Rules:
 
 ---
 
-### Secondary Card Spacing (fixed)
+#### Secondary Card Spacing (fixed)
 
 - Padding: `Core/Spacing/24`
 - Gap: `Core/Spacing/24`
@@ -1168,22 +1258,22 @@ Rules:
 
 ---
 
-### Card nesting and hierarchy
+#### Card nesting and hierarchy
 
 Symphonica does **not** document arbitrary “cards inside cards.” The following rules define the **only** supported nesting pattern and prevent hierarchy inversions.
 
-#### Prohibited
+##### Prohibited
 
 - **Do not nest a Primary Card inside a Secondary Card.**
   - A Primary Card is a **top-level section container** (shadow, no border, main module).
   - A nested Primary inside a Secondary breaks visual hierarchy, elevation, and the intended reading order (main surface inside a bordered “detail” surface).
 
-#### Permitted
+##### Permitted
 
 - **Secondary Card inside Primary Card** (or inside the white body of a Primary Card / equivalent primary module surface) is allowed.
   - Matches use cases such as detail clusters, resource/API grids, and selectable tiles **within** a main section.
 
-#### Nested Secondary visual rule (contrast)
+##### Nested Secondary visual rule (contrast)
 
 - When a Secondary Card is rendered **inside** a Primary Card, its **surface background** must **not** stay the same as the parent white body (both would read as one flat white).
 - Use **`Core/Color/LegacyNeutral/Subtle`** for the nested Secondary Card **default background** so the inner card reads clearly against the Primary white.
@@ -1191,7 +1281,7 @@ Symphonica does **not** document arbitrary “cards inside cards.” The followi
 - **Border**, **hover / active / selected** states, **grid variant** typography and spacing follow the normal Secondary Card rules unchanged unless otherwise specified.
 - Secondary Cards placed **directly** on the app body (`Semantic/Color/Secondary`) keep the default Secondary surface (**`Core/Color/Neutral/White`**) as today.
 
-#### Summary
+##### Summary
 
 | Context | Primary nested in Secondary | Secondary nested in Primary |
 |--------|-----------------------------|-----------------------------|
@@ -1200,16 +1290,16 @@ Symphonica does **not** document arbitrary “cards inside cards.” The followi
 
 ---
 
-### Card Typography
+#### Card Typography
 
-#### Header / Title
+##### Header / Title
 
 - Font family: Montserrat
 - Font size: `20px`
 - Font weight: `600`
 - Color: `Semantic/Text/Title`
 
-#### Body
+##### Body
 
 - Font size: `14px`
 - Font weight depends on hierarchy:
@@ -1225,7 +1315,7 @@ Use text tokens based on hierarchy. Do not use raw color tokens.
 
 ---
 
-### Card Actions
+#### Card Actions
 
 Actions inside cards must use existing button definitions:
 
@@ -1235,7 +1325,7 @@ Actions inside cards must use existing button definitions:
 
 ---
 
-### Card Status Badge Placement
+#### Card Status Badge Placement
 
 Cards may include a status badge to indicate the current state of the entity.
 
@@ -1270,7 +1360,7 @@ Constraints:
 
 ---
 
-### Implementation Rules
+#### Implementation Rules
 
 - Do not hardcode border radius
 - Do not hardcode shadow
@@ -1280,7 +1370,7 @@ Constraints:
 
 ---
 
-## 5.6 Navigation Components — Pills
+### 5.6 Navigation Components — Pills
 
 Pills are compact navigation elements used to switch between views or data sets.
 
@@ -1316,19 +1406,19 @@ Implementation rules:
 - Do not inherit font size from parent containers or Bootstrap
 - Do not use default Bootstrap nav/tab font sizing
 
-### Default
+#### Default
 - Background: transparent
 - Text: `Semantic/Text/Secondary`
 
-### Hover
+#### Hover
 - Background: `Core/Color/Neutral/200`
 - Text: `Semantic/Text/Secondary`
 
-### Active
+#### Active
 - Background: `Semantic/Color/Primary/Base`
 - Text: `Semantic/Text/White`
 
-### Disabled
+#### Disabled
 - Background: transparent
 - Text: `Core/Color/Neutral/500`
 
@@ -1343,25 +1433,25 @@ Rules:
 
 ---
 
-## 5.7 Navigation — Tabs Top (Secondary Cards)
+### 5.7 Navigation — Tabs Top (Secondary Cards)
 
 Tabs Top are Bootstrap `nav-tabs` used **inside Secondary Card bodies** to switch sections or views. They align with the [Bootstrap 5 UI Kit — Tabs top](https://www.figma.com/design/nxyHm0KrZLbBCr9Y8iC1km/Bootstrap-5-Design-System---UI-Kit?node-id=1-34210) component: primary theme border on the track and on the active tab, Montserrat 14 / medium, inactive labels use body text color on white card.
 
-### Structure
+#### Structure
 
 - Markup: `ul.nav.nav-tabs` with Symphonica scope class (e.g. `sym-nav-tabs-top`), `li.nav-item`, `button.nav-link` (or anchor when routed).
 - `role="tablist"` on the `ul`; each control `role="tab"`.
 
-### When to use
+#### When to use
 
 - **Secondary Cards**: use Tabs Top for in-card section switching.
 - **Primary Card Header** bottom row: keep **Pills** (or filters / button group) per Card Header rules — do not replace Card Header pills with Tabs Top unless product spec changes.
 
-### Tokens
+#### Tokens
 
 - Use `component.nav.tabs.top` for track border, tab typography, padding, radii, gap, and inactive / inactiveHover / active / disabled surfaces.
 
-### Visual (summary)
+#### Visual (summary)
 
 - **Track**: bottom border `Semantic/Color/Primary` (`component.nav.tabs.top.track`).
 - **Active tab**: white background, top/left/right border primary, label `Semantic/Text/Title`, top corner radius from tokens; bottom border meets the track using the white “cover” token so the tab connects to the content area.
@@ -1369,7 +1459,7 @@ Tabs Top are Bootstrap `nav-tabs` used **inside Secondary Card bodies** to switc
 - **Inactive hover**: background `Core/Color/Neutral/100`; **primary border on top, left, and right** (`component.nav.tabs.top.inactiveHover.borderColor`); **bottom border uses `inactiveHover.borderBottomCover`** (same as hover background) to overlap the track—same pattern as active’s white cover. Do not map hover borders to `inactive.borderColor` or the outline stays invisible.
 - **Disabled**: transparent background, `Core/Color/Neutral/500` label.
 
-### Rules
+#### Rules
 
 - Do not use **Pills** for this in-card pattern when Tabs Top is required.
 - Do not use default Bootstrap tab colors; override with Symphonica tokens.
@@ -1377,11 +1467,11 @@ Tabs Top are Bootstrap `nav-tabs` used **inside Secondary Card bodies** to switc
 
 ---
 
-## 5.8 Navigation — App Sidebar (Primary menu)
+### 5.8 Navigation — App Sidebar (Primary menu)
 
 The **Symphonica primary navigation** is a **vertical sidebar** (logo / wordmark, global search field, domain list with leading Material Icons Outlined, labels, trailing `chevron_right`). Source: [Guía de Estilos — menú](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7089-7392).
 
-### Structure
+#### Structure
 
 - **Shell**: `aside` (or app-owned landmark) with scope class `sym-sidebar`; optional `sym-sidebar--collapsed` when width is collapsed.
 - **Header**: wordmark **Symphonica** (typography from `component.nav.sidebar` wordmark tokens) + toggle control (`menu_open` when expanded, `menu` when collapsed).
@@ -1392,13 +1482,13 @@ The **Symphonica primary navigation** is a **vertical sidebar** (logo / wordmark
   - Trailing **`chevron_right`** in `chevronColor`.
 - **Widths**: expanded → `component.nav.sidebar.widthExpanded` (aliases **`layout.apiExplorer.sidebarColumnWidth`**, 330px); collapsed → **`widthCollapsed`** (64px). Collapsed mode hides label, chevron, and search (visually / SR-friendly), centers row icons, tightens horizontal padding.
 
-### States
+#### States
 
 - **Row hover**: background `itemHoverBackground` (`Core/Color/Neutral/100`).
 - **Current / active route** (optional): background `itemActiveBackground` (`Semantic/Color/Primary/Light`); set `aria-current="page"` on the active control.
 - **Motion**: width and row transitions use `Core/Motion` tokens (respect reduced motion).
 
-### Rules
+#### Rules
 
 - Implement with **`component.nav.sidebar`** only for sizes, colors, and spacing — see `design_tokens.json` and generated CSS variables.
 - Icons: **Material Icons Outlined** only, 24px row icons; toggle uses tokenized control styling (`toggleIconColor`).
@@ -1775,6 +1865,15 @@ Figma → Code mapping:
 - `Component/Button/Icon/Primary/Icon/Active`
   → `component.button.icon.primary.icon.active`
 
+- `Component/Card/Subtitle/Info/Text`
+  → `component.card.subtitle.info.text`
+
+- `Component/Card/Subtitle/Info/Icon`
+  → `component.card.subtitle.info.icon`
+
+- `Component/Card/SubtitleLabel/Surface/Info`
+  → `component.card.subtitleLabel.surface.info`
+
 ---
 
 ## 12. Constraints for AI / Cursor
@@ -1782,9 +1881,10 @@ Figma → Code mapping:
 - **Card nesting:** never nest a **Primary Card** inside a **Secondary Card**. **Secondary** may be nested **inside Primary**; use **`component.card.secondary.nestedInPrimary.background`** for nested default background (`LegacyNeutral/Subtle`). Standalone Secondary on app background keeps default white. See §5.5.
 - **App sidebar** (primary Symphonica menu): use **`component.nav.sidebar`** tokens and Material Icons Outlined per §5.8; **24px vertical spacing between leading icons** via `menuListGap` with **`itemPaddingY` 0**; map each domain row’s leading icon color via **`itemIcon.*`** aliases — do not substitute ad-hoc colors or reuse Tabs Top / Card Header pill styles for this shell; **collapsed sidebar must not show a scrollbar** (overflow hidden per §5.8)
 - Circular icon buttons inside **table** action columns and **table footer** load-more must use `component.button.icon.primary` (default hover: white), not `primaryCard`
-- **Table Actions column (body rows):** action buttons hidden by default, visible on **row hover**; keep keyboard access (e.g. **`:focus-within`**). Use motion tokens for `opacity` transitions; respect **`prefers-reduced-motion`**. Table footer load-more is not covered by this pattern. See section 5.4, Table Action Column.
+- **Table Actions column (body rows):** action buttons hidden by default, visible on **row hover**; keep keyboard access (e.g. **`:focus-within`**). Use motion tokens for `opacity` transitions; respect **`prefers-reduced-motion`**. Table footer load-more is not covered by this pattern. See **§5.4**, **Table Action Column**.
 - Circular icon buttons on **white card surfaces** use `component.button.icon.primaryCard` / `dangerCard` (hover: `Semantic/Color/Secondary`)
-- Inside **Secondary Card** bodies, use **Tabs Top** tokens (`component.nav.tabs.top`) for section navigation; Card Header rows still use **Pills** where specified — do not mix `nav-tabs` and pills in the same Card Header row
+- Inside **Secondary Card** bodies, use **Tabs Top** tokens (`component.nav.tabs.top`) for section navigation (**§5.7**); Card Header rows still use **Pills** (**§5.6**) where specified — do not mix `nav-tabs` and pills in the same Card Header row
+- **Card Subtitle Label**: strip surface **`component.card.subtitleLabel.surface.{info|success|error}`**; label and optional leading icons **`component.card.subtitle.{state}.text`** and **`component.card.subtitle.{state}.icon`**; typography box **`subtitleLabel`** (`fontSize`, `fontWeight`, `height`, `borderRadius`). **Error** uses Danger semantics. Switch does not pick up bar tint. See **§5.5**, **Card Subtitle Label**.
 - No hardcoded styles
 - Use tokens always
 - Never invent styles outside tokens
@@ -1826,9 +1926,10 @@ Rules:
   - Cards
   - Badges
   - Icon buttons (circular)
-  - Custom components
+  - Segmented **Button Group** outer shell (**`component.buttonGroup.borderRadius.container`**, aliasing **`Core/Border/Radius/Sm`**) — Symphonica-owned chrome on Bootstrap **`btn-group`**, distinct from applying arbitrary radius tokens to generic **`btn`** primitives
+  - Other **custom components** documented with explicit radius tokens
 
-- Do not apply core.border.radius tokens to Bootstrap components unless explicitly defined.
+- Do not apply `core.border.radius` tokens to Bootstrap primitives unless explicitly defined (including per-component specs such as Button Group above).
 
 - Never infer border radius from other components.
 

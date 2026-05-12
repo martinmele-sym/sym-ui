@@ -247,6 +247,13 @@ export function SymphonicaShowcase() {
   const [tab, setTab] = useState(0)
   const [pillSectionA, setPillSectionA] = useState(0)
   const [gridPill, setGridPill] = useState(0)
+  const [lifecycleSegment, setLifecycleSegment] = useState(0)
+
+  const lifecycleSegments = [
+    { label: 'Blueprint', count: 24 },
+    { label: 'Runtime', count: 101 },
+    { label: 'Exceptions', count: 7 },
+  ] as const
 
   function handleHeaderPillClick(index: number) {
     if (index === 0) {
@@ -346,27 +353,26 @@ export function SymphonicaShowcase() {
           <article className="sym-card-secondary flex-grow-1 sym-no-hover">
             <h2 className="sym-card-title">Lifecycle overview</h2>
             <div className="sym-subtitle-label">Provisioning scope</div>
-            <div
-              className="d-flex flex-wrap align-items-center"
-              style={{ gap: 'var(--core-spacing-8)' }}
-              role="tablist"
-              aria-label="Lifecycle segments"
-            >
-              {['Blueprint', 'Runtime', 'Exceptions'].map((label, i) => (
+            <div className="sym-btn-group" role="radiogroup" aria-label="Lifecycle segments">
+              {lifecycleSegments.map((seg, i) => (
                 <button
-                  key={label}
+                  key={seg.label}
                   type="button"
-                  role="tab"
-                  aria-selected={i === 0}
-                  className={`sym-pill${i === 0 ? ' sym-pill--active' : ''}`}
+                  role="radio"
+                  aria-checked={lifecycleSegment === i}
+                  className={`sym-btn-group__segment${lifecycleSegment === i ? ' sym-btn-group__segment--selected' : ''}`}
+                  onClick={() => setLifecycleSegment(i)}
                 >
-                  {label}
+                  <span className="sym-btn-group__label">{seg.label}</span>
+                  <span className="sym-btn-group__count" aria-label={`${seg.count} items`}>
+                    {seg.count}
+                  </span>
                 </button>
               ))}
             </div>
             <p className="sym-card-body-text">
-              Secondary card body uses standard spacing. Pills illustrate the card-header navigation
-              pattern composition for dense surfaces.
+              Secondary card body uses standard spacing. Segmented Button Group (counts use{' '}
+              <code>component.buttonGroup.countBadge</code>, not header pills).
             </p>
             <div
               className="d-flex flex-wrap align-items-center"
@@ -389,7 +395,7 @@ export function SymphonicaShowcase() {
         <div className="col-md-4 d-flex">
           <article className="sym-card-secondary sym-card-secondary--state-hover flex-grow-1 sym-no-hover">
             <h2 className="sym-card-title">Operations bridge</h2>
-            <div className="sym-subtitle-label sym-subtitle-label--with-switch">
+            <div className="sym-subtitle-label sym-subtitle-label--success sym-subtitle-label--with-switch">
               <span>Notifications</span>
               <div className="form-check form-switch sym-subtitle-label__switch">
                 <input
@@ -470,7 +476,7 @@ export function SymphonicaShowcase() {
         <div className="col-md-4 d-flex">
           <article className="sym-card-secondary flex-grow-1 sym-no-hover">
             <h2 className="sym-card-title">Enrollment</h2>
-            <div className="sym-subtitle-label">Customer profile</div>
+            <div className="sym-subtitle-label sym-subtitle-label--error">Customer profile</div>
             <form
               className="d-flex flex-column"
               style={{ gap: 'var(--core-spacing-12)' }}
