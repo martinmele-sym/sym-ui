@@ -109,6 +109,7 @@
   --semantic-action-success-hover: #27B678;
   --semantic-action-success-active: #1E9C66;
   --semantic-action-success-disabled: #76DFB2;
+  --semantic-gradient-hero-primary-band: linear-gradient(132deg, var(--semantic-color-primary-base) 0%, var(--semantic-action-primary-active) 40%, var(--semantic-action-primary-hover) 100%);
   --semantic-text-primary: var(--semantic-color-dark);
   --semantic-text-secondary: var(--core-color-legacy-neutral-strong);
   --semantic-text-title: var(--semantic-color-primary-base);
@@ -442,9 +443,49 @@
   --component-nav-sidebar-item-icon-resource-domain: var(--semantic-color-warning-base);
   --component-nav-sidebar-item-icon-integration-domain: var(--semantic-color-process-dark);
   --component-nav-sidebar-item-icon-global: var(--core-color-neutral-600);
+  --component-header-shell-horizontal-padding: var(--core-spacing-32);
+  --component-header-shell-utility-tray-gap: var(--core-spacing-24);
+  --component-header-shell-breadcrumb-cluster-gap: var(--core-spacing-4);
+  --component-header-nav-bar-padding-y: 5px;
+  --component-header-search-min-width: 200px;
+  --component-header-search-preferred-width: 350px;
+  --component-header-search-placeholder-color: var(--core-color-neutral-600);
+  --component-header-search-border-color: var(--core-color-neutral-400);
+  --component-header-search-font-size: var(--core-typography-font-size-14);
+  --component-header-search-font-weight: var(--core-typography-font-weight-regular);
+  --component-header-search-suffix-icon-size: var(--core-size-18);
+  --component-header-utility-icon-size: var(--core-size-16);
+  --component-header-user-email-font-size: var(--core-typography-font-size-12);
+  --component-header-user-email-font-weight: var(--core-typography-font-weight-semibold);
+  --component-header-breadcrumb-link-font-size: var(--core-typography-font-size-14);
+  --component-header-breadcrumb-link-font-weight: var(--core-typography-font-weight-medium);
+  --component-header-breadcrumb-separator-font-size: var(--core-typography-font-size-16);
+  --component-header-breadcrumb-separator-font-weight: var(--core-typography-font-weight-regular);
+  --component-header-breadcrumb-leading-icon-size: var(--core-size-16);
+  --component-header-breadcrumb-help-icon-size: var(--core-size-20);
+  --component-header-breadcrumb-segment-icon-gap: var(--core-spacing-8);
+  --component-header-breadcrumb-separator-padding-x: var(--core-spacing-8);
+  --component-header-small-nav-bar-background: var(--semantic-color-primary-base);
+  --component-header-small-breadcrumb-bar-background: var(--layout-body-background);
+  --component-header-small-breadcrumb-foreground: var(--semantic-text-title);
+  --component-header-small-breadcrumb-separator-foreground: var(--semantic-color-primary-base);
+  --component-header-small-help-icon-foreground: var(--semantic-color-primary-base);
+  --component-header-small-user-email-foreground: var(--semantic-text-white);
+  --component-header-large-shell-background-base: var(--semantic-color-primary-base);
+  --component-header-large-shell-hero-linear-gradient: var(--semantic-gradient-hero-primary-band);
+  --component-header-large-nav-bar-border-bottom-width: var(--core-border-width-hairline);
+  --component-header-large-nav-bar-border-bottom-color: rgba(255,255,255,0.15);
+  --component-header-large-breadcrumb-band-padding-top: var(--core-spacing-8);
+  --component-header-large-breadcrumb-band-padding-bottom: 86px;
+  --component-header-large-breadcrumb-foreground: var(--semantic-text-white);
+  --component-header-large-breadcrumb-separator-foreground: var(--semantic-text-white);
+  --component-header-large-help-icon-foreground: var(--semantic-text-white);
+  --component-header-large-user-email-foreground: var(--semantic-text-white);
 
   /* --- layout --- */
   --layout-body-background: var(--semantic-color-secondary);
   --layout-body-section-gap: var(--core-spacing-24);
   --layout-api-explorer-sidebar-column-width: 330px;
+  --layout-header-large-shell-height: 156px;
+  --layout-header-large-body-offset-top: 94px;
 }

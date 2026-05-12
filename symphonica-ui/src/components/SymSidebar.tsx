@@ -1,9 +1,12 @@
 import { useId, useState } from 'react'
+import { NavLink } from 'react-router-dom'
 
 type NavItem = {
   id: string
   label: string
   icon: string
+  /** Internal route when set; otherwise local-only nav row */
+  to?: string
   /** Token: --component-nav-sidebar-item-icon-* */
   iconColorVar:
     | '--component-nav-sidebar-item-icon-home'
@@ -22,6 +25,7 @@ const NAV_ITEMS: NavItem[] = [
     id: 'home',
     label: 'Inicio',
     icon: 'home',
+    to: '/',
     iconColorVar: '--component-nav-sidebar-item-icon-home',
   },
   {
@@ -32,8 +36,9 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     id: 'order-management',
-    label: 'Order management',
+    label: 'Service orders',
     icon: 'assignment',
+    to: '/service-orders',
     iconColorVar: '--component-nav-sidebar-item-icon-order-management',
   },
   {
@@ -76,7 +81,6 @@ const NAV_ITEMS: NavItem[] = [
 
 export function SymSidebar() {
   const [collapsed, setCollapsed] = useState(false)
-  const [activeId, setActiveId] = useState('home')
   const searchId = useId()
 
   return (
@@ -93,7 +97,7 @@ export function SymSidebar() {
             type="button"
             className="sym-sidebar__toggle"
             aria-expanded={!collapsed}
-            onClick={() => setCollapsed((c) => !c)}
+            onClick={() => setCollapsed((prev: boolean) => !prev)}
             aria-label={collapsed ? 'Expandir menú' : 'Contraer menú'}
           >
             <span className="material-icons-outlined sym-sidebar__toggle-icon" aria-hidden>
@@ -121,27 +125,33 @@ export function SymSidebar() {
         <nav className="sym-sidebar__nav" aria-label="Dominios">
           <ul className="sym-sidebar__list">
             {NAV_ITEMS.map((item) => {
-              const isActive = activeId === item.id
+              const linkBody = (
+                <>
+                  <span
+                    className="material-icons-outlined sym-sidebar__leading-icon"
+                    style={{ color: `var(${item.iconColorVar})` }}
+                    aria-hidden
+                  >
+                    {item.icon}
+                  </span>
+                  <span className="sym-sidebar__label">{item.label}</span>
+                  <span className="material-icons-outlined sym-sidebar__chevron" aria-hidden>
+                    chevron_right
+                  </span>
+                </>
+              )
+
               return (
                 <li key={item.id} className="sym-sidebar__item">
-                  <button
-                    type="button"
-                    className="sym-sidebar__link"
-                    aria-current={isActive ? 'page' : undefined}
-                    onClick={() => setActiveId(item.id)}
-                  >
-                    <span
-                      className="material-icons-outlined sym-sidebar__leading-icon"
-                      style={{ color: `var(${item.iconColorVar})` }}
-                      aria-hidden
-                    >
-                      {item.icon}
-                    </span>
-                    <span className="sym-sidebar__label">{item.label}</span>
-                    <span className="material-icons-outlined sym-sidebar__chevron" aria-hidden>
-                      chevron_right
-                    </span>
-                  </button>
+                  {item.to ? (
+                    <NavLink to={item.to} end={item.to === '/'} className="sym-sidebar__link">
+                      {linkBody}
+                    </NavLink>
+                  ) : (
+                    <button type="button" className="sym-sidebar__link">
+                      {linkBody}
+                    </button>
+                  )}
                 </li>
               )
             })}

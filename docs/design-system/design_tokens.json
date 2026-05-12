@@ -3,7 +3,7 @@
     "name": "Symphonica Design System",
     "version": "1.0.0",
     "mode": "base",
-    "description": "Core, semantic and component tokens aligned with current Figma variables. Alerts, badges, filled, outlined and icon buttons are connected through semantic aliases.",
+    "description": "Core, semantic and component tokens aligned with current Figma variables. Semantic.gradient holds reusable CSS gradient strings (var-based). Alerts, badges, buttons, app header (small/large), navigation, cards, and tables use semantic aliases.",
     "llmImplementationNotes": {
       "buttonOutlinedInteraction": "Outlined labeled buttons and outlined icon-only (card header) buttons: default state uses background, foreground, border. For hover and active, use the nested tokens component.button.outlined.[primary|danger|success].hover|active.(background|border|foreground). Background and border share the same semantic.action.* color (solid fill). Foreground aliases to the matching filled variant foreground (white on brand) for contrast. For disabled, use the nested .disabled object: background stays white, border and foreground use the semantic.action.*.disabled token. Do not apply semantic.action hover colors only to text/border while keeping a white background. Does not apply to table tbody Actions columns: those use circular component.button.icon variants only (never outlined icon-only there); row-level affordance timing follows tableActionColumnRowHoverVisibility.",
       "buttonIconCircularSurfaces": "Default circular icon buttons (component.button.icon.primary|danger) use neutral white hover background for table rows and similar dense rows on secondary app background. Inside Primary or Secondary card bodies (white card surface), use variant tokens component.button.icon.primaryCard or .dangerCard: hover background is semantic.color.secondary so the affordance reads on white without a harsh white chip. Table action columns and table footer load-more must keep the default variant, not primaryCard. In tbody Actions cells, whether the buttons are shown at all follows tableActionColumnRowHoverVisibility (row hover / focus-within); once visible, per-button hover still uses this default-variant behavior (e.g. white chip).",
@@ -12,7 +12,8 @@
       "symphonicaAppSidebar": "Primary app navigation is the Symphonica sidebar (Guía de Estilos). Reference: https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7089-7392 Use component.nav.sidebar tokens only (expanded width aliases layout.apiExplorer.sidebarColumnWidth 330px; collapsed 64px). White surface, vertical padding px/py from tokens, Material Icons Outlined 24px leading per row, labels Montserrat 14 medium semantic.text.primary, trailing chevron_right in neutral.500. Vertical spacing between nav rows: menuListGap MUST be Core/Spacing/24 (24px clear between leading icons—use itemPaddingY 0 so gap is not inflated). Search row: 16px placeholder neutral.600, border neutral.400 (Bootstrap text field pattern). Horizontal gap icon–label: itemGap 16. Collapsed: hide labels/chevrons and search; center icons; no scrollbar on sidebar (overflow hidden on shell and nav); toggle menu_open (expanded) / menu (collapsed). Expanded: scroll only the nav list if needed, not the whole aside. Wordmark \"Symphonica\" uses semantic.text.title weight semibold for showcase; production may swap asset.",
       "cardNesting": "Never nest a Primary Card inside a Secondary Card. The only allowed card-in-card pattern is Secondary inside Primary (e.g. detail clusters inside a main module). When a Secondary Card is nested inside a Primary Card body, set its default surface background to component.card.secondary.nestedInPrimary.background (alias Core/LegacyNeutral/Subtle), not white on white. Standalone Secondary cards on the app secondary background keep component.card.secondary.default.background (white). Borders and Secondary states (hover/active/selected/grid) are unchanged unless the spec adds nested variants.",
       "subtitleLabelRoleVariants": "Card Subtitle Label: strip surface uses component.card.subtitleLabel.surface.{info|success|error}; label typography and optional leading icons use component.card.subtitle.{state}.text and .icon (icon aliases text in Figma today). Layout: subtitleLabel.borderRadius|height|fontSize|fontWeight|variants. Error uses Danger palette for surface/text. Switch stays primary-themed. Figma: Subtitle Label.",
-      "buttonGroupSegmented": "Card Header segmented Button Group (Figma 7321-12060): continuous primary hairline borders; outer corners component.buttonGroup.borderRadius.container. Unselected segment interior core.color.transparent on white header; selected segment fill semantic.color.primary.base with white label text. Count pills use component.buttonGroup.countBadge (secondary surface, primary numeral, 14px medium, pill radius)—not the uppercase 12px global badge in §5.2. Gap label↔pill component.buttonGroup.segment.labelBadgeGap. Hover/active: unselected segments use component.button.outlined.primary.hover|active; selected segment shell uses component.button.filled.primary.hover|active. Bootstrap btn-group border collapse for shared seams."
+      "buttonGroupSegmented": "Card Header segmented Button Group (Figma 7321-12060): continuous primary hairline borders; outer corners component.buttonGroup.borderRadius.container. Unselected segment interior core.color.transparent on white header; selected segment fill semantic.color.primary.base with white label text. Count pills use component.buttonGroup.countBadge (secondary surface, primary numeral, 14px medium, pill radius)—not the uppercase 12px global badge in §5.2. Gap label↔pill component.buttonGroup.segment.labelBadgeGap. Hover/active: unselected segments use component.button.outlined.primary.hover|active; selected segment shell uses component.button.filled.primary.hover|active. Bootstrap btn-group border collapse for shared seams.",
+      "symphonicaAppHeader": "Application shell App Header (Guía Figma 7219-7632): variants component.header.small vs component.header.large + layout.header.large. Small = primary navBarBackground + breadcrumb band using component.header.small.breadcrumbBarBackground (aliases layout.body.background so the strip matches the main column body — not a separate white bar). Large = hero band: background-color component.header.large.shellBackgroundBase (alias semantic.color.primary.base) plus background-image component.header.large.shellHeroLinearGradient (alias semantic.gradient.heroPrimaryBand). The semantic.gradient.heroPrimaryBand value is a complete CSS linear-gradient string: angle 132deg; stops at 0% semantic.color.primary.base, 40% semantic.action.primary.active, 100% semantic.action.primary.hover — implement with var() references so theme changes propagate. To flatten the hero to a solid, set shellHeroLinearGradient to none or override at product theme layer. Deep breadcrumb band padding component.header.large.breadcrumbBandPaddingBottom; body uses layout.header.large.bodyOffsetTop below layout.header.large.shellHeight so content overlaps lower header (§8). Search uses Bootstrap form-control pattern + Material Outlined search suffix; breadcrumb uses Bootstrap breadcrumb + Material home + help_outline; utilities tray gap component.header.shell.utilityTrayGap; horizontal shell padding component.header.shell.horizontalPadding."
     }
   },
   "principles": {
@@ -193,6 +194,9 @@
           "active": "#1E9C66",
           "disabled": "#76DFB2"
         }
+      },
+      "gradient": {
+        "heroPrimaryBand": "linear-gradient(132deg, var(--semantic-color-primary-base) 0%, var(--semantic-action-primary-active) 40%, var(--semantic-action-primary-hover) 100%)"
       },
       "text": {
         "primary": "{alias:semantic.color.dark}",
@@ -764,6 +768,62 @@
             "global": "{alias:core.color.neutral.600}"
           }
         }
+      },
+      "header": {
+        "shell": {
+          "horizontalPadding": "{alias:core.spacing.32}",
+          "utilityTrayGap": "{alias:core.spacing.24}",
+          "breadcrumbClusterGap": "{alias:core.spacing.4}"
+        },
+        "navBar": {
+          "paddingY": "5px"
+        },
+        "search": {
+          "minWidth": "200px",
+          "preferredWidth": "350px",
+          "placeholderColor": "{alias:core.color.neutral.600}",
+          "borderColor": "{alias:core.color.neutral.400}",
+          "fontSize": "{alias:core.typography.fontSize.14}",
+          "fontWeight": "{alias:core.typography.fontWeight.regular}",
+          "suffixIconSize": "{alias:core.size.18}"
+        },
+        "utility": {
+          "iconSize": "{alias:core.size.16}"
+        },
+        "user": {
+          "emailFontSize": "{alias:core.typography.fontSize.12}",
+          "emailFontWeight": "{alias:core.typography.fontWeight.semibold}"
+        },
+        "breadcrumb": {
+          "linkFontSize": "{alias:core.typography.fontSize.14}",
+          "linkFontWeight": "{alias:core.typography.fontWeight.medium}",
+          "separatorFontSize": "{alias:core.typography.fontSize.16}",
+          "separatorFontWeight": "{alias:core.typography.fontWeight.regular}",
+          "leadingIconSize": "{alias:core.size.16}",
+          "helpIconSize": "{alias:core.size.20}",
+          "segmentIconGap": "{alias:core.spacing.8}",
+          "separatorPaddingX": "{alias:core.spacing.8}"
+        },
+        "small": {
+          "navBarBackground": "{alias:semantic.color.primary.base}",
+          "breadcrumbBarBackground": "{alias:layout.body.background}",
+          "breadcrumbForeground": "{alias:semantic.text.title}",
+          "breadcrumbSeparatorForeground": "{alias:semantic.color.primary.base}",
+          "helpIconForeground": "{alias:semantic.color.primary.base}",
+          "userEmailForeground": "{alias:semantic.text.white}"
+        },
+        "large": {
+          "shellBackgroundBase": "{alias:semantic.color.primary.base}",
+          "shellHeroLinearGradient": "{alias:semantic.gradient.heroPrimaryBand}",
+          "navBarBorderBottomWidth": "{alias:core.border.width.hairline}",
+          "navBarBorderBottomColor": "rgba(255,255,255,0.15)",
+          "breadcrumbBandPaddingTop": "{alias:core.spacing.8}",
+          "breadcrumbBandPaddingBottom": "86px",
+          "breadcrumbForeground": "{alias:semantic.text.white}",
+          "breadcrumbSeparatorForeground": "{alias:semantic.text.white}",
+          "helpIconForeground": "{alias:semantic.text.white}",
+          "userEmailForeground": "{alias:semantic.text.white}"
+        }
       }
     },
     "layout": {
@@ -773,6 +833,12 @@
       },
       "apiExplorer": {
         "sidebarColumnWidth": "330px"
+      },
+      "header": {
+        "large": {
+          "shellHeight": "156px",
+          "bodyOffsetTop": "94px"
+        }
       }
     }
   },

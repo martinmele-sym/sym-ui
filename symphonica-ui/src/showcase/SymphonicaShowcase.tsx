@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 type SortPhase = 'idle' | 'asc' | 'desc'
 
@@ -242,12 +243,14 @@ function OrdersTableCard({
   )
 }
 
-export function SymphonicaShowcase() {
-  const [navView, setNavView] = useState<NavView>('inventory')
+export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' }) {
+  const navigate = useNavigate()
+  const [pillSectionA, setPillSectionA] = useState(() => (mode === 'serviceOrders' ? 1 : 0))
   const [tab, setTab] = useState(0)
-  const [pillSectionA, setPillSectionA] = useState(0)
   const [gridPill, setGridPill] = useState(0)
   const [lifecycleSegment, setLifecycleSegment] = useState(0)
+
+  const navView: NavView = mode === 'serviceOrders' ? 'service-orders' : 'inventory'
 
   const lifecycleSegments = [
     { label: 'Blueprint', count: 24 },
@@ -257,30 +260,28 @@ export function SymphonicaShowcase() {
 
   function handleHeaderPillClick(index: number) {
     if (index === 0) {
-      setNavView('inventory')
+      navigate('/')
       setPillSectionA(0)
       return
     }
     if (index === 1) {
-      setNavView('service-orders')
+      navigate('/service-orders')
       setPillSectionA(1)
       return
     }
-    setNavView('inventory')
+    navigate('/')
     setPillSectionA(index)
   }
 
   return (
     <div className="sym-page">
-      <h1 className="sym-card-title">
-        {navView === 'inventory' ? 'Symphonica showcase' : 'Service orders'}
-      </h1>
-
       {/* 1. Primary Card — Card Header */}
       <article className="sym-card-primary sym-no-hover">
         <header className="sym-card-header">
           <div className="sym-card-header__top">
-            <h2 className="sym-card-title">Customer Id: Telefonica</h2>
+            <h1 className="sym-card-title">
+              {mode === 'home' ? 'Symphonica showcase' : 'Service orders'}
+            </h1>
             <p className="sym-card-meta">Source: BSS</p>
           </div>
           <div className="sym-card-header__bottom">
