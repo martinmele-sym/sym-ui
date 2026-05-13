@@ -1,18 +1,40 @@
 /* Symphonica component layer — all values reference design tokens */
 
 .sym-app-shell {
-  display: flex;
-  align-items: stretch;
+  display: block;
   min-height: 100vh;
+  box-sizing: border-box;
+  /* Fixed chrome: App Header `left` + main `margin-left` track live sidebar width */
+  --sym-shell-sidebar-width: var(--component-nav-sidebar-width-expanded);
+}
+
+.sym-app-shell:has(.sym-sidebar--collapsed) {
+  --sym-shell-sidebar-width: var(--component-nav-sidebar-width-collapsed);
 }
 
 .sym-app-main {
-  flex: 1;
+  margin-left: var(--sym-shell-sidebar-width);
   min-width: 0;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition:
+    margin-left var(--core-motion-duration-base) var(--core-motion-easing-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sym-app-main {
+    transition: none;
+  }
+}
+
+.sym-app-main--header-large {
+  padding-top: var(--layout-header-large-shell-height);
+}
+
+.sym-app-main--header-small {
+  padding-top: var(--layout-header-small-stack-height);
 }
 
 .sym-app-body {
@@ -51,7 +73,10 @@
 
 .sym-app-header {
   flex-shrink: 0;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: var(--sym-shell-sidebar-width);
+  right: 0;
   z-index: 0;
 }
 
@@ -308,10 +333,12 @@
 /* --- App sidebar (§5.8) --- */
 
 .sym-sidebar {
-  flex-shrink: 0;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 2;
   width: var(--component-nav-sidebar-width-expanded);
-  height: 100vh;
   box-sizing: border-box;
   background-color: var(--component-nav-sidebar-surface-background);
   overflow: hidden;

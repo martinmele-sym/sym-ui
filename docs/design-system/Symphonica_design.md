@@ -854,6 +854,8 @@ Symphonica defines two main card types:
 
 Primary cards may include a header section used for navigation, filters, or actions.
 
+**Scope:** This **Card Header** is **not** the application **App Header** (§5.9). It sits **inside** the card and **scrolls with** the card body — **never** **`position: fixed`** to the viewport unless a dedicated sticky-card pattern is added to this spec.
+
 
 Variants:
 - Navigation (Pills)
@@ -1476,7 +1478,7 @@ The **Symphonica primary navigation** is a **vertical sidebar** (logo / wordmark
 
 #### Structure
 
-- **Shell**: `aside` (or app-owned landmark) with scope class `sym-sidebar`; optional `sym-sidebar--collapsed` when width is collapsed.
+- **Shell**: `aside` (or app-owned landmark) with scope class **`sym-sidebar`**; optional **`sym-sidebar--collapsed`** when width is collapsed. **`position: fixed`**, **`top: 0`**, **`left: 0`**, **`bottom: 0`** (viewport‑high rail) — **must not scroll** with the main column; width **`component.nav.sidebar.widthExpanded`** / **`widthCollapsed`**. **`sym-app-shell`** exposes **`--sym-shell-sidebar-width`** (expanded vs collapsed); **`sym-app-main`** uses **`margin-left`** equal so the main column clears the rail (same variable drives App Header **`left`**).
 - **Header**: wordmark **Symphonica** (typography from `component.nav.sidebar` wordmark tokens) + toggle control (`menu_open` when expanded, `menu` when collapsed).
 - **Search**: single-line field, placeholder tone `component.nav.sidebar.searchPlaceholderColor`, border `searchBorderColor`, type size `searchFontSize`, suffix search icon (Material Outlined `search`).
 - **Nav list**: `ul` / list with **`menuListGap`** = **`Core/Spacing/24`** — **24px between consecutive leading icons** (vertical). Use **`itemPaddingY`** = **`Core/Spacing/0`** so row height follows the 24px icon and the stack does not inflate vertical space between icons. Horizontal gap between leading icon and label: **`itemGap`** (`Core/Spacing/16`). Each row is a single interactive control (`button` or routed link) with:
@@ -1495,7 +1497,7 @@ The **Symphonica primary navigation** is a **vertical sidebar** (logo / wordmark
 
 - Implement with **`component.nav.sidebar`** only for sizes, colors, and spacing — see `design_tokens.json` and generated CSS variables.
 - Icons: **Material Icons Outlined** only, 24px row icons; toggle uses tokenized control styling (`toggleIconColor`).
-- **Scroll / overflow**: expanded — overflow scrolls on the **nav list only** (header + search stay fixed). Collapsed — **no visible scrollbar** on the sidebar; use `overflow: hidden` on shell and nav so the narrow rail never shows a scroll track.
+- **Scroll / overflow**: the **rail chrome** (aside) is **viewport-fixed** — **do not** attach vertical scroll to the whole **`aside`**. Expanded — overflow scrolls on the **nav list** (`sym-sidebar__list`) **only** (wordmark, toggle, and search stay visible above the scrolling region). Collapsed — **no visible scrollbar** on the sidebar; use **`overflow: hidden`** on chrome/nav wrappers so the narrow rail never shows a scroll track.
 - Do not restyle sidebar rows as Bootstrap `nav-pills` or `nav-tabs`; this pattern is separate from Card Header pills and Secondary Card Tabs Top.
 - Product logo asset may replace the text wordmark; keep dimensions and spacing token-driven.
 
@@ -1524,7 +1526,7 @@ Source (reference): [Guía de Estilos — Symphonica Header](https://www.figma.c
 
 #### Tokens
 
-- **Layout geometry (overlap)**: **`layout.header.large.shellHeight`**, **`layout.header.large.bodyOffsetTop`** (overlap depth = difference — see §8).
+- **Layout geometry (overlap & fixed chrome)**: **`layout.header.large.shellHeight`**, **`layout.header.large.bodyOffsetTop`** (overlap depth — §8); **`layout.header.small.stackHeight`** (vertical reservation under fixed **Small** header — tune if the nav row wraps).
 - **Main column body**: **`layout.body.background`**, **`layout.body.sectionGap`**. Page wrapper (**`sym-page`**) uses **`margin-top: 0`** and **`padding-top: 0`** for **both** header variants — **no negative `margin-top`** on the page wrapper (it stacks primary chrome **under** the App Header). **Large** overlap is **only** via **`sym-app-body`** + **`layout.header.large`**.
 - **Hero band (Large)**: **`semantic.gradient.heroPrimaryBand`** — canonical **`linear-gradient`** recipe (documented in JSON as one string so tools read angle + stops without Figma); **`component.header.large.shellBackgroundBase`** and **`component.header.large.shellHeroLinearGradient`** (alias) wire it into the shell.
 - **Chrome & content**: **`component.header.shell`**, **`navBar`**, **`search`**, **`breadcrumb`** (shared metrics), **`small`** (**`breadcrumbBarBackground`** matches **`layout.body.background`**; breadcrumb/help/user colors), **`large`** (hero shell tokens above, band padding, nav divider, breadcrumb/help/user colors).
@@ -1537,6 +1539,7 @@ Source (reference): [Guía de Estilos — Symphonica Header](https://www.figma.c
 #### Rules
 
 - Do **not** substitute Card Header patterns for the App Header; ownership stays with the **application shell**.
+- **App Header (§5.9)** uses **`position: fixed`** and **`top: 0`** relative to the **viewport**, spanning **only the main column** (horizontal **`left`** immediately **after** the **sidebar** — expanded vs collapsed width). It **must not scroll**: scrolling is confined to **`sym-app-body`** (or equivalent main-column viewport). Reserve **`padding-top`** on **`sym-app-main`** equal to **`layout.header.large.shellHeight`** (**Large**) or **`layout.header.small.stackHeight`** (**Small**) so layout clears the fixed chrome. **Card Headers** (§5.5) remain **inside** their cards — **not** viewport-fixed — unless a future sticky-card pattern is documented separately.
 - Use **tokens only** for colors and spacing; optional illustration layers may ship from **design exports**, but the **default Large hero fill** is **`shellBackgroundBase` + `shellHeroLinearGradient`** — no raster gradient asset required.
 - **Small** variant must **not** apply the **Large** body overlap offset unless migrating layouts explicitly switch variants.
 
@@ -1668,8 +1671,8 @@ Pills do not own:
 
 Symphonica uses a structured layout:
 
-- **App Header** (fixed top) — **§5.9**: global search, utility icons, optional user / locale cluster, and **Bootstrap breadcrumb**; variants **Large** (hero band + overlapping body) and **Small** (classic two-row stack).
-- Sidebar (fixed/collapsible) — visual and token spec: **§5.8** (`component.nav.sidebar`; expanded width follows `layout.apiExplorer.sidebarColumnWidth` unless product updates layout tokens)
+- **App Header** — **§5.9**: **`position: fixed`**, **`top: 0`**, **main column only** (sidebar-aware **`left`** offset); **does not scroll** — **`sym-app-body`** scrolls instead; global search, utilities, user cluster, **Bootstrap breadcrumb**; variants **Large** (hero band + overlapping body) and **Small** (classic two-row stack).
+- **Sidebar** — **§5.8**: **`position: fixed`**, **`top: 0`**, **`left: 0`**, **`bottom: 0`**, width expanded/collapsed — **does not scroll** with the page body; **`sym-app-main`** **`margin-left`** tracks **`--sym-shell-sidebar-width`**; nav list scrolls internally only (`component.nav.sidebar`; **`layout.apiExplorer.sidebarColumnWidth`** when expanded unless tokens change).
 - **Main column scroll viewport** (`sym-app-body`) — **no `padding-top`** and **no positive `margin-top`** except the **Large** header overlap rule (**`layout.header.large.bodyOffsetTop` − `layout.header.large.shellHeight`**), which is layout geometry only.
 - **Page composition wrapper** (first child inside the viewport, e.g. `sym-page`) — **`padding-top: 0`** and **`margin-top: 0`** (**both** **Large** and **Small** App Header). Do **not** use negative **`margin-top`** on **`sym-page`** — it pulls cards **under** the nav/breadcrumb. **Large** proximity to the hero band is **only** from **`sym-app-body`** overlap (**`layout.header.large`**). Horizontal and bottom inset use **`layout.body.sectionGap`**.
 - Body Content — positioning depends on **header variant** (see **§5.9** and **`layout.header`** tokens).
@@ -1678,17 +1681,17 @@ Symphonica uses a structured layout:
 
 #### Large header + body overlap
 
-When the App Header uses the **Large** variant, the shell is **taller** than the vertical offset where main content starts: body content is positioned so it **rides over** the lower portion of the header band (visual “float”). Use **`layout.header.large.shellHeight`** and **`layout.header.large.bodyOffsetTop`**: the overlap depth is **`shellHeight − bodyOffsetTop`** (e.g. **156px** shell vs **94px** offset ⇒ **62px** overlap). Preserve **`z-index`** so scrollable body/content paints above the decorative header layer where specified. The scroll viewport (**`sym-app-body`**) keeps **`padding-top: 0`**; overlap uses **`margin-top`** only on the viewport. The page wrapper (**`sym-page`**) keeps **`padding-top: 0`** and **`margin-top: 0`** (**§8**).
+When the App Header uses the **Large** variant, the shell is **taller** than the vertical offset where main content starts: body content is positioned so it **rides over** the lower portion of the header band (visual “float”). The chrome stays **`position: fixed`**; **`sym-app-main`** reserves **`padding-top: layout.header.large.shellHeight`** so **`sym-app-body`** clears it before overlap math applies. Use **`layout.header.large.shellHeight`** and **`layout.header.large.bodyOffsetTop`**: the overlap depth is **`shellHeight − bodyOffsetTop`** (e.g. **156px** shell vs **94px** offset ⇒ **62px** overlap). Preserve **`z-index`** so scrollable body/content paints above the decorative header layer where specified. The scroll viewport (**`sym-app-body`**) keeps **`padding-top: 0`**; overlap uses **`margin-top`** only on the viewport. The page wrapper (**`sym-page`**) keeps **`padding-top: 0`** and **`margin-top: 0`** (**§8**).
 
 #### Small header + stacked body
 
-When the App Header uses the **Small** variant, the **nav band** (primary) stacks above the **breadcrumb band**. The breadcrumb band uses **`component.header.small.breadcrumbBarBackground`** (**alias of `layout.body.background`**, i.e. **`semantic.color.secondary`** in the default theme) so it **does not read as a separate white surface** — it should blend with the main column body (alternatively **`transparent`** only when the shell behind it already paints **`layout.body.background`**). Main content starts **below** the full header height — **no** intentional overlap with the breadcrumb row; prefer normal document flow unless product layout tokens specify otherwise. The page wrapper (**`sym-page`**) uses **`padding-top: 0`** and **`margin-top: 0`** — **no negative `margin-top`** so primary cards stay **below** the header chrome (**§8**).
+When the App Header uses the **Small** variant, the **nav band** (primary) stacks above the **breadcrumb band**. The breadcrumb band uses **`component.header.small.breadcrumbBarBackground`** (**alias of `layout.body.background`**, i.e. **`semantic.color.secondary`** in the default theme) so it **does not read as a separate white surface** — it should blend with the main column body (alternatively **`transparent`** only when the shell behind it already paints **`layout.body.background`**). Main content starts **below** the fixed header stack — **no** intentional overlap with the breadcrumb row; **`sym-app-main`** reserves **`padding-top: layout.header.small.stackHeight`**. The page wrapper (**`sym-page`**) uses **`padding-top: 0`** and **`margin-top: 0`** — **no negative `margin-top`** so primary cards stay **below** the header chrome (**§8**).
 
 DIAGRAMA DE LAYOUT: SIDENAV EXPANDIDO (340px)
 
 ┌──────────┬──────────────────────────────────────────────────────────┐
 │          │                                                          │
-│  Sidenav │  Header (Fixed top) — `layout.header.large.shellHeight` (Large variant)   │
+│ Sidenav (fixed) │  App Header (fixed top, main column) — `layout.header.large.shellHeight` (Large)   │
 │  (340px) │──────────────────────────────────────────────────────────│
 │  (Fixed) │                                                          │
 │          │  +- - - - - - - - - - - - - - - - - - - - - - - - - -+   │
@@ -1705,7 +1708,7 @@ DIAGRAMA DE LAYOUT: SIDENAV EXPANDIDO (340px)
 DIAGRAMA DE LAYOUT: SIDENAV CERRADO (64px)
 ┌─────┬───────────────────────────────────────────────────────────────┐
 │     │                                                               │
-│Sid  │       Header — `layout.header.large.shellHeight` (Large variant)                  │
+│Sid  │       App Header (fixed top, main column) — `layout.header.large.shellHeight` (Large)                  │
 │enav │                                                               │ 
 │64px │───────────────────────────────────────────────────────────────│
 │Fixed│                                                               │
@@ -1785,8 +1788,8 @@ Use spacing tokens consistently:
 ### Positioning
 
 - Prefer flex/grid.
-- **Large App Header (§5.9)**: main body/content may use **absolute or fixed offset** from the viewport top per **`layout.header.large.bodyOffsetTop`** so content **overlaps** the lower header band; keep stacking context explicit (`z-index`).
-- **Small App Header**: prefer **normal stacking** below the full header height unless a product-specific layout token overrides.
+- **Large App Header (§5.9)**: **`position: fixed`**, **`top: 0`** (main column); main body/content uses **`layout.header.large.bodyOffsetTop`** so content **overlaps** the lower hero band; keep stacking context explicit (`z-index`).
+- **Small App Header**: same **fixed-top** rule over the main column; reserve **`layout.header.small.stackHeight`** on **`sym-app-main`**; body scrolls in **`sym-app-body`** only.
 - Avoid ad-hoc absolute positioning elsewhere.
 
 ---
@@ -1939,10 +1942,9 @@ Figma → Code mapping:
 ---
 
 ## 12. Constraints for AI / Cursor
-- Main column **`sym-app-body`**: **`padding-top: 0`**; **`margin-top`** only for **Large** header overlap (**`layout.header.large`**). Page wrapper (**e.g. `sym-page`**): **`padding-top: 0`**, **`margin-top: 0`** (both variants); **`layout.body.sectionGap`** for left/right/bottom padding and between top-level sections/cards
-- **App Header** (§5.9): implement **Small** vs **Large** explicitly — **Large** uses **`layout.header.large.shellHeight`** + **`layout.header.large.bodyOffsetTop`** so body content **overlaps** the lower band; **Small** stacks breadcrumb under the primary nav **without** that overlap. Search, breadcrumb, utilities, and user cluster use **`component.header.*`** only.
+- **App shell layout**: **`sym-app-shell`** exposes **`--sym-shell-sidebar-width`** (expanded vs collapsed). **`sym-sidebar`**: **`position: fixed`**, **`top: 0`**, **`left: 0`**, **`bottom: 0`** — **does not scroll** with the main column. **`sym-app-main`** uses **`margin-left: var(--sym-shell-sidebar-width)`** so the main column clears the rail; **`padding-top`** reserves fixed App Header (**`layout.header.large.shellHeight`** / **`layout.header.small.stackHeight`**). **App Header**: **`position: fixed`**, **`top: 0`**, main column only (**`left`** after sidebar, aligned with **`margin-left`**) — **never** nest inside **`sym-app-body`**. **`sym-app-body`** scrolls only; **`padding-top: 0`**; **`margin-top`** only for **Large** overlap (**`layout.header.large.bodyOffsetTop`** math). **`sym-page`**: **`padding-top: 0`**, **`margin-top: 0`**; **`layout.body.sectionGap`** for horizontal/bottom padding and between sections. Implement **Small** vs **Large** variants per §5.9 (**Large** body overlaps lower hero band; **Small** no overlap); **`component.header.*`** for chrome.
 - **Card nesting:** never nest a **Primary Card** inside a **Secondary Card**. **Secondary** may be nested **inside Primary**; use **`component.card.secondary.nestedInPrimary.background`** for nested default background (`LegacyNeutral/Subtle`). Standalone Secondary on app background keeps default white. See §5.5.
-- **App sidebar** (primary Symphonica menu): use **`component.nav.sidebar`** tokens and Material Icons Outlined per §5.8; **24px vertical spacing between leading icons** via `menuListGap` with **`itemPaddingY` 0**; map each domain row’s leading icon color via **`itemIcon.*`** aliases — do not substitute ad-hoc colors or reuse Tabs Top / Card Header pill styles for this shell; **collapsed sidebar must not show a scrollbar** (overflow hidden per §5.8)
+- **App sidebar** (primary Symphonica menu): **`aside.sym-sidebar`** is **viewport-fixed** per §5.8 — **do not** scroll the whole rail with page content; **nav list** scrolls internally only when expanded. Use **`component.nav.sidebar`** tokens and Material Icons Outlined; **24px vertical spacing between leading icons** via `menuListGap` with **`itemPaddingY` 0**; map each domain row’s leading icon color via **`itemIcon.*`** aliases — do not substitute ad-hoc colors or reuse Tabs Top / Card Header pill styles for this shell; **collapsed sidebar must not show a scrollbar** (overflow hidden per §5.8)
 - Circular icon buttons inside **table** action columns and **table footer** load-more must use `component.button.icon.primary` (default hover: white), not `primaryCard`
 - **Table Actions column (body rows):** action buttons hidden by default, visible on **row hover**; keep keyboard access (e.g. **`:focus-within`**). Use motion tokens for `opacity` transitions; respect **`prefers-reduced-motion`**. Table footer load-more is not covered by this pattern. See **§5.4**, **Table Action Column**.
 - Circular icon buttons on **white card surfaces** use `component.button.icon.primaryCard` / `dangerCard` (hover: `Semantic/Color/Secondary`)
