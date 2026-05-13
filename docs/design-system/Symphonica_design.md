@@ -296,7 +296,7 @@ independent of specific color values.
 
 ## 5. Component Tokens
 
-References elsewhere in this specification use **§5.*n*** for the subsections below (**§5.1**–**§5.9**). **§5.3** covers labeled buttons and includes **Button Groups** under the same heading family.
+References elsewhere in this specification use **§5.*n*** for the subsections below (**§5.1**–**§5.10**). **§5.3** covers labeled buttons and includes **Button Groups** under the same heading family.
 
 ---
 
@@ -494,7 +494,7 @@ Structure:
 
 Surface variants:
 - **Default** (`component.button.icon.primary` / `danger`): for **table** action columns, table footer load-more, and any control chiefly used on `Semantic/Color/Secondary` (app) background or on table row surfaces.
-- **On card** (`component.button.icon.primaryCard` / `dangerCard`): for circular icon buttons placed **inside Primary or Secondary card bodies** (white surface). Hover background uses `Semantic/Color/Secondary` instead of white so the hover state is visible and consistent with Symphonica surfaces.
+- **On card** (`component.button.icon.primaryCard` / `dangerCard`): for circular icon buttons placed **inside Primary or Secondary card bodies** (white surface). **Both** variants use the **same** hover background **`Core/Color/Neutral/200`** — aligned with **Pills** hover (`component.pill.states.hover.background`). **Role** (primary vs destructive) is expressed **only** via **`icon.*`** colors (`Semantic/Color/Primary` vs **`Semantic/Color/Danger`**), not via a different hover chip.
 
 Rules:
 - Do not use the **on card** variant for table row actions or for the table footer load-more control.
@@ -1545,6 +1545,69 @@ Source (reference): [Guía de Estilos — Symphonica Header](https://www.figma.c
 
 ---
 
+### 5.10 Modal Dialog
+
+**Modal dialogs** surface blocking confirmations, destructive checks, or short forms above the main UI. Visual and variant structure follow the Guía de Estilos.
+
+**Source (reference):** [Guía de Estilos — Modal Dialog](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7273-4192).
+
+#### Role variants (tone)
+
+Symphonica modals use **three roles**. The role drives **title ink**, **leading header icon** (when present), **primary action(s)** fill color, and optional **featured-item** tint where the spec calls for emphasis.
+
+| Role | Use | Title / icon tint | Primary action button |
+|------|-----|-------------------|----------------------|
+| **Info** | Ordinary actions: clone, create, edit, confirm neutral actions, launch, etc. | **`Semantic/Text/Title`** (primary-violet title semantics — **`semantic.text.title`**) | **`component.button.filled.primary`** |
+| **Danger** | Delete and **irrevocable** actions | **`Semantic/Color/Danger/Base`** | **`component.button.filled.danger`** |
+| **Success** | Affirmations such as **Publish**, ship, go-live | **`Semantic/Color/Success/Base`** | **`component.button.filled.success`** |
+
+#### Anatomy
+
+- **Backdrop**: dims page behind the dialog; clicks typically dismiss only when explicitly allowed (prefer explicit Cancel/Close for destructive flows).
+- **Panel**: **`Core/Color/Neutral/White`** surface, corner radius consistent with Guía frame (**`Core/Border/Radius/Sm`** — **8px** — aligned with card-like shells unless Figma exports a dedicated modal radius token later). Elevation: **Shadows / Modal** from Guía (`0 7px 20px` approximate drop shadow on **`#00000029`** — implement to match Figma **`Shadows/Modal`**; do not substitute **`core.shadow.card`** without review).
+- **Header row**: horizontal **`justify-between`**. **Leading cluster**: optional **Material Icons Outlined** glyph (**24px**, **`Core/Spacing/8`** gap to title) + **title**. Title typography: **`Core/Typography/FontSize/20`**, **`Core/Typography/FontWeight/Semibold`**, line-height tight/normal per Guía. **Trailing**: close control (**24px** target hit area, **`close`** glyph — keyboard-accessible, **`aria-label`**).
+- **Body**: vertical rhythm from Guía (**`Core/Spacing/16`** between stacked blocks inside the content column; **24px** panel padding). Supporting copy: **`Core/Typography/FontSize/14`**, **`Core/Typography/FontWeight/Medium`**, **`Semantic/Text/Secondary`** (~**22px** row rhythm where specified in Guía).
+
+#### Featured item (“elemento destacado”)
+
+Most confirmation flows include a **featured strip** naming the entity affected (record name, route, device, etc.):
+
+- Default strip surface in reference layouts: **`Semantic/Color/Secondary`** (**`semantic.color.secondary`**) with **`Semantic/Text/Primary`**, **16px** medium, centered or full-width as in Guía; horizontal **`Core/Spacing/8`**, vertical **`Core/Spacing/16`**, corner **`Core/Border/Radius/Sm`**.
+- Product specs may swap the strip to **role-tinted lights** (e.g. **`Semantic/Color/Primary/Light`**, **`Semantic/Color/Danger/Light`**, **`Semantic/Color/Success/Light`**) for stronger emphasis — still token-driven, never ad-hoc hex.
+
+Optional when the context is obvious from the title alone.
+
+#### Forms inside modals
+
+Examples: **Clone Process Model**, **Create Device** (vendor → model → version), optional description **textarea**.
+
+- Use Bootstrap **`form-control`** / **`form-select`** / **`form-label`** patterns styled with Symphonica field tokens (placeholder **`Semantic/Text`/`neutral` placeholder tones**, borders **`Core/Color/Neutral/400`** default, primary-focused ring per **`Components/Input/Focused`** — **`semantic.color.primary`** family — Guía).
+- Required markers: **danger** asterisk (**`Semantic/Color/Danger/Base`**).
+- Stack fields with **`Core/Spacing/16`** (or tighter **12** only if Guía frame specifies); scrolling: **dialog body** scrolls, not the **backdrop**.
+
+Multi-primary layouts (e.g. **Clone and Open Editor** + **Clone Model**): **both** actions use the **same role** filled styling (**Info → primary fill**, **Success → success fill**); ordering follows UX — **Cancel** stays outlined.
+
+#### Footer actions
+
+- **Dismiss / Cancel**: **always** **`component.button.outlined.primary`**, **`component.button.size.sm`** (`Core/Size/32` button height recipe — **sm** labeled buttons).
+- **Affirmation / submit**: **always** **filled**, **`component.button.size.sm`**, mapped to the **modal role** (**primary**, **danger**, or **success** filled tokens).
+- Alignment: **end** (right in LTR), **`Core/Spacing/16`** between buttons.
+
+#### Accessibility & shell behavior
+
+- Implement **`role="dialog"`**, **`aria-modal="true"`**, **`aria-labelledby`** (title id); initial focus on the dialog panel or first focusable control per pattern.
+- **Escape** closes only when product rules allow; destructive dialogs should **not** silently discard without confirmation.
+- **`Focus`** returns to the invoking control on close.
+- **Z-index** stacks **above** App Header and sidebar chrome — above **`sym-app-header`** / **`sym-sidebar`** modal layer without obscuring required notifications policy.
+
+#### Rules
+
+- Do **not** reuse **badge** or **pill** components as modal titles; titles are **plain heading** semantics + optional icon.
+- Do **not** mix **md/lg** buttons in the modal footer when following Guía — footer actions stay **sm**.
+- Motion: open/close use **`Core/Motion`** durations/easing; respect **`prefers-reduced-motion`** (see global constraint — avoid instantaneous pop).
+
+---
+
 ## 6. Component Rules
 
 All components must:
@@ -1637,6 +1700,20 @@ Buttons do not own:
 - Card header structure
 - Table action column rules
 
+#### Modal Dialog
+
+Modal Dialog owns:
+- Overlay/backdrop and stacking above application chrome (Guía elevation)
+- Panel shell (white surface, padding, radius, **Shadows/Modal** from Guía)
+- Header row (optional **Material Icons Outlined** + role-colored title, close affordance)
+- Body composition (supporting copy, optional **featured item** strip, optional Bootstrap-styled short forms)
+- Footer (**sm** **Cancel** outlined primary + **sm** filled primary aligned to modal **role**; dual primaries allowed when Guía shows paired submits sharing one role)
+
+Modal Dialog does not own:
+- Primary navigation or sidebar/header chrome underneath (those remain **`sym-app-*`** ownership — §§5.8–5.9, §8)
+- Persistent **Alerts** inline on the page (§5.1)
+- Full-page creation flows better modeled as routes unless explicitly framed as modal-only CRUD
+
 ---
 
 #### Pills
@@ -1660,7 +1737,8 @@ Pills do not own:
 - **Secondary Card** bodies: section navigation uses **Tabs Top** (Bootstrap `nav-tabs` + Symphonica tokens), not Pills
 - Table action buttons must use icon button rules, not outlined icon-only button rules
 - Outlined icon-only buttons in Card Headers must not use circular icon button rules
-- Badge placement inside cards is owned by the Card, not by the Badge
+- **Modal dialogs:** confirmations and short forms use **§5.10** — role (**Info** | **Danger** | **Success**), **sm** footer buttons (**filled** primary vs role / **outlined.primary** cancel), optional featured strip + Bootstrap fields.
+
 - **Card nesting:** do not place a **Primary Card** inside a **Secondary Card**; **Secondary inside Primary** is allowed, using **`component.card.secondary.nestedInPrimary.background`** for the nested surface (`LegacyNeutral/Subtle`). See **§5.5 — Card nesting and hierarchy**.
 
 ---
@@ -1677,6 +1755,7 @@ Symphonica uses a structured layout:
 - **Page composition wrapper** (first child inside the viewport, e.g. `sym-page`) — **`padding-top: 0`** and **`margin-top: 0`** (**both** **Large** and **Small** App Header). Do **not** use negative **`margin-top`** on **`sym-page`** — it pulls cards **under** the nav/breadcrumb. **Large** proximity to the hero band is **only** from **`sym-app-body`** overlap (**`layout.header.large`**). Horizontal and bottom inset use **`layout.body.sectionGap`**.
 - Body Content — positioning depends on **header variant** (see **§5.9** and **`layout.header`** tokens).
 - Footer (fixed bottom)
+- **Modal dialogs** — **§5.10**: overlay above the scrolling **main column** and fixed shell chrome; elevation and **`z-index`** above sidebar/header layers per Guía; scroll **inside** the dialog body when content exceeds viewport — **do not** scroll the page behind an open **`aria-modal`** dialog.
 - Sidebar expand/collapse must use Motion tokens defined in `Core Tokens / Motion`.
 
 #### Large header + body overlap
@@ -1942,12 +2021,13 @@ Figma → Code mapping:
 ---
 
 ## 12. Constraints for AI / Cursor
+- **Modal dialogs — §5.10**: Three **roles** — **Info** (ordinary actions → **`semantic.text.title`** + **`component.button.filled.primary`**), **Danger** (irrevocable → danger title ink + **`component.button.filled.danger`**), **Success** (e.g. publish → success title ink + **`component.button.filled.success`**). Footer **Cancel/Close** is **`component.button.outlined.primary`**, **`component.button.size.sm`**. Primary actions **`filled`**, **`sm`**. Optional **24px** header icon + **20 semibold** title; **featured item** strip defaults **`semantic.color.secondary`** / **`semantic.text.primary`** unless spec uses role lights. Short forms use Bootstrap **`form-control`** / **`form-select`** + Symphonica field tokens; **`aria-modal`**, focus management, **Escape** policy per flow. Reference: [Guía Modal Dialog](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7273-4192).
 - **App shell layout**: **`sym-app-shell`** exposes **`--sym-shell-sidebar-width`** (expanded vs collapsed). **`sym-sidebar`**: **`position: fixed`**, **`top: 0`**, **`left: 0`**, **`bottom: 0`** — **does not scroll** with the main column. **`sym-app-main`** uses **`margin-left: var(--sym-shell-sidebar-width)`** so the main column clears the rail; **`padding-top`** reserves fixed App Header (**`layout.header.large.shellHeight`** / **`layout.header.small.stackHeight`**). **App Header**: **`position: fixed`**, **`top: 0`**, main column only (**`left`** after sidebar, aligned with **`margin-left`**) — **never** nest inside **`sym-app-body`**. **`sym-app-body`** scrolls only; **`padding-top: 0`**; **`margin-top`** only for **Large** overlap (**`layout.header.large.bodyOffsetTop`** math). **`sym-page`**: **`padding-top: 0`**, **`margin-top: 0`**; **`layout.body.sectionGap`** for horizontal/bottom padding and between sections. Implement **Small** vs **Large** variants per §5.9 (**Large** body overlaps lower hero band; **Small** no overlap); **`component.header.*`** for chrome.
 - **Card nesting:** never nest a **Primary Card** inside a **Secondary Card**. **Secondary** may be nested **inside Primary**; use **`component.card.secondary.nestedInPrimary.background`** for nested default background (`LegacyNeutral/Subtle`). Standalone Secondary on app background keeps default white. See §5.5.
 - **App sidebar** (primary Symphonica menu): **`aside.sym-sidebar`** is **viewport-fixed** per §5.8 — **do not** scroll the whole rail with page content; **nav list** scrolls internally only when expanded. Use **`component.nav.sidebar`** tokens and Material Icons Outlined; **24px vertical spacing between leading icons** via `menuListGap` with **`itemPaddingY` 0**; map each domain row’s leading icon color via **`itemIcon.*`** aliases — do not substitute ad-hoc colors or reuse Tabs Top / Card Header pill styles for this shell; **collapsed sidebar must not show a scrollbar** (overflow hidden per §5.8)
-- Circular icon buttons inside **table** action columns and **table footer** load-more must use `component.button.icon.primary` (default hover: white), not `primaryCard`
+- Circular icon buttons inside **table** action columns and **table footer** load-more must use `component.button.icon.primary` / `danger` (default hover: white), not **`primaryCard`** / **`dangerCard`**
 - **Table Actions column (body rows):** action buttons hidden by default, visible on **row hover**; keep keyboard access (e.g. **`:focus-within`**). Use motion tokens for `opacity` transitions; respect **`prefers-reduced-motion`**. Table footer load-more is not covered by this pattern. See **§5.4**, **Table Action Column**.
-- Circular icon buttons on **white card surfaces** use `component.button.icon.primaryCard` / `dangerCard` (hover: `Semantic/Color/Secondary`)
+- Circular icon buttons on **white card surfaces** use `component.button.icon.primaryCard` / `dangerCard`; **both** use hover background **`Core/Color/Neutral/200`** (same as Pills hover)—variant choice follows icon semantic role only
 - Inside **Secondary Card** bodies, use **Tabs Top** tokens (`component.nav.tabs.top`) for section navigation (**§5.7**); Card Header rows still use **Pills** (**§5.6**) where specified — do not mix `nav-tabs` and pills in the same Card Header row
 - **Card Subtitle Label**: strip surface **`component.card.subtitleLabel.surface.{info|success|error}`**; label and optional leading icons **`component.card.subtitle.{state}.text`** and **`component.card.subtitle.{state}.icon`**; typography box **`subtitleLabel`** (`fontSize`, `fontWeight`, `height`, `borderRadius`). **Error** uses Danger semantics. Switch does not pick up bar tint. See **§5.5**, **Card Subtitle Label**.
 - No hardcoded styles
@@ -1992,7 +2072,7 @@ Rules:
   - Badges
   - Icon buttons (circular)
   - Segmented **Button Group** outer shell (**`component.buttonGroup.borderRadius.container`**, aliasing **`Core/Border/Radius/Sm`**) — Symphonica-owned chrome on Bootstrap **`btn-group`**, distinct from applying arbitrary radius tokens to generic **`btn`** primitives
-  - Other **custom components** documented with explicit radius tokens
+  - **Modal Dialog** panel shell (**§5.10** — **`Core/Border/Radius/Sm`** / Guía frame **8px**)
 
 - Do not apply `core.border.radius` tokens to Bootstrap primitives unless explicitly defined (including per-component specs such as Button Group above).
 

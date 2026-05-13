@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 type SortPhase = 'idle' | 'asc' | 'desc'
@@ -94,6 +94,87 @@ function Badge({
     <span className={`sym-badge sym-badge--${variant}`} aria-label={label}>
       {label.toUpperCase()}
     </span>
+  )
+}
+
+type ShowcaseModalId = 'stable' | 'monitored' | 'export' | 'draft'
+type ShowcaseModalRole = 'info' | 'danger' | 'success'
+
+function ShowcaseModal({
+  open,
+  onClose,
+  role,
+  titleId,
+  title,
+  icon,
+  children,
+  primaryLabel,
+  primaryClassName,
+}: {
+  open: boolean
+  onClose: () => void
+  role: ShowcaseModalRole
+  titleId: string
+  title: string
+  icon: string | null
+  children: ReactNode
+  primaryLabel: string
+  primaryClassName: string
+}) {
+  if (!open) return null
+
+  return (
+    <div
+      className="sym-modal-backdrop"
+      role="presentation"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div
+        className="sym-modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
+        <div className="sym-modal__header">
+          <div className={`sym-modal__title-row sym-modal__title-row--${role}`}>
+            {icon ? (
+              <span className="material-icons-outlined sym-modal__title-icon" aria-hidden>
+                {icon}
+              </span>
+            ) : null}
+            <h2 id={titleId} className="sym-modal__title">
+              {title}
+            </h2>
+          </div>
+          <button
+            type="button"
+            className="sym-modal__close"
+            onClick={onClose}
+            aria-label="Close dialog"
+          >
+            <span className="material-icons-outlined" aria-hidden>
+              close
+            </span>
+          </button>
+        </div>
+        <div className="sym-modal__stack">{children}</div>
+        <div className="sym-modal__footer">
+          <button type="button" className="sym-btn-outlined-labeled sym-btn--sm" onClick={onClose}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className={`${primaryClassName} sym-btn--sm`}
+            onClick={onClose}
+          >
+            {primaryLabel}
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -249,6 +330,8 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
   const [tab, setTab] = useState(0)
   const [gridPill, setGridPill] = useState(0)
   const [lifecycleSegment, setLifecycleSegment] = useState(0)
+  const [showcaseModal, setShowcaseModal] = useState<ShowcaseModalId | null>(null)
+  const [exportFormat, setExportFormat] = useState<'csv' | 'xlsx'>('csv')
 
   const navView: NavView = mode === 'serviceOrders' ? 'service-orders' : 'inventory'
 
@@ -257,6 +340,20 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
     { label: 'Runtime', count: 101 },
     { label: 'Exceptions', count: 7 },
   ] as const
+
+  useEffect(() => {
+    if (!showcaseModal) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowcaseModal(null)
+    }
+    document.addEventListener('keydown', onKey)
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prevOverflow
+    }
+  }, [showcaseModal])
 
   function handleHeaderPillClick(index: number) {
     if (index === 0) {
@@ -379,12 +476,32 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
               className="d-flex flex-wrap align-items-center"
               style={{ gap: 'var(--core-spacing-8)' }}
             >
-              <Badge variant="success" label="stable" />
-              <Badge variant="info" label="monitored" />
-              <button type="button" className="sym-btn-outlined-labeled">
+              <button
+                type="button"
+                className="sym-btn-filled-success"
+                onClick={() => setShowcaseModal('stable')}
+              >
+                Stable
+              </button>
+              <button
+                type="button"
+                className="sym-btn-filled-danger"
+                onClick={() => setShowcaseModal('monitored')}
+              >
+                Monitored
+              </button>
+              <button
+                type="button"
+                className="sym-btn-filled-primary"
+                onClick={() => setShowcaseModal('export')}
+              >
                 Export CSV
               </button>
-              <button type="button" className="sym-btn-filled-primary">
+              <button
+                type="button"
+                className="sym-btn-filled-primary"
+                onClick={() => setShowcaseModal('draft')}
+              >
                 <span className="material-icons-outlined" aria-hidden>
                   save
                 </span>
@@ -467,7 +584,12 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
               className="d-flex flex-wrap align-items-center"
               style={{ gap: 'var(--core-spacing-8)' }}
             >
-              <Badge variant="danger" label="action" />
+              <button type="button" className="sym-btn-outlined-labeled-danger">
+                Action
+              </button>
+              <button type="button" className="sym-btn-outlined-labeled-success">
+                Approve
+              </button>
               <button type="button" className="sym-btn-outlined-labeled">
                 Discard
               </button>
@@ -647,6 +769,111 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
           ariaLabel="Service orders (full list)"
         />
       )}
+
+      <ShowcaseModal
+        open={showcaseModal === 'stable'}
+        onClose={() => setShowcaseModal(null)}
+        role="success"
+        titleId="showcase-modal-stable-title"
+        title="Mark lifecycle view stable?"
+        icon="verified"
+        primaryLabel="Yes, mark stable"
+        primaryClassName="sym-btn-filled-success"
+      >
+        <div className="sym-modal__featured">Blueprint segment · Lifecycle overview</div>
+        <p className="sym-modal__support">
+          Stable views notify downstream automation jobs and freeze churn dashboards until you
+          release again.
+        </p>
+      </ShowcaseModal>
+
+      <ShowcaseModal
+        open={showcaseModal === 'monitored'}
+        onClose={() => setShowcaseModal(null)}
+        role="danger"
+        titleId="showcase-modal-monitored-title"
+        title="Pause monitoring for connector?"
+        icon="visibility_off"
+        primaryLabel="Yes, pause monitoring"
+        primaryClassName="sym-btn-filled-danger"
+      >
+        <div className="sym-modal__featured">Connector · API North</div>
+        <p className="sym-modal__support">
+          Telemetry alerts stop immediately for this target. You can resume monitoring from the
+          bridge panel afterwards.
+        </p>
+      </ShowcaseModal>
+
+      <ShowcaseModal
+        open={showcaseModal === 'export'}
+        onClose={() => setShowcaseModal(null)}
+        role="info"
+        titleId="showcase-modal-export-title"
+        title="Export filtered orders"
+        icon="download"
+        primaryLabel="Export"
+        primaryClassName="sym-btn-filled-primary"
+      >
+        <p className="sym-modal__support">
+          Rows reflect the current table filters and column visibility in this showcase sample.
+        </p>
+        <div>
+          <label className="sym-form-label form-label" htmlFor="showcase-export-format">
+            File format
+          </label>
+          <select
+            id="showcase-export-format"
+            className="form-select sym-form-control"
+            value={exportFormat}
+            onChange={(e) => setExportFormat(e.target.value === 'xlsx' ? 'xlsx' : 'csv')}
+          >
+            <option value="csv">CSV (UTF-8, comma-separated)</option>
+            <option value="xlsx">Excel workbook (.xlsx)</option>
+          </select>
+        </div>
+        <div className="form-check">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            id="showcase-export-headers"
+            defaultChecked
+          />
+          <label className="form-check-label" htmlFor="showcase-export-headers">
+            Include header row
+          </label>
+        </div>
+        <div>
+          <label className="sym-form-label form-label" htmlFor="showcase-export-note">
+            Notes{' '}
+            <span style={{ color: 'var(--semantic-text-secondary)', fontWeight: 400 }}>
+              (optional)
+            </span>
+          </label>
+          <textarea
+            id="showcase-export-note"
+            className="form-control sym-form-control"
+            rows={3}
+            placeholder="Add an export memo for audit trails…"
+          />
+        </div>
+      </ShowcaseModal>
+
+      <ShowcaseModal
+        open={showcaseModal === 'draft'}
+        onClose={() => setShowcaseModal(null)}
+        role="info"
+        titleId="showcase-modal-draft-title"
+        title="Save draft?"
+        icon="save"
+        primaryLabel="Save draft"
+        primaryClassName="sym-btn-filled-primary"
+      >
+        <div className="sym-modal__featured">Card draft · Lifecycle overview</div>
+        <p className="sym-modal__support">
+          Saves banner chips and segmented counts locally for this session. Replace with API-backed
+          persistence in production.
+        </p>
+      </ShowcaseModal>
     </div>
   )
 }

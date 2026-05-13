@@ -109,6 +109,9 @@
   --semantic-action-success-hover: #27B678;
   --semantic-action-success-active: #1E9C66;
   --semantic-action-success-disabled: #76DFB2;
+  --semantic-action-info-hover: #0EB8D8;
+  --semantic-action-info-active: #0C9DBA;
+  --semantic-action-info-disabled: #8AE5F6;
   --semantic-gradient-hero-primary-band: linear-gradient(132deg, var(--semantic-color-primary-base) 0%, var(--semantic-action-primary-active) 40%, var(--semantic-action-primary-hover) 100%);
   --semantic-text-primary: var(--semantic-color-dark);
   --semantic-text-secondary: var(--core-color-legacy-neutral-strong);
@@ -295,6 +298,12 @@
   --component-button-filled-success-hover: var(--semantic-action-success-hover);
   --component-button-filled-success-active: var(--semantic-action-success-active);
   --component-button-filled-success-disabled: var(--semantic-action-success-disabled);
+  --component-button-filled-info-background: var(--semantic-color-info-base);
+  --component-button-filled-info-foreground: var(--core-color-neutral-white);
+  --component-button-filled-info-border: var(--semantic-color-info-base);
+  --component-button-filled-info-hover: var(--semantic-action-info-hover);
+  --component-button-filled-info-active: var(--semantic-action-info-active);
+  --component-button-filled-info-disabled: var(--semantic-action-info-disabled);
   --component-button-outlined-primary-background: var(--core-color-neutral-white);
   --component-button-outlined-primary-foreground: var(--semantic-color-primary-base);
   --component-button-outlined-primary-border: var(--semantic-color-primary-base);
@@ -353,7 +362,7 @@
   --component-button-icon-danger-icon-active: var(--core-color-neutral-white);
   --component-button-icon-danger-icon-disabled: var(--semantic-action-danger-disabled);
   --component-button-icon-primary-card-background-default: var(--core-color-transparent);
-  --component-button-icon-primary-card-background-hover: var(--semantic-color-secondary);
+  --component-button-icon-primary-card-background-hover: var(--core-color-neutral-200);
   --component-button-icon-primary-card-background-active: var(--semantic-action-primary-active);
   --component-button-icon-primary-card-background-disabled: var(--core-color-transparent);
   --component-button-icon-primary-card-icon-default: var(--semantic-color-primary-base);
@@ -361,7 +370,7 @@
   --component-button-icon-primary-card-icon-active: var(--core-color-neutral-white);
   --component-button-icon-primary-card-icon-disabled: var(--semantic-action-primary-disabled);
   --component-button-icon-danger-card-background-default: var(--core-color-transparent);
-  --component-button-icon-danger-card-background-hover: var(--semantic-color-secondary);
+  --component-button-icon-danger-card-background-hover: var(--core-color-neutral-200);
   --component-button-icon-danger-card-background-active: var(--semantic-action-danger-active);
   --component-button-icon-danger-card-background-disabled: var(--core-color-transparent);
   --component-button-icon-danger-card-icon-default: var(--semantic-color-danger-base);
