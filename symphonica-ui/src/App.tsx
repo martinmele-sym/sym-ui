@@ -1,6 +1,7 @@
 import { Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { SymAppHeader, type AppHeaderBreadcrumbSegment } from './components/SymAppHeader'
 import { SymSidebar } from './components/SymSidebar'
+import { PartyDomainShowcase } from './showcase/PartyDomainShowcase'
 import { SymphonicaShowcase } from './showcase/SymphonicaShowcase'
 
 function AppLayout() {
@@ -14,10 +15,16 @@ function AppLayout() {
           { label: 'Telefónica', href: '/' },
           { label: 'Service orders', current: true },
         ]
-      : [
-          { label: 'Customer Details', href: '/', leadingHome: true },
-          { label: 'Telefónica', current: true },
-        ]
+      : pathname === '/party-domain'
+        ? [
+            { label: 'Customer Details', href: '/', leadingHome: true },
+            { label: 'Telefónica', href: '/' },
+            { label: 'Party domain', current: true },
+          ]
+        : [
+            { label: 'Customer Details', href: '/', leadingHome: true },
+            { label: 'Telefónica', current: true },
+          ]
 
   return (
     <div className="sym-app-shell">
@@ -37,6 +44,7 @@ export default function App() {
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<SymphonicaShowcase mode="home" />} />
+        <Route path="party-domain" element={<PartyDomainShowcase />} />
         <Route path="service-orders" element={<SymphonicaShowcase mode="serviceOrders" />} />
       </Route>
     </Routes>

@@ -370,7 +370,7 @@ Rules:
 - Must use Bootstrap outlined button structure
 - Must not be circular
 - Must not use `component.button.icon`
-- Must use defined button sizes: sm / md / lg
+- Token sizing: **`component.button.outlined.iconOnly.size`** / **`iconSize`** map to **`component.button.size.md`** (**38×38** hit area, **24px** Material icon) so Card Header toolbars align with **`sym-form-control`** row height and **filled primary** actions (Guía filter rows — e.g. [7872:9277](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7872-9277)). Do not regress to Bootstrap **`btn-sm`** dimensions for these chrome buttons.
 
 #### Circular Icon Buttons
 
@@ -857,218 +857,251 @@ Primary cards may include a header section used for navigation, filters, or acti
 **Scope:** This **Card Header** is **not** the application **App Header** (§5.9). It sits **inside** the card and **scrolls with** the card body — **never** **`position: fixed`** to the viewport unless a dedicated sticky-card pattern is added to this spec.
 
 
-Variants:
-- Navigation (Pills)
-- Filters (inputs/selects)
-- Actions (buttons / icon buttons)
+**Source (reference):** [Guía de Estilos — Card Primary Header](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7230-4966) (variants **`Filter=NavPills`**, **`Filter=Simple` / `Filter=Advanced`**, **`Filter=Always`**, Scheduler-style **`Filter=Simple` / `Filter=Advanced` / `Filter=No`**, etc.).
+
+Primary Card headers organize **title metadata** and **one** of three **mutually exclusive** interaction families on the **bottom row** (left side):
+
+| Spec variant | Typical Guía / Figma cue | Left group (bottom row) |
+|--------------|--------------------------|-------------------------|
+| **Pills navigation** | `Filter=NavPills` | Refresh / download (optional) + **pills** |
+| **Filters** | `Filter=Simple`, `Filter=Advanced` | Filter fields + clear / advanced controls |
+| **Button group** | `Filter=Always`, Scheduler dashboards | **Segmented Button Group** (§5.3) |
+
+**Auto-exclusion:** **Pills navigation** and **Filters** are **never** combined in the same Primary Card header — choose exactly one. **Button group** is the third family: do **not** mix it with pills or with a filters row in the same header.
 
 Structure:
 
-- Top section:
-  - Title
-  - Optional subtitle / metadata
+- **Top section (title band):**
+  - **Title** (required)
+  - **Optional** subtitle / metadata (many Guía frames omit it — `Filter=None` / `Filter=No`)
+  - **Conditional:** **Primary Create** button (filled primary): visible label **`Create {entity}`** with Material **`add`** outlined icon **before** the text (do **not** put a literal **`+`** in the label; the icon conveys addition). Align **top-right** on the **same vertical band as the title** when the **Button group** variant requires **both** the **search / advanced-search** strip on the bottom-right **and** this action (see **Button group** below). For **Pills** and **Filters**, the same button defaults to the **bottom-row right group** when present, not the title row.
 
-- Bottom section:
-  - Left group: contextual navigation, filters, or grouped controls
-  - Right group: primary action
+- **Bottom section:**
+  - **Left group:** exactly one pattern — pills **or** filters **or** segmented button group
+  - **Right group:** depends on variant (primary **Create**, search strip, or empty — see below)
 
 Rules:
-- Only one variant must be active at a time:
-  - Pills OR Filters
-- Do not mix pills and filters in the same header
-- Actions may coexist with either variant
+
+- Exactly **one** left-group pattern per header; no stacking pills + filters + button group.
+- Use **progressive disclosure** (advanced row) instead of overloading a single row.
 
 Layout behavior:
-- Pills must be horizontally aligned
-- Filters must follow form layout rules
-- Actions must align to the right
 
-Spacing:
-- Must use card internal spacing tokens
-- Must not introduce custom spacing
+- **Pills:** horizontal alignment in the bottom row; never inline with the title.
+- **Filters / search fields:** may wrap; **advanced** states add a **full-width row immediately below** the row that contains the advanced toggle (same behaviour as **Filters** and **Button-group search**).
+- Respect **`component.card.header`** spacing tokens; no ad-hoc gaps.
 
 Constraints:
-- Header must not grow beyond content height
-- Must remain consistent across screens
+
+- Header height grows only as needed (e.g. **Simple** vs **Advanced** filter rows in Guía).
+- Remain consistent within a product area.
 
 #### Card Header Groups Usage
 
-Card Header bottom row is divided into two groups:
+The **bottom** horizontal strip is split into:
 
-- Left group: contextual navigation, filters, or grouped controls
-- Right group: primary action
+- **Left group:** pills **or** filters **or** button group (exclusive).
+- **Right group:** contextual — optional **primary Create** (see recipe below), **search + advanced**, or empty per variant rules below.
 
-#### Pattern Exclusivity Rules
+#### Pattern exclusivity (summary)
 
-The left group must use only ONE pattern at a time:
+The left group uses **only one** of:
 
-- Pills navigation pattern
-- Filters pattern
-- Button group pattern
+- Pills navigation  
+- Filters  
+- Button group  
 
-Rules:
-- Do not mix pills and filters
-- Do not mix pills and button groups
-- Do not mix filters and button groups
-- Do not combine multiple patterns in the same header
+Do **not** combine pills with filters, pills with button group, or filters with button group on the same Primary Card header.
 
 If multiple interaction types are required:
-- Use progressive disclosure (e.g. advanced filters expansion)
-- Do not overload the header with multiple patterns
+
+- Prefer **advanced** row disclosure (filters or search), not an extra pattern in the same header.
 
 #### Empty State Behavior
 
 If the left group is empty:
 
-- The right group must remain aligned to the right
-- Do not center the primary action
-- Do not stretch the action to fill available space
+- The right group stays **end-aligned** (LTR); do not center or stretch actions across the header.
 
-If both groups are empty:
-- The header bottom row must not be rendered
+If **both** groups are empty:
 
-##### Right Group
+- Do **not** render the bottom header row (title band may still show).
 
-The right group is reserved for the main page/section action.
+##### Right group (variant-dependent)
 
-Typical pattern:
-- Filled primary button
-- Label format: `+ Create {entity}`
-- Add icon positioned before the label
-- Uses Material Icons "add" icon (class="material-icons-outlined").
+The bottom-row **right** slot is **not** always “Create only”:
 
-Rules:
-- If there is no primary action, the right group must remain empty
-- Do not move secondary actions into the right group
-- Do not place pills or filters in the right group
+- **Pills navigation:** typically optional **Primary Create** (filled primary) — label **`Create {entity}`** + leading **`add`** icon; omit entirely when the screen has no primary create (Guía allows empty right group).
+- **Filters:** typically optional **primary Create** in this slot **when** the product defines one; otherwise leave empty. Do **not** place pill or filter controls here.
+- **Button group:** this slot holds the **search** control (Bootstrap **`form-control`** / Symphonica field tokens) and an **advanced search** affordance (e.g. outlined icon-only **`tune`** or equivalent per Guía). **Opening advanced search** inserts an **additional row below** (same progressive disclosure as **Filters advanced**). When **both** this search strip **and** **primary Create** are required, move **primary Create** to the **top section**, **top-right**, aligned with the **title** — the bottom-right stays dedicated to search (+ advanced trigger).
 
-##### Left Group
-
-The left group may use one of the following patterns.
-
-#### Left Group Order Rules
-
-Elements inside the left group must follow a strict order:
-
-- Actions (icon-only buttons)
-- Navigation (pills)
-- Filters (inputs/selects)
-- Secondary actions (clear / advanced)
+**Primary Create button recipe (when used):** **`component.button.filled.primary`**; Material Icons Outlined **`add`** immediately **before** the label; visible label **`Create {entity}`** (e.g. “Create service order”) — **no** redundant **`+`** character in the string because **`add`** already communicates addition (matches Guía). §5.3 / Guía button tokens.
 
 Rules:
-- Do not place actions after navigation elements
-- Do not place filters before primary navigation elements
-- Maintain consistent ordering across all screens
 
-###### 1. Pills navigation pattern
+- Do not park unrelated secondary actions in the right group; icon-only utilities belong in the **left** group order for **Pills** / **Filters**.
+- Do not place pills, filter chips, or segmented segments in the right group.
+
+##### Left group — variant recipes
+
+###### 1. Pills navigation (`NavPills`)
 
 Structure:
-- Refresh outlined icon-only button
-- Download outlined icon-only button
-- Pills navigation
+
+- Optional **Refresh** outlined icon-only  
+- Optional **Download** outlined icon-only  
+- **Pills** (`component.pill`) — not Bootstrap `nav-tabs`
 
 Rules:
-- Refresh and download buttons appear before pills
-- Buttons must use `component.button.outlined.iconOnly`
-- Pills must use `component.pill`
-- Do not use Bootstrap nav tabs
 
-###### 2. Filters pattern
+- Icons use **`component.button.outlined.iconOnly`**; refresh → Material **`refresh`**, download → **`file_download`**.
+- **Mutual exclusion:** never pair this left group with **Filters** in the same header.
+
+###### 2. Filters (`Simple` / `Advanced`)
 
 Structure:
-- Inputs and/or selects
-- Clear filters outlined icon-only button
-- Advanced search outlined icon-only button
 
-Rules:
-- Inputs and selects follow Bootstrap form structure styled with Symphonica rules
-- Clear filters button appears after filter fields
-- Advanced search button appears after clear filters
-- Advanced search may reveal an additional row below with more filter fields
-- Filter actions must use outlined icon-only buttons
+- Optional leading icon-only actions (refresh / download) per product — **before** fields when present.
+- **Inputs and/or selects** as compact filters.
+- **Clear filters** outlined icon-only (e.g. **`filter_alt_off`**).
+- **Advanced filters** outlined icon-only (e.g. **`tune`**) — **omit** when the screen has no advanced filter set.
 
-##### Filters Layout Constraints
+Filter field rules:
 
-- Filter inputs must not overflow the header width
-- Filters must wrap to next line if space is insufficient
-- Do not shrink inputs below usable width
+- **No visible field labels** in the header chrome — use **`placeholder`** (and optional trailing icons) as the visible cue, matching Guía **Customer Search** / **Integration Orders** style frames.
+- **Accessibility:** every filter control still needs an **accessible name** (`aria-label`, `aria-labelledby`, or a **visually hidden** `<label>`) — placeholders alone are not sufficient for WCAG naming.
 
-Rules:
-- Prefer wrapping over compression
-- Do not force horizontal scroll in header
+Advanced behaviour:
+
+- **Without** advanced: single header row (**Simple** height in Guía).
+- **With** advanced: toggling advanced opens a **second row directly below** the main bottom row with additional fields (**Advanced** height in Guía). Closing advanced removes that row.
+
+- **Clear** stays **outlined icon-only**. **`tune`** (advanced) is **outlined icon-only** when collapsed; when the advanced row is **open**, render **`tune`** as **filled-primary icon-only** (white glyph on primary fill) — matches Guía **Card Primary Header with filters** ([Figma reference](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7872-9277)).
+
+**Mutual exclusion:** never combine this pattern with **Pills navigation** in the same header.
+
+##### Filters layout constraints
+
+- Align toolbar controls **`flex-end`** (baseline band): icon-only triggers share the same vertical band as inputs/selects (Guía filter rows).
+- Primary toolbar fields: target **`160px`–`300px`** width each (`max-width: 300px`, `min-width: 160px`), wrapping when the viewport is narrow — matches **Card Primary Header with filters** ([Figma](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7872-9277)).
+- Advanced row fields: same **min/max** band; prefer **`flex: 1 1 0`** so siblings share horizontal space up to the **300px** cap per field.
+- Fields must not force horizontal scroll; **wrap** to the next line when space is tight.
+- Do not shrink controls below a usable minimum width.
+- Prefer wrapping over compressing typography.
+
+##### Filters variant — implementation contract (assistants / Cursor)
+
+This subsection is the **machine- and human-readable contract** for rebuilding the **Filters** Primary Card header in code. Follow it verbatim unless the Guía adds a new frame.
+
+**Canonical reference implementation (copy shape from here):** `symphonica-ui/src/showcase/PartyDomainShowcase.tsx` — the first `<article className="sym-card-primary">` / `<header className="sym-card-header">` block inside `PartyDomainShowcase`.
+
+**Guía screens:** [Card Primary Header — filters, advanced closed + open](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7872-9277).
+
+**Non-negotiable DOM semantics:**
+
+1. **Do not flatten** title + toolbar + advanced row into one flex row. Keep **`sym-card-header__top`**, **`sym-card-header__bottom`**, and the **optional advanced block** as separate siblings inside **`sym-card-header`** so spacing (`component.card.header.layout.gap`) and future motion/sticky behavior stay correct.
+2. **Bottom row:** **`sym-card-header__bottom`** contains exactly **`sym-card-header__left`** then **`sym-card-header__right`**. The left group wraps the toolbar; the right group holds **only** the optional **primary Create** (never filter inputs in the right group).
+3. **Toolbar:** Inside **`sym-card-header__left`**, use a single **`sym-card-header__filters`** container for the **simple** row (leading optional refresh/download icon-only → fields → **`filter_alt_off`** → **`tune`**).
+4. **Advanced row:** When expanded, render **another** block **below** **`sym-card-header__bottom`**, still inside **`sym-card-header`**, with **`sym-card-header__advanced-row`** (and reuse **`sym-card-header__filters`** on that row for the same flex/wrap/gap behavior). Do **not** insert the advanced row inside **`sym-card-header__right`**.
+
+**CSS class binding (symphonica-ui):**
+
+| Region | Classes | Notes |
+|--------|-----------|--------|
+| Card shell | `sym-card-primary` | Primary surface + padding tokens |
+| Header root | `sym-card-header` | Column; vertical gap from **`component.card.header.layout`** |
+| Title band | `sym-card-header__top` → `sym-card-title` | Title required |
+| Bottom strip | `sym-card-header__bottom` | Row; **`flex-end`** alignment via header tokens |
+| Left cluster | `sym-card-header__left` | **`flex: 1`**, **`min-width: 0`** so filters can wrap without breaking layout |
+| Right CTA | `sym-card-header__right` | **`flex-shrink: 0`**; optional **`sym-btn-filled-primary`** |
+| Simple toolbar | `sym-card-header__filters` | Wrap + **`align-items: flex-end`** + **`core.spacing.8`** gap |
+| Simple field wrapper | `sym-card-header__filter-field sym-card-header__filter-field--primary-toolbar` | **160px–300px** band; no **`flex: 1 1 10rem`** alone |
+| Advanced row container | `sym-card-header__advanced-row` (+ optional second `sym-card-header__filters`) | Full width; **no** top border (vertical rhythm = header layout gap) |
+| Advanced field wrapper | `sym-card-header__filter-field sym-card-header__filter-field--advanced-toolbar` | **`flex: 1 1 0`**, same **160–300px** cap |
+| Clear | `sym-btn-outlined-icon-only` | Icon **`filter_alt_off`** — **md** hit target (tokens **`component.button.outlined.iconOnly`**) |
+| Advanced toggle | `sym-btn-outlined-icon-only` **or** `sym-btn-filled-primary sym-btn-filled-primary--icon-only` | Outlined when collapsed; **filled icon-only** when row open — **same md square** as outlined (filled modifier reuses icon-only dimensions) |
+| Primary Create | `sym-btn-filled-primary` | Leading **`add`**; label **`Create {entity}`** — **no** literal **`+`** in string |
+
+**Bootstrap / Symphonica controls:** Inputs and selects use **`form-control sym-form-control`** / **`form-select sym-form-control`** (per §5.10 field styling). Icons: **`material-icons-outlined`**.
+
+**State matrix (`tune` + advanced row):**
+
+| Advanced row | `tune` button classes | ARIA |
+|--------------|----------------------|------|
+| Closed | `sym-btn-outlined-icon-only` | `aria-expanded={false}` · `aria-pressed={false}` · `aria-controls` → region `id` |
+| Open | `sym-btn-filled-primary sym-btn-filled-primary--icon-only` | `aria-expanded={true}` · `aria-pressed={true}` · same `aria-controls` |
+
+**Accessibility checklist:**
+
+- Every filter control has a **real name**: paired **`visually-hidden`** `<label htmlFor="…">` **or** `aria-label` (placeholders alone are insufficient).
+- Advanced disclosed content: **`role="region"`**, stable **`id`**, concise **`aria-label`**, **`aria-controls` / `aria-expanded`** on the toggle.
+- Icon glyphs: **`aria-hidden`** on **`material-icons-outlined`** spans; meaning lives on the button label.
+
+**Anti-patterns (reject in review):**
+
+- Literal **`+`** in the Create label when **`add`** is already shown.
+- **`tune`** stays outlined while the advanced row is visible (must match Guía filled active state).
+- Omitting **`sym-card-header__filter-field--primary-toolbar`** / **`--advanced-toolbar`** → fields revert to generic flex and **break** the 160–300px Guía band.
+- Moving filters into **`sym-card-header__top`** (Filters variant keeps Create on **bottom-right**, not title row, unless you are in the **Button group + Create + search** exception documented above).
 
 ---
 
-###### 3. Button group pattern
+###### 3. Button group (`Filter=Always`, Scheduler, etc.)
 
-Structure:
-- Bootstrap **`btn-group`**
-- **Segmented primary control** (Guía reference): one row of **3–4** segments; each segment = **label** + optional **count pill**; exactly **one** active segment for exclusive filters/views unless otherwise specified
+Structure — **bottom row:**
 
-Rules:
-- Use only when the header requires **mutually related, mutually exclusive** choices (e.g. status buckets with counts), not arbitrary unrelated actions
-- Must follow §5.3 **Button Groups** (selection paints, hover/active/disabled mapping, count pills vs §5.2 badges)
-- Must not be mixed with pills or filters unless explicitly defined
-- Outer group chrome: **`component.buttonGroup.gap`** and **`component.buttonGroup.borderRadius.container`**; segment interior and pills use **`component.buttonGroup.segment`** and **`component.buttonGroup.countBadge`**; outlined/filled **`component.button`** tokens supply interaction paints per §5.3
+- **Left:** Segmented **Button Group** (Bootstrap **`btn-group`** + §5.3): **3–4** segments typical; label + optional **count pill**; **one** selected segment for exclusive buckets unless spec says otherwise. Chrome: **`component.buttonGroup.*`**.
+- **Right:** **Search** field + **advanced search** control. Activating advanced search adds a **new row below** (additional criteria), same disclosure model as **Filters advanced**.
 
-Implementation mapping:
+Structure — **top row (conditional):**
 
-- Must use `component.card.header` layout tokens
-- Top section must map to `header.top`
-- Bottom action row must map to `header.bottom`
-- Left group must map to `header.bottom.leftGroup`
-- Right group must map to `header.bottom.rightGroup`
+- When this variant requires **both** the bottom-right **search** strip **and** a **primary Create** action (**`Create {entity}`** label + **`add`** icon), place **that button** in the **top section**, **aligned top-right** on the **same band as the title** (Figma e.g. Scheduler **New Job** frames). Do **not** stack Create beside search on the bottom-right in that case.
 
 Rules:
-- Do not create custom layout outside defined header structure
-- Do not flatten header sections into a single row
+
+- Use only for **related, mutually exclusive** buckets (status / scope), not unrelated actions.
+- Do **not** mix this left pattern with pills or filter-only rows in the same header.
+
+---
+
+#### Implementation mapping (tokens)
+
+- Must use **`component.card.header`** layout tokens (including **`alignItems: flex-end`** on **`header.bottom`** and left/right groups for Filters toolbars).
+- Top section → **`header.top`**; bottom row → **`header.bottom`**; left / right → **`header.bottom.leftGroup`** / **`header.bottom.rightGroup`**.
+- Do not flatten title + bottom rows into a single undifferentiated flex row in code — preserve **top** vs **bottom** semantics for animation, sticky subheaders, and accessibility.
+- **Filters variant detailed binding:** see **§5.5 — Filters variant — implementation contract (assistants / Cursor)** and **`PartyDomainShowcase`** header markup.
+
+Rules:
+
+- Do not invent header chrome outside these three variants unless a new frame is added to the Guía.
 
 #### Primary Card Header with Pills
 
-This pattern is used for main section headers inside Primary Cards.
+Summary checklist:
 
-Structure:
-- Top area:
-  - Title
-  - Optional subtitle / metadata
+- **Top:** title + optional subtitle/metadata; optional **primary Create** only via **bottom-row right** (or absent).
+- **Bottom left:** optional refresh + download + **pills**.
+- **Bottom right:** optional **primary Create** (filled primary, **`add`** icon + **`Create {entity}`** — no **`+`** in copy).
+- Pills stay **below** the title band; never inline with the title.
+- Do not swap pills for ad-hoc buttons.
 
-- Bottom action row:
-  - Left group:
-    - Optional outlined icon-only action button
-    - Optional secondary icon-only action button
-    - Pills navigation
+#### Primary Card Header with Filters
 
-  - Right group:
-    - Primary filled action button
+Summary checklist:
 
-Layout rules:
-- Pills must be placed below the title/subtitle area
-- Pills must not be placed inline with the title
-- Pills belong to the bottom action row
-- Bottom action row uses horizontal layout
-- Left group is aligned to the left
-- Right group is aligned to the right
-- The primary action button must be pushed to the far right
+- **Top:** title + optional subtitle/metadata **only** — **primary Create** on the **title row** only in the **Button group + Create + search** case, **not** for standalone Filters.
+- **Bottom left:** filters with **placeholder**-led fields; clear + optional advanced icon-only.
+- **Advanced:** optional; when on, **extra row below** main bottom row; **`tune`** uses **filled-primary icon-only** while open ([Guía frame](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7872-9277)).
+- **Bottom right:** optional **primary Create** when the product defines it.
+- **Code / AI contract:** **§5.5 — Filters variant — implementation contract (assistants / Cursor)** + canonical **`PartyDomainShowcase`** header + `meta.llmImplementationNotes.cardHeaderFiltersImplementationContract` in **`design_tokens.json`**.
 
-Left group rules:
-- The refresh action, when present, must be an outlined primary icon-only Bootstrap button
-- Refresh icon must use Material Icons "refresh" (class="material-icons-outlined").
-- Download action, when present, must be an outlined primary icon-only Bootstrap button
-- Download icon must use Material Icons "file_download" (class="material-icons-outlined").
-- Pills appear after the icon-only buttons
+#### Primary Card Header with Button Group
 
-Right group rules:
-- Main action uses Bootstrap filled primary button
-- Main action label pattern: `+ Create {entity}`
-- Add icon must be positioned to the left of the text
-- Uses Material Icons "add" icon (class="material-icons-outlined").
+Summary checklist:
 
-Constraints:
-- Do not create an extra title above this pattern
-- Do not place pill navigation next to the title
-- Do not center the pill navigation
-- Do not replace pills with buttons
-
+- **Top:** title + optional subtitle; **primary Create** **top-right** when Create **and** bottom search strip are both required.
+- **Bottom left:** segmented button group (§5.3).
+- **Bottom right:** search + advanced trigger; advanced expands **row below**.
 
 #### Card Subtitle Label
 
@@ -1106,7 +1139,7 @@ Switch rules:
 - Use Bootstrap switch structure styled with Symphonica tokens
 - Switch must be aligned to the right side of the subtitle label
 - Switch height must not alter subtitle label height
-- The switch control keeps **standard primary / outlined switch** appearance; it does **not** take on Success or Error tint from the bar (matches Figma: Simple/Advanced chrome stays primary)
+- The switch control keeps **standard primary** appearance driven by **§5.12** (**`semantic.color.primary`** checked track + focus ring); it does **not** take on Success or Error tint from the bar (matches Figma: Simple/Advanced chrome stays primary)
 
 Use cases:
 - Grouping metadata
@@ -1520,7 +1553,7 @@ Source (reference): [Guía de Estilos — Symphonica Header](https://www.figma.c
 
 - **Nav row** (both variants): horizontal padding **`component.header.shell.horizontalPadding`**; inner vertical padding **`component.header.navBar.paddingY`**; optional bottom hairline on **Large** — **`component.header.large.navBarBorderBottomWidth`** + **`component.header.large.navBarBorderBottomColor`** (subtle translucent divider over the hero band).
 - **Search**: Bootstrap **`form-control`** / input group pattern — width clamps **`component.header.search.minWidth`**–**`component.header.search.preferredWidth`**, border **`component.header.search.borderColor`**, placeholder **`component.header.search.placeholderColor`**, typography **`component.header.search.fontSize`** / **`fontWeight`**, suffix icon **Material Outlined `search`** per **`component.header.search.suffixIconSize`**.
-- **Utility cluster**: icon buttons / links spaced by **`component.header.shell.utilityTrayGap`**; breadcrumb row trailing cluster gap from **`component.header.shell.breadcrumbClusterGap`**; icons **Material Icons Outlined** (`description`, `apps`, product-specific glyphs, locale flag asset when applicable) at **`component.header.utility.iconSize`** unless a nested molecule specifies otherwise.
+- **Utility cluster**: icon buttons / links spaced by **`component.header.shell.utilityTrayGap`**; breadcrumb row trailing cluster gap from **`component.header.shell.breadcrumbClusterGap`**; icons **Material Icons Outlined** (`description`, `apps`, product-specific glyphs, locale flag asset when applicable) at **`component.header.utility.iconSize`** unless a nested molecule specifies otherwise. **Hover** on **utility icon buttons** sitting on **primary-tinted** surfaces (**Large** hero band, **Small** nav row): **`semantic.overlay.whiteOnBrand.hover`** — translucent white overlay; do **not** hand-pick RGBA.
 - **User line** (e-mail + `account_circle`): **`component.header.user.emailFontSize`** / **`emailFontWeight`**; **Large** foreground **`component.header.large.userEmailForeground`**; **Small** on primary nav row **`component.header.small.userEmailForeground`**.
 - **Breadcrumb**: Bootstrap **`breadcrumb`** structure — [Bootstrap 5.1 Breadcrumb](https://getbootstrap.com/docs/5.1/components/breadcrumb/). Leading **`home`** Material icon (**`component.header.breadcrumb.leadingIconSize`**); segment typography **`breadcrumb.linkFontSize`** / **`linkFontWeight`**; separators **`separatorFontSize`** / **`separatorFontWeight`** / **`separatorPaddingX`**; optional **`help_outline`** **`breadcrumb.helpIconSize`**. Segment **`a`** elements must **not** use default hyperlink underline (icons and labels); affordance comes from color tokens and **`:focus-visible`** only — sidenav rows implemented as **`NavLink`** / anchors follow the same rule so router navigation does not inherit reboot link underlines.
 
@@ -1530,6 +1563,7 @@ Source (reference): [Guía de Estilos — Symphonica Header](https://www.figma.c
 - **Main column body**: **`layout.body.background`**, **`layout.body.sectionGap`**. Page wrapper (**`sym-page`**) uses **`margin-top: 0`** and **`padding-top: 0`** for **both** header variants — **no negative `margin-top`** on the page wrapper (it stacks primary chrome **under** the App Header). **Large** overlap is **only** via **`sym-app-body`** + **`layout.header.large`**.
 - **Hero band (Large)**: **`semantic.gradient.heroPrimaryBand`** — canonical **`linear-gradient`** recipe (documented in JSON as one string so tools read angle + stops without Figma); **`component.header.large.shellBackgroundBase`** and **`component.header.large.shellHeroLinearGradient`** (alias) wire it into the shell.
 - **Chrome & content**: **`component.header.shell`**, **`navBar`**, **`search`**, **`breadcrumb`** (shared metrics), **`small`** (**`breadcrumbBarBackground`** matches **`layout.body.background`**; breadcrumb/help/user colors), **`large`** (hero shell tokens above, band padding, nav divider, breadcrumb/help/user colors).
+- **Translucent white on brand** (utility icon **`:hover`** on **Large** hero / **Small** nav): **`semantic.overlay.whiteOnBrand.hover`**. Pair token **`semantic.overlay.whiteOnBrand.emphasis`** is reserved for stronger emphasis on solid role surfaces (e.g. **§5.11** toast close **`:hover`**).
 
 #### Gradient tokens (LLM / implementation)
 
@@ -1564,7 +1598,7 @@ Symphonica modals use **three roles**. The role drives **title ink**, **leading 
 #### Anatomy
 
 - **Backdrop**: dims page behind the dialog; clicks typically dismiss only when explicitly allowed (prefer explicit Cancel/Close for destructive flows). Implement scrim from **`Core/Color/Neutral/900`** at **~45%** opacity (token-derived, e.g. **`color-mix`**), not ad‑hoc unrelated neutrals.
-- **Panel**: **`Core/Color/Neutral/White`** surface, corner **`Core/Border/Radius/Md`** (**8px** — Guía frame; matches primary card-like shells unless Figma exports a dedicated modal radius token later). Elevation: **`core.shadow.modal`** (**Shadows / Modal** from Guía — `0 7px 20px` on **`#00000029`** equivalent; do **not** substitute **`core.shadow.card`** without review).
+- **Panel**: **`Core/Color/Neutral/White`** surface, corner **`Core/Border/Radius/Md`** (**8px** — Guía frame; matches primary card-like shells unless Figma exports a dedicated modal radius token later). Elevation: **`core.shadow.modal`** (**Shadows / Modal** from Guía — `0 7px 20px` on **`#00000029`** equivalent; do **not** substitute **`core.shadow.card`** without review). **Max height** (scroll container): **`min(90vh, 720px)`** — the **panel** scrolls internally when content is taller; keeps the dialog usable on short viewports while bounding height on large displays (**720px** tracks the reference implementation unless Guía publishes a different frame).
 - **Major regions** (header row, body column, footer): vertical separation **`Core/Spacing/24`** between those blocks (panel padding remains **`Core/Spacing/24`** per below).
 - **Header row**: horizontal **`justify-between`**. **Leading cluster**: optional **Material Icons Outlined** glyph (**24px**, **`Core/Spacing/8`** gap to title) + **title**. Title typography: **`Core/Typography/FontSize/20`**, **`Core/Typography/FontWeight/Semibold`**, line-height tight/normal per Guía. **Trailing**: close control (**24px** target hit area, **`close`** glyph — keyboard-accessible, **`aria-label`**).
 - **Body**: vertical rhythm from Guía (**`Core/Spacing/16`** between stacked blocks inside the content column; **`Core/Spacing/24`** panel padding). Supporting copy: **`Core/Typography/FontSize/14`**, **`Core/Typography/FontWeight/Medium`**, **`Semantic/Text/Secondary`** (~**22px** row rhythm where specified in Guía).
@@ -1582,7 +1616,7 @@ Optional when the context is obvious from the title alone.
 
 Examples: **Clone Process Model**, **Create Device** (vendor → model → version), optional description **textarea**.
 
-- Use Bootstrap **`form-control`** / **`form-select`** / **`form-label`** patterns styled with Symphonica field tokens (placeholder **`Semantic/Text`/`neutral` placeholder tones**, borders **`Core/Color/Neutral/400`** default, primary-focused ring per **`Components/Input/Focused`** — **`semantic.color.primary`** family — Guía).
+- Use Bootstrap **`form-control`** / **`form-select`** / **`form-label`** patterns styled with Symphonica field tokens (placeholder **`Semantic/Text`/`neutral` placeholder tones**, borders **`Core/Color/Neutral/400`** default, primary-focused ring per **`core.focus.ring`** / **`semantic.color.primary`** — **§5.12**).
 - Required markers: **danger** asterisk (**`Semantic/Color/Danger/Base`**).
 - Stack fields with **`Core/Spacing/16`** (or tighter **12** only if Guía frame specifies); scrolling: **dialog body** scrolls, not the **backdrop**.
 
@@ -1638,7 +1672,7 @@ Multi-primary layouts (e.g. **Clone and Open Editor** + **Clone Model**): **both
 
 #### Optional actions
 
-- **Small**, **outlined**, **light**: transparent interior, **white** hairline border, **white** label (**14px** medium in reference) — Guía “Action Button” strip. Use for secondary outcomes (**Retry**, **View detail**, **Dismiss** alongside primary narrative).
+- **Small**, **outlined**, **light**: transparent interior, **white** hairline border, **white** label (**14px** medium in reference) — Guía “Action Button” strip. Use for secondary outcomes (**Retry**, **View detail**, **Dismiss** alongside primary narrative). **Hover** fill on the solid role surface: **`semantic.overlay.whiteOnBrand.hover`** (optional actions); trailing **close** control **hover**: **`semantic.overlay.whiteOnBrand.emphasis`** — token-driven translucent white, not ad-hoc RGBA.
 
 #### Autohide duration
 
@@ -1658,6 +1692,29 @@ Multi-primary layouts (e.g. **Clone and Open Editor** + **Clone Model**): **both
 
 - Do **not** replace **§5.1 Alerts** inline in forms with toasts for validation errors unless UX explicitly defines global toast errors.
 - Do **not** stack unbounded toasts — cap concurrent visible count or queue.
+
+---
+
+### 5.12 Form controls — Bootstrap accents (Symphonica mapping)
+
+Bootstrap **Reboot** ships **default blue** (`#0d6efd`, `#86b7fe` focus tints) on **`form-control`**, **`form-select`**, **`form-check-input`** (checkbox / radio / switch), and **`form-range`**. In Symphonica apps those accents **must** track **`semantic.color.primary`** and **`core.focus.ring`**, not stock Bootstrap.
+
+**Implementation:** `symphonica-ui/src/styles/symphonica.css` — block comment **`Bootstrap form accents — Symphonica tokens (§5.12)`**. Rules load **after** `bootstrap.min.css` via `global.css`, so they apply **globally** (including **`document.body`** portaled modals).
+
+| Bootstrap construct | Symphonica mapping |
+|---------------------|-------------------|
+| **`form-control` / `form-select` `:focus`** | Border **`semantic.color.primary.base`**; ring **`core.focus.ring`** (**width**, **offset**, **color** → primary base) — matches **`sym-form-control`** intent |
+| **Checkbox / radio `border`** | Default **`core.color.neutral.400`**; surface **`core.color.neutral.white`** |
+| **Checkbox / radio `:focus`** | Same ring as fields |
+| **`:checked` / `:indeterminate`** | Fill + border **`semantic.color.primary.base`** (check / dash / radio dot SVGs stay white — Bootstrap defaults OK) |
+| **Switch `:focus` thumb** | Replace Bootstrap blue thumb with **`semantic.color.primary.light`** (**`#DFE3FA`**) in the SVG data-URL so focus matches primary family |
+| **`form-range` thumb** | **`semantic.color.primary.base`**; **`:active`** thumb → **`semantic.color.primary.light`** |
+| **`form-range` `:focus` thumb halo** | **`core.focus.ring`** (doubled shadow pattern preserved from Bootstrap) |
+
+Rules:
+
+- Do **not** rely on Bootstrap’s compiled blue hex values for Symphonica branded surfaces.
+- **Card Subtitle Label + switch** (§5.5): composes Bootstrap **`form-switch`**; styling inherits from this section — the switch track **`checked`** fill comes from **`:checked`** rules above; bar role (**info / success / error**) does **not** recolor the switch (see Card Subtitle Label rules).
 
 ---
 
@@ -1702,11 +1759,11 @@ Cards do not own:
 
 #### Card Header
 Card Header owns:
-- Header layout
-- Title / subtitle placement
-- Pills placement
-- Filters placement
-- Header-level actions placement
+- Header layout (top title band + bottom row)
+- Title / subtitle placement; **conditional** **primary Create** on the **title band** (Button group + search + Create case)
+- **Exactly one** of: **Pills** placement **or** **Filters** placement **or** **segmented Button Group** placement on the bottom-left
+- Bottom-right placement: optional **primary Create**, **search + advanced**, or empty — per §5.5 variant
+- Header-level icon-only actions placement (refresh / download / clear / advanced triggers)
 
 Card Header does not own:
 - Table content
@@ -1757,7 +1814,7 @@ Buttons do not own:
 
 Modal Dialog owns:
 - Overlay/backdrop and stacking above application chrome (Guía elevation)
-- Panel shell (white surface, padding, **`Core/Border/Radius/Md`**, elevation **`core.shadow.modal`** from Guía)
+- Panel shell (white surface, padding, **`Core/Border/Radius/Md`**, elevation **`core.shadow.modal`** from Guía); **scroll container** capped at **`min(90vh, 720px)`** so overflow scrolls **inside** the panel
 - Header row (optional **Material Icons Outlined** + role-colored title, close affordance)
 - Body composition (supporting copy, optional **featured item** strip, optional Bootstrap-styled short forms)
 - Footer (**sm** **Cancel** outlined primary + **sm** filled primary aligned to modal **role**; dual primaries allowed when Guía shows paired submits sharing one role)
@@ -2088,8 +2145,8 @@ Figma → Code mapping:
 ---
 
 ## 12. Constraints for AI / Cursor
-- **Modal dialogs — §5.10**: Three **roles** — **Info** (ordinary actions → **`semantic.text.title`** + **`component.button.filled.primary`**), **Danger** (irrevocable → danger title ink + **`component.button.filled.danger`**), **Success** (e.g. publish → success title ink + **`component.button.filled.success`**). Footer **Cancel/Close** is **`component.button.outlined.primary`**, **`component.button.size.sm`**. Primary actions **`filled`**, **`sm`**. Panel **`Core/Border/Radius/Md`**, elevation **`core.shadow.modal`** (not **`core.shadow.card`**); backdrop scrim from **`Core/Color/Neutral/900`** ~**45%** opacity (token-derived). Optional **24px** header icon + **20 semibold** title; **featured item** strip defaults **`semantic.color.secondary`** / **`semantic.text.primary`** unless spec uses role lights. Short forms use Bootstrap **`form-control`** / **`form-select`** + Symphonica field tokens; **`aria-modal`**, focus management, **Escape** policy per flow. Reference: [Guía Modal Dialog](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7273-4192).
-- **Toasts — §5.11**: **Success** | **Error** | **Info** roles; titles **Operation Successfully** / **Operation Failed** / **Operation Info** (templates); optional body **16** medium white; **sm** **outlined light** actions (white border + transparent fill); **`top: 40px`**, **`right: 24px`**; **500px** chip width when viewport **>767px**; **≤767px**: **`left`/`right` 24px** on stack, full-width chips; autohide **4s** short / **8s** long+actions; reading heuristic **~1s per 14 words + 2s** clamp; **critical Error** **no** autohide; **pause on hover**; never block page clicks; **`document.body`** portal; **`Core/Spacing/12`** between stacked chips. Reference: [Guía Toasts](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=6621-29899).
+- **Modal dialogs — §5.10**: Three **roles** — **Info** (ordinary actions → **`semantic.text.title`** + **`component.button.filled.primary`**), **Danger** (irrevocable → danger title ink + **`component.button.filled.danger`**), **Success** (e.g. publish → success title ink + **`component.button.filled.success`**). Footer **Cancel/Close** is **`component.button.outlined.primary`**, **`component.button.size.sm`**. Primary actions **`filled`**, **`sm`**. Panel **`Core/Border/Radius/Md`**, elevation **`core.shadow.modal`** (not **`core.shadow.card`**); backdrop scrim from **`Core/Color/Neutral/900`** ~**45%** opacity (token-derived); scrollable panel **`max-height: min(90vh, 720px)`**. Optional **24px** header icon + **20 semibold** title; **featured item** strip defaults **`semantic.color.secondary`** / **`semantic.text.primary`** unless spec uses role lights. Short forms use Bootstrap **`form-control`** / **`form-select`** + Symphonica field tokens; **`aria-modal`**, focus management, **Escape** policy per flow. Reference: [Guía Modal Dialog](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7273-4192).
+- **Toasts — §5.11**: **Success** | **Error** | **Info** roles; titles **Operation Successfully** / **Operation Failed** / **Operation Info** (templates); optional body **16** medium white; **sm** **outlined light** actions (white border + transparent fill); **`top: 40px`**, **`right: 24px`**; **500px** chip width when viewport **>767px**; **≤767px**: **`left`/`right` 24px** on stack, full-width chips; autohide **4s** short / **8s** long+actions; reading heuristic **~1s per 14 words + 2s** clamp; **critical Error** **no** autohide; **pause on hover**; never block page clicks; **`document.body`** portal; **`Core/Spacing/12`** between stacked chips; **`semantic.overlay.whiteOnBrand.emphasis`** (close **`:hover`**), **`semantic.overlay.whiteOnBrand.hover`** (outlined-light action **`:hover`**). Reference: [Guía Toasts](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=6621-29899).
 - **App shell layout**: **`sym-app-shell`** exposes **`--sym-shell-sidebar-width`** (expanded vs collapsed). **`sym-sidebar`**: **`position: fixed`**, **`top: 0`**, **`left: 0`**, **`bottom: 0`** — **does not scroll** with the main column. **`sym-app-main`** uses **`margin-left: var(--sym-shell-sidebar-width)`** so the main column clears the rail; **`padding-top`** reserves fixed App Header (**`layout.header.large.shellHeight`** / **`layout.header.small.stackHeight`**). **App Header**: **`position: fixed`**, **`top: 0`**, main column only (**`left`** after sidebar, aligned with **`margin-left`**) — **never** nest inside **`sym-app-body`**. **`sym-app-body`** scrolls only; **`padding-top: 0`**; **`margin-top`** only for **Large** overlap (**`layout.header.large.bodyOffsetTop`** math). **`sym-page`**: **`padding-top: 0`**, **`margin-top: 0`**; **`layout.body.sectionGap`** for horizontal/bottom padding and between sections. Implement **Small** vs **Large** variants per §5.9 (**Large** body overlaps lower hero band; **Small** no overlap); **`component.header.*`** for chrome.
 - **Card nesting:** never nest a **Primary Card** inside a **Secondary Card**. **Secondary** may be nested **inside Primary**; use **`component.card.secondary.nestedInPrimary.background`** for nested default background (`LegacyNeutral/Subtle`). Standalone Secondary on app background keeps default white. See §5.5.
 - **App sidebar** (primary Symphonica menu): **`aside.sym-sidebar`** is **viewport-fixed** per §5.8 — **do not** scroll the whole rail with page content; **nav list** scrolls internally only when expanded. Use **`component.nav.sidebar`** tokens and Material Icons Outlined; **24px vertical spacing between leading icons** via `menuListGap` with **`itemPaddingY` 0**; map each domain row’s leading icon color via **`itemIcon.*`** aliases — do not substitute ad-hoc colors or reuse Tabs Top / Card Header pill styles for this shell; **collapsed sidebar must not show a scrollbar** (overflow hidden per §5.8)

@@ -32,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
     id: 'party-domain',
     label: 'Party domain',
     icon: 'corporate_fare',
+    to: '/party-domain',
     iconColorVar: '--component-nav-sidebar-item-icon-party-domain',
   },
   {

@@ -119,6 +119,8 @@
   --semantic-text-secondary: var(--core-color-legacy-neutral-strong);
   --semantic-text-title: var(--semantic-color-primary-base);
   --semantic-text-white: var(--core-color-neutral-white);
+  --semantic-overlay-white-on-brand-hover: rgba(255, 255, 255, 0.12);
+  --semantic-overlay-white-on-brand-emphasis: rgba(255, 255, 255, 0.15);
 
   /* --- component --- */
   --component-alert-primary-background: var(--semantic-color-primary-light);
@@ -164,13 +166,13 @@
   --component-card-header-top-layout-direction: column;
   --component-card-header-top-layout-gap: var(--core-spacing-4);
   --component-card-header-bottom-layout-direction: row;
-  --component-card-header-bottom-layout-align-items: center;
+  --component-card-header-bottom-layout-align-items: flex-end;
   --component-card-header-bottom-layout-justify-content: space-between;
   --component-card-header-bottom-left-group-layout-direction: row;
-  --component-card-header-bottom-left-group-layout-align-items: center;
+  --component-card-header-bottom-left-group-layout-align-items: flex-end;
   --component-card-header-bottom-left-group-layout-gap: var(--core-spacing-8);
   --component-card-header-bottom-right-group-layout-direction: row;
-  --component-card-header-bottom-right-group-layout-align-items: center;
+  --component-card-header-bottom-right-group-layout-align-items: flex-end;
   --component-card-header-bottom-right-group-layout-gap: var(--core-spacing-8);
   --component-card-primary-background: var(--core-color-neutral-white);
   --component-card-primary-border: var(--core-color-transparent);
@@ -342,8 +344,8 @@
   --component-button-outlined-success-disabled-background: var(--core-color-neutral-white);
   --component-button-outlined-success-disabled-border: var(--semantic-action-success-disabled);
   --component-button-outlined-success-disabled-foreground: var(--semantic-action-success-disabled);
-  --component-button-outlined-icon-only-size: var(--component-button-size-sm-button);
-  --component-button-outlined-icon-only-icon-size: var(--component-button-size-sm-icon);
+  --component-button-outlined-icon-only-size: var(--component-button-size-md-button);
+  --component-button-outlined-icon-only-icon-size: var(--component-button-size-md-icon);
   --component-button-icon-size: var(--core-size-30);
   --component-button-icon-icon-size: var(--core-size-20);
   --component-button-icon-border-radius: var(--core-border-radius-full);

@@ -65,7 +65,7 @@ const serviceOrdersListRows: TableRowData[] = (() => {
     'Tesco Mobile',
     'KPN',
   ]
-  return Array.from({ length: 20 }, (_, i) => ({
+  return Array.from({ length: 10 }, (_, i) => ({
     id: `SO-${3001 + i}`,
     status: variants[i % variants.length]!,
     badge: badges[i % badges.length]!,
@@ -433,7 +433,10 @@ function OrdersTableCard({
 
 export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' }) {
   const navigate = useNavigate()
-  const [pillSectionA, setPillSectionA] = useState(() => (mode === 'serviceOrders' ? 1 : 0))
+  const workflowOrdersPillIndex = 3
+  const [pillSectionA, setPillSectionA] = useState(() =>
+    mode === 'serviceOrders' ? workflowOrdersPillIndex : 0,
+  )
   const [tab, setTab] = useState(0)
   const [gridPill, setGridPill] = useState(0)
   const [lifecycleSegment, setLifecycleSegment] = useState(0)
@@ -474,14 +477,9 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
   }, [showcaseModal])
 
   function handleHeaderPillClick(index: number) {
-    if (index === 0) {
-      navigate('/')
-      setPillSectionA(0)
-      return
-    }
-    if (index === 1) {
+    if (index === workflowOrdersPillIndex) {
       navigate('/service-orders')
-      setPillSectionA(1)
+      setPillSectionA(workflowOrdersPillIndex)
       return
     }
     navigate('/')
@@ -546,7 +544,7 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
                 <span className="material-icons-outlined" aria-hidden>
                   add
                 </span>
-                Create Service Order
+                Create service order
               </button>
             </div>
           </div>
@@ -681,7 +679,13 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
                 </button>
               </li>
             </ul>
-            <div className="tab-content" role="tabpanel" style={{ paddingTop: 'var(--core-spacing-12)' }}>
+            <div
+              className="tab-content"
+              role="tabpanel"
+              id="showcase-tabs-panel"
+              aria-labelledby={tab === 0 ? 'tab-a' : tab === 1 ? 'tab-b' : 'tab-c'}
+              style={{ paddingTop: 'var(--core-spacing-12)' }}
+            >
               {tab === 0 && (
                 <p className="sym-card-body-text">
                   Tabs Top tokens style Bootstrap `nav-tabs` inside secondary cards (§5.7).
@@ -773,16 +777,16 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
             <div
               className="d-flex flex-wrap align-items-center"
               style={{ gap: 'var(--core-spacing-8)' }}
-              role="tablist"
+              role="radiogroup"
               aria-label="API modes"
             >
               {['Sync', 'Async'].map((label, i) => (
                 <button
                   key={label}
                   type="button"
-                  role="tab"
+                  role="radio"
                   className={`sym-pill${gridPill === i ? ' sym-pill--active' : ''}`}
-                  aria-selected={gridPill === i}
+                  aria-checked={gridPill === i}
                   onClick={() => setGridPill(i)}
                 >
                   {label}
@@ -882,8 +886,8 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
         <OrdersTableCard
           rows={serviceOrdersListRows}
           selectedRowId="SO-3010"
-          newRowId="SO-3011"
-          footerCounter="Showing 20 of 248 items"
+          newRowId="SO-3006"
+          footerCounter="Showing 10 of 248 items"
           ariaLabel="Service orders (full list)"
         />
       )}

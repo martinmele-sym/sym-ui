@@ -191,7 +191,7 @@
 }
 
 .sym-app-header--large .sym-app-header__icon-btn:hover {
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: var(--semantic-overlay-white-on-brand-hover);
 }
 
 .sym-app-header--small .sym-app-header__nav-row .sym-app-header__icon-btn {
@@ -199,7 +199,7 @@
 }
 
 .sym-app-header--small .sym-app-header__nav-row .sym-app-header__icon-btn:hover {
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: var(--semantic-overlay-white-on-brand-hover);
 }
 
 .sym-app-header__user {
@@ -715,6 +715,8 @@
   flex-direction: var(--component-card-header-bottom-left-group-layout-direction);
   align-items: var(--component-card-header-bottom-left-group-layout-align-items);
   gap: var(--component-card-header-bottom-left-group-layout-gap);
+  flex: 1;
+  min-width: 0;
   flex-wrap: wrap;
 }
 
@@ -723,7 +725,54 @@
   flex-direction: var(--component-card-header-bottom-right-group-layout-direction);
   align-items: var(--component-card-header-bottom-right-group-layout-align-items);
   gap: var(--component-card-header-bottom-right-group-layout-gap);
+  flex-shrink: 0;
   margin-left: auto;
+}
+
+/* Primary Card header — §5.5 Filters pattern (inputs/selects + clear/advanced icon-only) */
+.sym-card-header__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--core-spacing-8);
+  max-width: 100%;
+}
+
+.sym-card-header__filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-spacing-4);
+  box-sizing: border-box;
+}
+
+/* Guía Card Primary Header + filters (Figma 7872:9277): toolbar fields min 160px, max 300px */
+.sym-card-header__filter-field--primary-toolbar {
+  flex: 0 1 auto;
+  width: 300px;
+  max-width: min(100%, 300px);
+  min-width: min(100%, 160px);
+}
+
+.sym-card-header__filter-field--advanced-toolbar {
+  flex: 1 1 0;
+  min-width: min(100%, 160px);
+  max-width: 300px;
+}
+
+.sym-card-header__filter-field .sym-form-label {
+  margin-bottom: 0;
+}
+
+/* Filters variant — advanced row (§5.5): full-width strip below main bottom row */
+.sym-card-header__advanced-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--core-spacing-8);
+  width: 100%;
+  padding-top: 0;
+  border-top: none;
+  box-sizing: border-box;
 }
 
 .sym-subtitle-label {
@@ -1043,6 +1092,19 @@
   background-color: var(--component-button-filled-primary-disabled);
   border-color: var(--component-button-filled-primary-disabled);
   cursor: not-allowed;
+}
+
+/* Icon-only square primary (e.g. Filters advanced `tune` active — Guía 7872:9277) */
+.sym-btn-filled-primary.sym-btn-filled-primary--icon-only {
+  gap: 0;
+  min-height: unset;
+  width: var(--component-button-outlined-icon-only-size);
+  height: var(--component-button-outlined-icon-only-size);
+  padding: 0;
+}
+
+.sym-btn-filled-primary.sym-btn-filled-primary--icon-only .material-icons-outlined {
+  font-size: var(--component-button-outlined-icon-only-icon-size);
 }
 
 .sym-btn-filled-success {
@@ -1649,6 +1711,72 @@
   cursor: not-allowed;
 }
 
+/**
+ * Bootstrap form accents — Symphonica tokens (§5.12).
+ * Maps reboot defaults (Bootstrap blue #0d6efd / #86b7fe) to semantic primary + core.focus.ring.
+ * Loaded after bootstrap.min.css — overrides apply app-wide (including portaled modals on body).
+ */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--semantic-color-primary-base);
+  outline: 0;
+  box-shadow: 0 0 0 var(--core-focus-ring-offset) var(--core-focus-ring-color);
+}
+
+.form-check-input {
+  border-color: var(--core-color-neutral-400);
+  background-color: var(--core-color-neutral-white);
+}
+
+.form-check-input:focus {
+  border-color: var(--semantic-color-primary-base);
+  outline: 0;
+  box-shadow: 0 0 0 var(--core-focus-ring-offset) var(--core-focus-ring-color);
+}
+
+.form-check-input:checked,
+.form-check-input[type='checkbox']:indeterminate {
+  background-color: var(--semantic-color-primary-base);
+  border-color: var(--semantic-color-primary-base);
+}
+
+/* Switch: Bootstrap encodes focus thumb fill — replace blue with primary-light (#DFE3FA) */
+.form-switch .form-check-input:focus {
+  --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23DFE3FA'/%3e%3c/svg%3e");
+}
+
+.form-range:focus {
+  outline: 0;
+}
+
+.form-range:focus::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 1px var(--core-color-neutral-white),
+    0 0 0 var(--core-focus-ring-offset) var(--core-focus-ring-color);
+}
+
+.form-range:focus::-moz-range-thumb {
+  box-shadow:
+    0 0 0 1px var(--core-color-neutral-white),
+    0 0 0 var(--core-focus-ring-offset) var(--core-focus-ring-color);
+}
+
+.form-range::-webkit-slider-thumb {
+  background-color: var(--semantic-color-primary-base);
+}
+
+.form-range::-webkit-slider-thumb:active {
+  background-color: var(--semantic-color-primary-light);
+}
+
+.form-range::-moz-range-thumb {
+  background-color: var(--semantic-color-primary-base);
+}
+
+.form-range::-moz-range-thumb:active {
+  background-color: var(--semantic-color-primary-light);
+}
+
 .sym-form-label {
   font-family: var(--core-typography-font-family-base);
   font-size: var(--core-typography-font-size-14);
@@ -1665,12 +1793,6 @@
   color: var(--semantic-text-primary);
   border-color: var(--core-color-neutral-400);
   min-height: var(--core-size-38);
-}
-
-.sym-form-control.form-control:focus,
-.sym-form-control.form-select:focus {
-  border-color: var(--semantic-color-primary-base);
-  box-shadow: 0 0 0 var(--core-focus-ring-offset) var(--core-focus-ring-color);
 }
 
 .sym-stack-bottom {
@@ -1937,7 +2059,7 @@
 }
 
 .sym-toast__close:hover {
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: var(--semantic-overlay-white-on-brand-emphasis);
 }
 
 .sym-toast__close .material-icons-outlined {
@@ -1985,7 +2107,7 @@
 }
 
 .sym-toast__action:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: var(--semantic-overlay-white-on-brand-hover);
 }
 
 .sym-toast__action:disabled {
