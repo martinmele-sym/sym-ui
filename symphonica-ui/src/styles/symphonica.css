@@ -107,6 +107,7 @@
 }
 
 .sym-app-header--large .sym-app-header__nav-row {
+  /* Width token defaults to 0 — continuous hero vs breadcrumb (§5.9); fork via tokens if needed */
   border-bottom-width: var(--component-header-large-nav-bar-border-bottom-width);
   border-bottom-style: solid;
   border-bottom-color: var(--component-header-large-nav-bar-border-bottom-color);
@@ -210,6 +211,14 @@
 
 .sym-app-header__user-icon.material-icons-outlined {
   font-size: var(--component-header-utility-icon-size);
+}
+
+.sym-app-header--large .sym-app-header__user-icon {
+  color: var(--component-header-large-user-email-foreground);
+}
+
+.sym-app-header--small .sym-app-header__nav-row .sym-app-header__user-icon {
+  color: var(--component-header-small-user-email-foreground);
 }
 
 .sym-app-header__user-email {
@@ -1455,6 +1464,57 @@
   background-color: var(--component-button-icon-danger-card-background-disabled);
   color: var(--component-button-icon-danger-card-icon-disabled);
   cursor: not-allowed;
+}
+
+/* --- Inline alerts (§5.1 — component.alert tokens) --- */
+
+.sym-alert {
+  box-sizing: border-box;
+  margin: 0;
+  padding: var(--core-spacing-8) var(--core-spacing-12);
+  border-style: solid;
+  border-width: var(--core-border-width-hairline);
+  border-radius: var(--core-border-radius-sm);
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-14);
+  font-weight: var(--core-typography-font-weight-medium);
+  line-height: var(--core-typography-line-height-relaxed);
+}
+
+.sym-alert--primary {
+  background-color: var(--component-alert-primary-background);
+  color: var(--component-alert-primary-foreground);
+  border-color: var(--component-alert-primary-border);
+}
+
+.sym-alert--success {
+  background-color: var(--component-alert-success-background);
+  color: var(--component-alert-success-foreground);
+  border-color: var(--component-alert-success-border);
+}
+
+.sym-alert--danger {
+  background-color: var(--component-alert-danger-background);
+  color: var(--component-alert-danger-foreground);
+  border-color: var(--component-alert-danger-border);
+}
+
+.sym-alert--info {
+  background-color: var(--component-alert-info-background);
+  color: var(--component-alert-info-foreground);
+  border-color: var(--component-alert-info-border);
+}
+
+.sym-alert--warning {
+  background-color: var(--component-alert-warning-background);
+  color: var(--component-alert-warning-foreground);
+  border-color: var(--component-alert-warning-border);
+}
+
+.tooltip.sym-tooltip {
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-14);
+  font-weight: var(--core-typography-font-weight-medium);
 }
 
 .sym-badge {

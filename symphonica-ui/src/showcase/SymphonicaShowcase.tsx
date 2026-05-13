@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
+import { SymIconTooltipButton } from '../components/SymIconTooltipButton'
 
 type SortPhase = 'idle' | 'asc' | 'desc'
 
@@ -378,33 +379,30 @@ function OrdersTableCard({
                 <td>{row.updated}</td>
                 <td className="sym-table__cell--actions">
                   <div className="sym-table-actions">
-                    <button
-                      type="button"
+                    <SymIconTooltipButton
                       className="sym-icon-btn sym-icon-btn--primary"
                       aria-label={`View ${row.id}`}
                     >
                       <span className="material-icons-outlined" aria-hidden>
                         visibility
                       </span>
-                    </button>
-                    <button
-                      type="button"
+                    </SymIconTooltipButton>
+                    <SymIconTooltipButton
                       className="sym-icon-btn sym-icon-btn--primary"
                       aria-label={`Open ${row.id} in new window`}
                     >
                       <span className="material-icons-outlined" aria-hidden>
                         open_in_new
                       </span>
-                    </button>
-                    <button
-                      type="button"
+                    </SymIconTooltipButton>
+                    <SymIconTooltipButton
                       className="sym-icon-btn sym-icon-btn--danger"
                       aria-label={`Delete ${row.id}`}
                     >
                       <span className="material-icons-outlined" aria-hidden>
                         delete
                       </span>
-                    </button>
+                    </SymIconTooltipButton>
                   </div>
                 </td>
               </tr>
@@ -415,15 +413,14 @@ function OrdersTableCard({
       <footer className="sym-table-footer">
         <span />
         <div className="sym-table-footer__center">
-          <button
-            type="button"
+          <SymIconTooltipButton
             className="sym-icon-btn sym-icon-btn--primary sym-table-footer__load-more"
             aria-label="Load more items"
           >
             <span className="material-icons-outlined" aria-hidden>
               add
             </span>
-          </button>
+          </SymIconTooltipButton>
         </div>
         <div className="sym-table-footer__counter">{footerCounter}</div>
       </footer>
@@ -794,24 +791,22 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
               ))}
             </div>
             <div className="sym-table-actions sym-stack-bottom">
-              <button
-                type="button"
+              <SymIconTooltipButton
                 className="sym-icon-btn sym-icon-btn--primary-card"
                 aria-label="Edit API North"
               >
                 <span className="material-icons-outlined" aria-hidden>
                   edit
                 </span>
-              </button>
-              <button
-                type="button"
+              </SymIconTooltipButton>
+              <SymIconTooltipButton
                 className="sym-icon-btn sym-icon-btn--primary-card"
                 aria-label="More"
               >
                 <span className="material-icons-outlined" aria-hidden>
                   more_vert
                 </span>
-              </button>
+              </SymIconTooltipButton>
             </div>
           </article>
         </div>
@@ -824,15 +819,14 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
             <p className="sym-card-meta">Ingress · REST</p>
             <p className="sym-card-body-text">Pinned hover shadow for grid review.</p>
             <div className="sym-table-actions sym-stack-bottom">
-              <button
-                type="button"
+              <SymIconTooltipButton
                 className="sym-icon-btn sym-icon-btn--primary-card"
                 aria-label="Copy endpoint"
               >
                 <span className="material-icons-outlined" aria-hidden>
                   content_copy
                 </span>
-              </button>
+              </SymIconTooltipButton>
             </div>
           </article>
         </div>
@@ -845,15 +839,14 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
             <p className="sym-card-meta">Queue depth · high</p>
             <p className="sym-card-body-text">Active border uses semantic success token.</p>
             <div className="sym-table-actions sym-stack-bottom">
-              <button
-                type="button"
+              <SymIconTooltipButton
                 className="sym-icon-btn sym-icon-btn--danger-card"
                 aria-label="Delete connector"
               >
                 <span className="material-icons-outlined" aria-hidden>
                   delete
                 </span>
-              </button>
+              </SymIconTooltipButton>
             </div>
           </article>
         </div>
@@ -866,15 +859,14 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
             <p className="sym-card-meta">Traffic share · 18%</p>
             <p className="sym-card-body-text">Selected border highlights procurement focus.</p>
             <div className="sym-table-actions sym-stack-bottom">
-              <button
-                type="button"
+              <SymIconTooltipButton
                 className="sym-icon-btn sym-icon-btn--primary-card"
                 aria-label="Open documentation"
               >
                 <span className="material-icons-outlined" aria-hidden>
                   open_in_new
                 </span>
-              </button>
+              </SymIconTooltipButton>
             </div>
           </article>
         </div>

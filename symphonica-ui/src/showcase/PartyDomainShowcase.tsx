@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SymIconTooltipButton } from '../components/SymIconTooltipButton'
 
 function Badge({
   variant,
@@ -337,14 +338,13 @@ export function PartyDomainShowcase() {
         <div className="col-md-6 d-flex">
           <article className="sym-card-secondary flex-grow-1 sym-no-hover d-flex flex-column">
             <h2 className="sym-card-title">Hierarchy snapshot</h2>
-            <div
-              className="sym-subtitle-label sym-subtitle-label--success"
-              style={{ gap: 'var(--core-spacing-8)' }}
-            >
-              <span className="material-icons-outlined" aria-hidden>
-                account_tree
-              </span>
-              <span>Organization tree</span>
+            <div className="d-flex flex-column" style={{ gap: 'var(--core-spacing-8)' }}>
+              <p className="sym-card-meta mb-0">Inline alerts — semantic variants</p>
+              <div className="sym-alert sym-alert--primary">Primary — contextual notice on this workspace.</div>
+              <div className="sym-alert sym-alert--success">Success — hierarchy sync completed.</div>
+              <div className="sym-alert sym-alert--danger">Danger — blocking validation on parent link.</div>
+              <div className="sym-alert sym-alert--info">Info — read-only snapshot from catalog.</div>
+              <div className="sym-alert sym-alert--warning">Warning — stale branch data; refresh advised.</div>
             </div>
             <p className="sym-card-body-text">
               Secondary card complements the tabbed workspace: use for summaries, hierarchies, or
@@ -393,20 +393,19 @@ export function PartyDomainShowcase() {
               ))}
             </div>
             <div className="sym-table-actions sym-stack-bottom">
-              <button
-                type="button"
+              <SymIconTooltipButton
                 className="sym-icon-btn sym-icon-btn--primary-card"
                 aria-label="Edit API North"
               >
                 <span className="material-icons-outlined" aria-hidden>
                   edit
                 </span>
-              </button>
-              <button type="button" className="sym-icon-btn sym-icon-btn--primary-card" aria-label="More">
+              </SymIconTooltipButton>
+              <SymIconTooltipButton className="sym-icon-btn sym-icon-btn--primary-card" aria-label="More">
                 <span className="material-icons-outlined" aria-hidden>
                   more_vert
                 </span>
-              </button>
+              </SymIconTooltipButton>
             </div>
           </article>
         </div>
@@ -419,15 +418,14 @@ export function PartyDomainShowcase() {
             <p className="sym-card-meta">Ingress · REST</p>
             <p className="sym-card-body-text">Pinned hover shadow for grid review.</p>
             <div className="sym-table-actions sym-stack-bottom">
-              <button
-                type="button"
+              <SymIconTooltipButton
                 className="sym-icon-btn sym-icon-btn--primary-card"
                 aria-label="Copy endpoint"
               >
                 <span className="material-icons-outlined" aria-hidden>
                   content_copy
                 </span>
-              </button>
+              </SymIconTooltipButton>
             </div>
           </article>
         </div>
@@ -440,15 +438,14 @@ export function PartyDomainShowcase() {
             <p className="sym-card-meta">Queue depth · high</p>
             <p className="sym-card-body-text">Active border uses semantic success token.</p>
             <div className="sym-table-actions sym-stack-bottom">
-              <button
-                type="button"
+              <SymIconTooltipButton
                 className="sym-icon-btn sym-icon-btn--danger-card"
                 aria-label="Delete connector"
               >
                 <span className="material-icons-outlined" aria-hidden>
                   delete
                 </span>
-              </button>
+              </SymIconTooltipButton>
             </div>
           </article>
         </div>
@@ -461,15 +458,14 @@ export function PartyDomainShowcase() {
             <p className="sym-card-meta">Traffic share · 18%</p>
             <p className="sym-card-body-text">Selected border highlights procurement focus.</p>
             <div className="sym-table-actions sym-stack-bottom">
-              <button
-                type="button"
+              <SymIconTooltipButton
                 className="sym-icon-btn sym-icon-btn--primary-card"
                 aria-label="Open documentation"
               >
                 <span className="material-icons-outlined" aria-hidden>
                   open_in_new
                 </span>
-              </button>
+              </SymIconTooltipButton>
             </div>
           </article>
         </div>

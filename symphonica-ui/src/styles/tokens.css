@@ -381,6 +381,8 @@
   --component-button-icon-danger-card-icon-hover: var(--semantic-color-danger-base);
   --component-button-icon-danger-card-icon-active: var(--core-color-neutral-white);
   --component-button-icon-danger-card-icon-disabled: var(--semantic-action-danger-disabled);
+  --component-tooltip-icon-button-delay-show-ms: 400;
+  --component-tooltip-icon-button-delay-hide-ms: 100;
   --component-button-group-gap: var(--core-spacing-0);
   --component-button-group-border-radius-container: var(--core-border-radius-sm);
   --component-button-group-segment-padding-x: var(--core-spacing-13);
@@ -428,9 +430,9 @@
   --component-nav-sidebar-padding-x: var(--core-spacing-20);
   --component-nav-sidebar-padding-y: var(--core-spacing-24);
   --component-nav-sidebar-section-gap: var(--core-spacing-24);
-  --component-nav-sidebar-menu-list-gap: var(--core-spacing-24);
+  --component-nav-sidebar-menu-list-gap: var(--core-spacing-16);
   --component-nav-sidebar-item-gap: var(--core-spacing-16);
-  --component-nav-sidebar-item-padding-y: var(--core-spacing-0);
+  --component-nav-sidebar-item-padding-y: var(--core-spacing-8);
   --component-nav-sidebar-item-padding-x: var(--core-spacing-4);
   --component-nav-sidebar-item-radius: var(--core-border-radius-sm);
   --component-nav-sidebar-icon-size: var(--core-size-24);
@@ -486,7 +488,7 @@
   --component-header-small-user-email-foreground: var(--semantic-text-white);
   --component-header-large-shell-background-base: var(--semantic-color-primary-base);
   --component-header-large-shell-hero-linear-gradient: var(--semantic-gradient-hero-primary-band);
-  --component-header-large-nav-bar-border-bottom-width: var(--core-border-width-hairline);
+  --component-header-large-nav-bar-border-bottom-width: var(--core-spacing-0);
   --component-header-large-nav-bar-border-bottom-color: rgba(255,255,255,0.15);
   --component-header-large-breadcrumb-band-padding-top: var(--core-spacing-8);
   --component-header-large-breadcrumb-band-padding-bottom: 86px;
