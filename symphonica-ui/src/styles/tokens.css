@@ -445,7 +445,7 @@
   --component-nav-sidebar-search-min-height: var(--core-size-38);
   --component-nav-sidebar-item-label-font-size: var(--core-typography-font-size-14);
   --component-nav-sidebar-item-label-font-weight: var(--core-typography-font-weight-medium);
-  --component-nav-sidebar-item-hover-background: var(--core-color-neutral-100);
+  --component-nav-sidebar-item-hover-background: var(--core-color-neutral-200);
   --component-nav-sidebar-item-active-background: var(--semantic-color-primary-light);
   --component-nav-sidebar-chevron-color: var(--core-color-neutral-500);
   --component-nav-sidebar-toggle-icon-color: var(--semantic-text-secondary);

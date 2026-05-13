@@ -1535,7 +1535,7 @@ The **Symphonica primary navigation** is a **vertical sidebar** (logo / wordmark
 
 #### States
 
-- **Row hover**: background `itemHoverBackground` (`Core/Color/Neutral/100`).
+- **Row hover**: background `itemHoverBackground` (`Core/Color/Neutral/200`).
 - **Current / active route** (optional): background `itemActiveBackground` (`Semantic/Color/Primary/Light`); set `aria-current="page"` on the active control.
 - **Motion**: width and row transitions use `Core/Motion` tokens (respect reduced motion).
 
