@@ -59,6 +59,8 @@
   --core-focus-ring-color: var(--semantic-color-primary-base);
   --core-shadow-none: none;
   --core-shadow-card: 0 4px 10px 0 rgba(0, 0, 0, 0.07);
+  --core-shadow-modal: 0 7px 20px rgba(0, 0, 0, 0.16);
+  --core-shadow-notification-toastr: 0 4px 10px rgba(0, 0, 0, 0.2);
   --core-typography-font-family-base: Montserrat, sans-serif;
   --core-typography-font-weight-regular: 400;
   --core-typography-font-weight-medium: 500;

@@ -296,7 +296,7 @@ independent of specific color values.
 
 ## 5. Component Tokens
 
-References elsewhere in this specification use **§5.*n*** for the subsections below (**§5.1**–**§5.10**). **§5.3** covers labeled buttons and includes **Button Groups** under the same heading family.
+References elsewhere in this specification use **§5.*n*** for the subsections below (**§5.1**–**§5.11**). **§5.3** covers labeled buttons and includes **Button Groups** under the same heading family.
 
 ---
 
@@ -1563,10 +1563,11 @@ Symphonica modals use **three roles**. The role drives **title ink**, **leading 
 
 #### Anatomy
 
-- **Backdrop**: dims page behind the dialog; clicks typically dismiss only when explicitly allowed (prefer explicit Cancel/Close for destructive flows).
-- **Panel**: **`Core/Color/Neutral/White`** surface, corner radius consistent with Guía frame (**`Core/Border/Radius/Sm`** — **8px** — aligned with card-like shells unless Figma exports a dedicated modal radius token later). Elevation: **Shadows / Modal** from Guía (`0 7px 20px` approximate drop shadow on **`#00000029`** — implement to match Figma **`Shadows/Modal`**; do not substitute **`core.shadow.card`** without review).
+- **Backdrop**: dims page behind the dialog; clicks typically dismiss only when explicitly allowed (prefer explicit Cancel/Close for destructive flows). Implement scrim from **`Core/Color/Neutral/900`** at **~45%** opacity (token-derived, e.g. **`color-mix`**), not ad‑hoc unrelated neutrals.
+- **Panel**: **`Core/Color/Neutral/White`** surface, corner **`Core/Border/Radius/Md`** (**8px** — Guía frame; matches primary card-like shells unless Figma exports a dedicated modal radius token later). Elevation: **`core.shadow.modal`** (**Shadows / Modal** from Guía — `0 7px 20px` on **`#00000029`** equivalent; do **not** substitute **`core.shadow.card`** without review).
+- **Major regions** (header row, body column, footer): vertical separation **`Core/Spacing/24`** between those blocks (panel padding remains **`Core/Spacing/24`** per below).
 - **Header row**: horizontal **`justify-between`**. **Leading cluster**: optional **Material Icons Outlined** glyph (**24px**, **`Core/Spacing/8`** gap to title) + **title**. Title typography: **`Core/Typography/FontSize/20`**, **`Core/Typography/FontWeight/Semibold`**, line-height tight/normal per Guía. **Trailing**: close control (**24px** target hit area, **`close`** glyph — keyboard-accessible, **`aria-label`**).
-- **Body**: vertical rhythm from Guía (**`Core/Spacing/16`** between stacked blocks inside the content column; **24px** panel padding). Supporting copy: **`Core/Typography/FontSize/14`**, **`Core/Typography/FontWeight/Medium`**, **`Semantic/Text/Secondary`** (~**22px** row rhythm where specified in Guía).
+- **Body**: vertical rhythm from Guía (**`Core/Spacing/16`** between stacked blocks inside the content column; **`Core/Spacing/24`** panel padding). Supporting copy: **`Core/Typography/FontSize/14`**, **`Core/Typography/FontWeight/Medium`**, **`Semantic/Text/Secondary`** (~**22px** row rhythm where specified in Guía).
 
 #### Featured item (“elemento destacado”)
 
@@ -1599,12 +1600,64 @@ Multi-primary layouts (e.g. **Clone and Open Editor** + **Clone Model**): **both
 - **Escape** closes only when product rules allow; destructive dialogs should **not** silently discard without confirmation.
 - **`Focus`** returns to the invoking control on close.
 - **Z-index** stacks **above** App Header and sidebar chrome — above **`sym-app-header`** / **`sym-sidebar`** modal layer without obscuring required notifications policy.
+- **Viewport overlay geometry**: **`sym-app-main`** uses **`overflow: hidden`** for column chrome — **`position: fixed`** descendants rendered **inside** that subtree are **clipped** to the main column (sidebar stays uncovered; dialogs appear off-centre). **Mount** backdrop + dialog at **`document.body`** (or another portal root outside overflowing shells) so **`inset: 0`** truly spans the **viewport**.
 
 #### Rules
 
 - Do **not** reuse **badge** or **pill** components as modal titles; titles are **plain heading** semantics + optional icon.
 - Do **not** mix **md/lg** buttons in the modal footer when following Guía — footer actions stay **sm**.
 - Motion: open/close use **`Core/Motion`** durations/easing; respect **`prefers-reduced-motion`** (see global constraint — avoid instantaneous pop).
+
+---
+
+### 5.11 Toasts (Snackbars)
+
+**Toasts** are **non-blocking** transient notifications: they confirm outcomes, report failures, or deliver contextual info **without** trapping focus or dimming the page (contrast **§5.10** Modals).
+
+**Source (reference):** [Guía de Estilos — Toasts](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=6621-29899).
+
+#### Role variants
+
+| Role | When | Canonical title tone (adjust copy per product) |
+|------|------|------------------------------------------------|
+| **Success** | Action completed OK (most common) | e.g. **Operation Successfully** |
+| **Error** | Action failed or critical problem | e.g. **Operation Failed** |
+| **Info** | Context when entering a section or supplementary guidance | e.g. **Operation Info** |
+
+- **Chrome**: solid surface per role — reference uses **`Semantic/Action/Success/Hover`**, **`Semantic/Action/Danger/Hover`**, and **`Semantic/Color/Primary`** (info) as full-bleed fills; title and body **`Semantic/Text/White`** (or **`Core/Color/Neutral/White`**).
+- **Typography**: title **`Core/Typography/FontSize/16`**, **`Semibold`**; optional body **16**, **`Medium`** (body slot below title).
+- **Elevation**: **`core.shadow.notificationToastr`** (**Shadows / Notification Toastr** from Guía — aligns to Figma **`Shadows/Notification Toastr`**; do **not** substitute **`core.shadow.card`** without review).
+- **Radius**: **`Core/Border/Radius/Md`** (**8px**). Padding **`Core/Spacing/16`**; vertical gap **`Core/Spacing/16`** between title row, body, and actions **inside** the chip.
+
+#### Layout & placement
+
+- **Viewport**: **`position: fixed`**; **`top: 40px`**, **`right: 24px`** (LTR).
+- **Width**: **500px** when viewport **>767px**. When **≤767px**, inset the stack container **`left: 24px`** and **`right: 24px`** so each toast spans the full width between those edges.
+- **Stacking**: multiple toasts in a vertical column with **`Core/Spacing/12`** gap between chips; **`z-index`** above page chrome and **above modal overlays** when both exist briefly (e.g. toast after confirm — typical **1060–1100** vs modal **1050**).
+- **Portal**: mount at **`document.body`** so **`sym-app-main`** **`overflow`** does not clip toasts (same rationale as **§5.10** viewport overlays).
+
+#### Optional actions
+
+- **Small**, **outlined**, **light**: transparent interior, **white** hairline border, **white** label (**14px** medium in reference) — Guía “Action Button” strip. Use for secondary outcomes (**Retry**, **View detail**, **Dismiss** alongside primary narrative).
+
+#### Autohide duration
+
+- **Short copy** (e.g. “File saved”): **4 seconds** default.
+- **Long copy** or **toast that includes actions**: **8 seconds** default.
+- **Reading-time rule**: allow roughly **1 second per 12–15 words** (use **~14** words as a planning midpoint), then add a **2 second** safety margin; clamp sensibly (e.g. **4s–12s**) so dense UIs stay predictable.
+- **Critical errors**: **do not autohide** — remain until the user **dismisses** (close control) or resolves the issue; optionally pair with **Retry** / **View logs** actions.
+
+#### UX & technical rules
+
+- **Pause on hover**: while the pointer is over the toast, **suspend** the autohide timer; **resume** when leave (keyboard-only users still get full duration unless product specifies focus-based pause).
+- **Never block interaction**: no fullscreen backdrop; pointer events only on the toast chip — page remains clickable (**unlike `aria-modal`** dialogs).
+- **Dismiss**: trailing **close** icon (**24px** touch target), **`aria-label`**; removing a toast from the stack must be keyboard-accessible.
+- **Live regions**: **Success / Info** → **`role="status"`** + polite live behaviour where appropriate; **Error** → **`role="alert"`** for urgent failures.
+
+#### Rules
+
+- Do **not** replace **§5.1 Alerts** inline in forms with toasts for validation errors unless UX explicitly defines global toast errors.
+- Do **not** stack unbounded toasts — cap concurrent visible count or queue.
 
 ---
 
@@ -1704,7 +1757,7 @@ Buttons do not own:
 
 Modal Dialog owns:
 - Overlay/backdrop and stacking above application chrome (Guía elevation)
-- Panel shell (white surface, padding, radius, **Shadows/Modal** from Guía)
+- Panel shell (white surface, padding, **`Core/Border/Radius/Md`**, elevation **`core.shadow.modal`** from Guía)
 - Header row (optional **Material Icons Outlined** + role-colored title, close affordance)
 - Body composition (supporting copy, optional **featured item** strip, optional Bootstrap-styled short forms)
 - Footer (**sm** **Cancel** outlined primary + **sm** filled primary aligned to modal **role**; dual primaries allowed when Guía shows paired submits sharing one role)
@@ -1713,6 +1766,18 @@ Modal Dialog does not own:
 - Primary navigation or sidebar/header chrome underneath (those remain **`sym-app-*`** ownership — §§5.8–5.9, §8)
 - Persistent **Alerts** inline on the page (§5.1)
 - Full-page creation flows better modeled as routes unless explicitly framed as modal-only CRUD
+
+#### Toast (Snackbar)
+
+Toast owns:
+- Fixed viewport placement (**`top: 40px`**, **`right: 24px`** LTR); **500px** chip width when viewport **>767px**; **≤767px**: stack container **`left`/`right` 24px**, full-width chips; stacking / queue policy
+- Role surfaces (**Success**, **Error**, **Info**), title + optional body, optional **sm** **outlined light** actions
+- Autohide timing (including pause-on-hover), persistent-dismiss behaviour for critical errors
+- Close affordance and **`aria-live`** / **`role`** semantics (**§5.11**)
+
+Toast does not own:
+- Form field validation messages at point of edit (prefer inline patterns unless spec says otherwise)
+- **`aria-modal`** blocking overlays — use **§5.10** Modals instead
 
 ---
 
@@ -1738,6 +1803,7 @@ Pills do not own:
 - Table action buttons must use icon button rules, not outlined icon-only button rules
 - Outlined icon-only buttons in Card Headers must not use circular icon button rules
 - **Modal dialogs:** confirmations and short forms use **§5.10** — role (**Info** | **Danger** | **Success**), **sm** footer buttons (**filled** primary vs role / **outlined.primary** cancel), optional featured strip + Bootstrap fields.
+- **Toasts:** transient feedback uses **§5.11** — **`top: 40px`**, **`right: 24px`** (see **§5.11** for **500px** vs mobile full-width **≤767px**), autohide + pause-on-hover, **non-blocking** portal mount — **not** a substitute for modal confirmations when user must commit or cancel explicitly.
 
 - **Card nesting:** do not place a **Primary Card** inside a **Secondary Card**; **Secondary inside Primary** is allowed, using **`component.card.secondary.nestedInPrimary.background`** for the nested surface (`LegacyNeutral/Subtle`). See **§5.5 — Card nesting and hierarchy**.
 
@@ -1756,6 +1822,7 @@ Symphonica uses a structured layout:
 - Body Content — positioning depends on **header variant** (see **§5.9** and **`layout.header`** tokens).
 - Footer (fixed bottom)
 - **Modal dialogs** — **§5.10**: overlay above the scrolling **main column** and fixed shell chrome; elevation and **`z-index`** above sidebar/header layers per Guía; scroll **inside** the dialog body when content exceeds viewport — **do not** scroll the page behind an open **`aria-modal`** dialog.
+- **Toasts (snackbars)** — **§5.11**: **`position: fixed`**, **non-blocking**, **`document.body`** portal; **`z-index`** above modal layer when shown after dismiss (typical **1060+** vs modal **1050**). Placement, width (**500px** vs **≤767px** full width), and stacking gap — canonical detail in **§5.11**.
 - Sidebar expand/collapse must use Motion tokens defined in `Core Tokens / Motion`.
 
 #### Large header + body overlap
@@ -2021,7 +2088,8 @@ Figma → Code mapping:
 ---
 
 ## 12. Constraints for AI / Cursor
-- **Modal dialogs — §5.10**: Three **roles** — **Info** (ordinary actions → **`semantic.text.title`** + **`component.button.filled.primary`**), **Danger** (irrevocable → danger title ink + **`component.button.filled.danger`**), **Success** (e.g. publish → success title ink + **`component.button.filled.success`**). Footer **Cancel/Close** is **`component.button.outlined.primary`**, **`component.button.size.sm`**. Primary actions **`filled`**, **`sm`**. Optional **24px** header icon + **20 semibold** title; **featured item** strip defaults **`semantic.color.secondary`** / **`semantic.text.primary`** unless spec uses role lights. Short forms use Bootstrap **`form-control`** / **`form-select`** + Symphonica field tokens; **`aria-modal`**, focus management, **Escape** policy per flow. Reference: [Guía Modal Dialog](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7273-4192).
+- **Modal dialogs — §5.10**: Three **roles** — **Info** (ordinary actions → **`semantic.text.title`** + **`component.button.filled.primary`**), **Danger** (irrevocable → danger title ink + **`component.button.filled.danger`**), **Success** (e.g. publish → success title ink + **`component.button.filled.success`**). Footer **Cancel/Close** is **`component.button.outlined.primary`**, **`component.button.size.sm`**. Primary actions **`filled`**, **`sm`**. Panel **`Core/Border/Radius/Md`**, elevation **`core.shadow.modal`** (not **`core.shadow.card`**); backdrop scrim from **`Core/Color/Neutral/900`** ~**45%** opacity (token-derived). Optional **24px** header icon + **20 semibold** title; **featured item** strip defaults **`semantic.color.secondary`** / **`semantic.text.primary`** unless spec uses role lights. Short forms use Bootstrap **`form-control`** / **`form-select`** + Symphonica field tokens; **`aria-modal`**, focus management, **Escape** policy per flow. Reference: [Guía Modal Dialog](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7273-4192).
+- **Toasts — §5.11**: **Success** | **Error** | **Info** roles; titles **Operation Successfully** / **Operation Failed** / **Operation Info** (templates); optional body **16** medium white; **sm** **outlined light** actions (white border + transparent fill); **`top: 40px`**, **`right: 24px`**; **500px** chip width when viewport **>767px**; **≤767px**: **`left`/`right` 24px** on stack, full-width chips; autohide **4s** short / **8s** long+actions; reading heuristic **~1s per 14 words + 2s** clamp; **critical Error** **no** autohide; **pause on hover**; never block page clicks; **`document.body`** portal; **`Core/Spacing/12`** between stacked chips. Reference: [Guía Toasts](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=6621-29899).
 - **App shell layout**: **`sym-app-shell`** exposes **`--sym-shell-sidebar-width`** (expanded vs collapsed). **`sym-sidebar`**: **`position: fixed`**, **`top: 0`**, **`left: 0`**, **`bottom: 0`** — **does not scroll** with the main column. **`sym-app-main`** uses **`margin-left: var(--sym-shell-sidebar-width)`** so the main column clears the rail; **`padding-top`** reserves fixed App Header (**`layout.header.large.shellHeight`** / **`layout.header.small.stackHeight`**). **App Header**: **`position: fixed`**, **`top: 0`**, main column only (**`left`** after sidebar, aligned with **`margin-left`**) — **never** nest inside **`sym-app-body`**. **`sym-app-body`** scrolls only; **`padding-top: 0`**; **`margin-top`** only for **Large** overlap (**`layout.header.large.bodyOffsetTop`** math). **`sym-page`**: **`padding-top: 0`**, **`margin-top: 0`**; **`layout.body.sectionGap`** for horizontal/bottom padding and between sections. Implement **Small** vs **Large** variants per §5.9 (**Large** body overlaps lower hero band; **Small** no overlap); **`component.header.*`** for chrome.
 - **Card nesting:** never nest a **Primary Card** inside a **Secondary Card**. **Secondary** may be nested **inside Primary**; use **`component.card.secondary.nestedInPrimary.background`** for nested default background (`LegacyNeutral/Subtle`). Standalone Secondary on app background keeps default white. See §5.5.
 - **App sidebar** (primary Symphonica menu): **`aside.sym-sidebar`** is **viewport-fixed** per §5.8 — **do not** scroll the whole rail with page content; **nav list** scrolls internally only when expanded. Use **`component.nav.sidebar`** tokens and Material Icons Outlined; **24px vertical spacing between leading icons** via `menuListGap` with **`itemPaddingY` 0**; map each domain row’s leading icon color via **`itemIcon.*`** aliases — do not substitute ad-hoc colors or reuse Tabs Top / Card Header pill styles for this shell; **collapsed sidebar must not show a scrollbar** (overflow hidden per §5.8)
@@ -2072,7 +2140,8 @@ Rules:
   - Badges
   - Icon buttons (circular)
   - Segmented **Button Group** outer shell (**`component.buttonGroup.borderRadius.container`**, aliasing **`Core/Border/Radius/Sm`**) — Symphonica-owned chrome on Bootstrap **`btn-group`**, distinct from applying arbitrary radius tokens to generic **`btn`** primitives
-  - **Modal Dialog** panel shell (**§5.10** — **`Core/Border/Radius/Sm`** / Guía frame **8px**)
+  - **Modal Dialog** panel shell (**§5.10** — **`Core/Border/Radius/Md`** / Guía frame **8px**)
+  - **Toast / Snackbar** shell (**§5.11** — **`Core/Border/Radius/Md`**)
 
 - Do not apply `core.border.radius` tokens to Bootstrap primitives unless explicitly defined (including per-component specs such as Button Group above).
 

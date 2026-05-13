@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 
 type SortPhase = 'idle' | 'asc' | 'desc'
@@ -97,6 +98,106 @@ function Badge({
   )
 }
 
+function toastReadingDurationMs(body: string): number {
+  const words = body.trim().split(/\s+/).filter(Boolean).length
+  return Math.min(12000, Math.max(4000, 2000 + Math.ceil(words / 14) * 1000))
+}
+
+type ShowcaseToast = {
+  id: string
+  variant: 'success' | 'error' | 'info'
+  title: string
+  body?: string
+  durationMs: number | null
+  actions?: { label: string; onClick: () => void }[]
+}
+
+function SymToastItem({
+  toast,
+  onDismiss,
+}: {
+  toast: ShowcaseToast
+  onDismiss: (id: string) => void
+}) {
+  const pausedRef = useRef(false)
+
+  useEffect(() => {
+    if (toast.durationMs === null) return
+    let remaining = toast.durationMs
+    const step = 100
+    const intervalId = window.setInterval(() => {
+      if (pausedRef.current) return
+      remaining -= step
+      if (remaining <= 0) {
+        window.clearInterval(intervalId)
+        onDismiss(toast.id)
+      }
+    }, step)
+    return () => window.clearInterval(intervalId)
+  }, [toast.id, toast.durationMs, onDismiss])
+
+  return (
+    <div
+      className={`sym-toast sym-toast--${toast.variant}`}
+      role={toast.variant === 'error' ? 'alert' : 'status'}
+      onMouseEnter={() => {
+        pausedRef.current = true
+      }}
+      onMouseLeave={() => {
+        pausedRef.current = false
+      }}
+    >
+      <div className="sym-toast__header">
+        <p className="sym-toast__title">{toast.title}</p>
+        <button
+          type="button"
+          className="sym-toast__close"
+          onClick={() => onDismiss(toast.id)}
+          aria-label="Dismiss notification"
+        >
+          <span className="material-icons-outlined" aria-hidden>
+            close
+          </span>
+        </button>
+      </div>
+      {toast.body ? <p className="sym-toast__body">{toast.body}</p> : null}
+      {toast.actions && toast.actions.length > 0 ? (
+        <div className="sym-toast__actions">
+          {toast.actions.map((action) => (
+            <button
+              key={action.label}
+              type="button"
+              className="sym-toast__action"
+              onClick={action.onClick}
+            >
+              {action.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function SymToastStack({
+  toasts,
+  onDismiss,
+}: {
+  toasts: ShowcaseToast[]
+  onDismiss: (id: string) => void
+}) {
+  if (toasts.length === 0) return null
+
+  return createPortal(
+    <div className="sym-toast-region">
+      {toasts.map((t) => (
+        <SymToastItem key={t.id} toast={t} onDismiss={onDismiss} />
+      ))}
+    </div>,
+    document.body,
+  )
+}
+
 type ShowcaseModalId = 'stable' | 'monitored' | 'export' | 'draft'
 type ShowcaseModalRole = 'info' | 'danger' | 'success'
 
@@ -110,6 +211,7 @@ function ShowcaseModal({
   children,
   primaryLabel,
   primaryClassName,
+  onPrimary,
 }: {
   open: boolean
   onClose: () => void
@@ -120,10 +222,11 @@ function ShowcaseModal({
   children: ReactNode
   primaryLabel: string
   primaryClassName: string
+  onPrimary?: () => void
 }) {
   if (!open) return null
 
-  return (
+  return createPortal(
     <div
       className="sym-modal-backdrop"
       role="presentation"
@@ -168,13 +271,17 @@ function ShowcaseModal({
           <button
             type="button"
             className={`${primaryClassName} sym-btn--sm`}
-            onClick={onClose}
+            onClick={() => {
+              onPrimary?.()
+              onClose()
+            }}
           >
             {primaryLabel}
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -332,6 +439,17 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
   const [lifecycleSegment, setLifecycleSegment] = useState(0)
   const [showcaseModal, setShowcaseModal] = useState<ShowcaseModalId | null>(null)
   const [exportFormat, setExportFormat] = useState<'csv' | 'xlsx'>('csv')
+  const [toasts, setToasts] = useState<ShowcaseToast[]>([])
+
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id))
+  }, [])
+
+  const pushToast = useCallback((partial: Omit<ShowcaseToast, 'id'> & { id?: string }) => {
+    const id = partial.id ?? crypto.randomUUID()
+    setToasts((prev) => [...prev, { ...partial, id }])
+    return id
+  }, [])
 
   const navView: NavView = mode === 'serviceOrders' ? 'service-orders' : 'inventory'
 
@@ -779,6 +897,14 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
         icon="verified"
         primaryLabel="Yes, mark stable"
         primaryClassName="sym-btn-filled-success"
+        onPrimary={() => {
+          pushToast({
+            variant: 'success',
+            title: 'Operation Successfully',
+            body: 'Lifecycle view marked stable.',
+            durationMs: 4000,
+          })
+        }}
       >
         <div className="sym-modal__featured">Blueprint segment · Lifecycle overview</div>
         <p className="sym-modal__support">
@@ -796,6 +922,34 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
         icon="visibility_off"
         primaryLabel="Yes, pause monitoring"
         primaryClassName="sym-btn-filled-danger"
+        onPrimary={() => {
+          const id = crypto.randomUUID()
+          pushToast({
+            id,
+            variant: 'error',
+            title: 'Operation Failed',
+            body: 'Monitoring pause did not complete for API North. Check bridge connectivity, then retry or dismiss.',
+            durationMs: null,
+            actions: [
+              {
+                label: 'Retry',
+                onClick: () => {
+                  dismissToast(id)
+                  pushToast({
+                    variant: 'info',
+                    title: 'Operation Info',
+                    body: 'Retry queued — this sample toast autohides in four seconds.',
+                    durationMs: 4000,
+                  })
+                },
+              },
+              {
+                label: 'Dismiss',
+                onClick: () => dismissToast(id),
+              },
+            ],
+          })
+        }}
       >
         <div className="sym-modal__featured">Connector · API North</div>
         <p className="sym-modal__support">
@@ -813,6 +967,20 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
         icon="download"
         primaryLabel="Export"
         primaryClassName="sym-btn-filled-primary"
+        onPrimary={() => {
+          const id = crypto.randomUUID()
+          pushToast({
+            id,
+            variant: 'success',
+            title: 'Operation Successfully',
+            body: 'Your export is being prepared. Large extracts may take up to two minutes. You can leave this page—we will notify you when the file is ready.',
+            durationMs: 8000,
+            actions: [
+              { label: 'View exports', onClick: () => dismissToast(id) },
+              { label: 'Close', onClick: () => dismissToast(id) },
+            ],
+          })
+        }}
       >
         <p className="sym-modal__support">
           Rows reflect the current table filters and column visibility in this showcase sample.
@@ -867,6 +1035,16 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
         icon="save"
         primaryLabel="Save draft"
         primaryClassName="sym-btn-filled-primary"
+        onPrimary={() => {
+          const body =
+            'Draft saved locally for this session. Inventory cards and segmented counts will reload when you return to this section.'
+          pushToast({
+            variant: 'info',
+            title: 'Operation Info',
+            body,
+            durationMs: toastReadingDurationMs(body),
+          })
+        }}
       >
         <div className="sym-modal__featured">Card draft · Lifecycle overview</div>
         <p className="sym-modal__support">
@@ -874,6 +1052,8 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
           persistence in production.
         </p>
       </ShowcaseModal>
+
+      <SymToastStack toasts={toasts} onDismiss={dismissToast} />
     </div>
   )
 }

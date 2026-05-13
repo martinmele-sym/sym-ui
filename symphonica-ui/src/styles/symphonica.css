@@ -1689,7 +1689,9 @@
   --bs-gutter-y: var(--layout-body-section-gap);
 }
 
-/* --- Modal dialog (§5.10 showcase / Guía) --- */
+/* --- Modal dialog (§5.10 showcase / Guía) ---
+   Mount markup via portal on document.body: .sym-app-main uses overflow:hidden, which clips
+   position:fixed descendants to the main column — sidebar would stay uncovered and dialogs skewed. */
 
 .sym-modal-backdrop {
   position: fixed;
@@ -1700,7 +1702,7 @@
   justify-content: center;
   padding: var(--core-spacing-24);
   box-sizing: border-box;
-  background-color: rgba(33, 37, 41, 0.45);
+  background-color: color-mix(in srgb, var(--core-color-neutral-900) 45%, transparent);
 }
 
 .sym-modal__dialog {
@@ -1711,17 +1713,17 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: var(--core-spacing-32);
+  gap: var(--core-spacing-24);
   padding: var(--core-spacing-24);
   border-radius: var(--core-border-radius-md);
   background-color: var(--core-color-neutral-white);
-  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.16);
+  box-shadow: var(--core-shadow-modal);
   outline: none;
 }
 
 .sym-modal__dialog:focus-visible {
   box-shadow:
-    0 7px 20px rgba(0, 0, 0, 0.16),
+    var(--core-shadow-modal),
     0 0 0 var(--core-focus-ring-offset) var(--core-focus-ring-color);
 }
 
@@ -1824,7 +1826,7 @@
   font-family: var(--core-typography-font-family-base);
   font-size: var(--core-typography-font-size-14);
   font-weight: var(--core-typography-font-weight-medium);
-  line-height: 1.57;
+  line-height: var(--core-typography-line-height-relaxed);
   color: var(--semantic-text-secondary);
 }
 
@@ -1836,6 +1838,159 @@
   justify-content: flex-end;
   gap: var(--core-spacing-16);
   width: 100%;
+}
+
+/* --- Toasts / snackbars (§5.11 showcase / Guía) ---
+   Portal to document.body — non-blocking; z-index above modal backdrop. */
+
+.sym-toast-region {
+  position: fixed;
+  top: 40px;
+  right: 24px;
+  z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--core-spacing-12);
+  max-width: calc(100vw - 24px);
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.sym-toast-region > .sym-toast {
+  pointer-events: auto;
+}
+
+@media (max-width: 767px) {
+  .sym-toast-region {
+    left: var(--core-spacing-24);
+    right: var(--core-spacing-24);
+    align-items: stretch;
+    max-width: none;
+  }
+
+  .sym-toast {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.sym-toast {
+  width: 500px;
+  max-width: 500px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-spacing-16);
+  padding: var(--core-spacing-16);
+  border-radius: var(--core-border-radius-md);
+  box-shadow: var(--core-shadow-notification-toastr);
+}
+
+.sym-toast--success {
+  background-color: var(--semantic-action-success-hover);
+}
+
+.sym-toast--error {
+  background-color: var(--semantic-action-danger-hover);
+}
+
+.sym-toast--info {
+  background-color: var(--semantic-color-primary-base);
+}
+
+.sym-toast__header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--core-spacing-16);
+  width: 100%;
+}
+
+.sym-toast__title {
+  flex: 1;
+  margin: 0;
+  min-width: 0;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-16);
+  font-weight: var(--core-typography-font-weight-semibold);
+  line-height: var(--core-typography-line-height-tight);
+  color: var(--semantic-text-white);
+}
+
+.sym-toast__close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--core-size-32);
+  height: var(--core-size-32);
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--core-border-radius-sm);
+  background-color: var(--core-color-transparent);
+  color: var(--semantic-text-white);
+  cursor: pointer;
+  transition: background-color var(--core-motion-duration-fast) var(--core-motion-easing-standard);
+}
+
+.sym-toast__close:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.sym-toast__close .material-icons-outlined {
+  font-size: var(--core-typography-font-size-24);
+  line-height: var(--core-typography-line-height-solid);
+}
+
+.sym-toast__body {
+  margin: 0;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-16);
+  font-weight: var(--core-typography-font-weight-medium);
+  line-height: var(--core-typography-line-height-relaxed);
+  color: var(--semantic-text-white);
+}
+
+.sym-toast__actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--core-spacing-8);
+  width: 100%;
+}
+
+.sym-toast__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--component-button-size-sm-button);
+  padding: var(--core-spacing-7) var(--core-spacing-12);
+  margin: 0;
+  box-sizing: border-box;
+  border: var(--core-border-width-hairline) solid var(--core-color-neutral-white);
+  border-radius: var(--bs-border-radius);
+  background-color: var(--core-color-transparent);
+  color: var(--semantic-text-white);
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-14);
+  font-weight: var(--core-typography-font-weight-medium);
+  line-height: var(--core-typography-line-height-relaxed);
+  cursor: pointer;
+  transition:
+    background-color var(--core-motion-duration-fast) var(--core-motion-easing-standard),
+    border-color var(--core-motion-duration-fast) var(--core-motion-easing-standard);
+}
+
+.sym-toast__action:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.sym-toast__action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .sym-btn--sm {
