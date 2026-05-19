@@ -23,7 +23,7 @@ export function PartyDomainShowcase() {
 
   return (
     <div className="sym-page">
-      <article className="sym-card-primary sym-no-hover">
+      <article className="sym-card-primary sym-card-primary--section-sticky sym-no-hover">
         <header className="sym-card-header">
           <div className="sym-card-header__top">
             <h1 className="sym-card-title">Party domain</h1>

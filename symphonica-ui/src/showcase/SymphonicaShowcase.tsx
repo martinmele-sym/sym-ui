@@ -485,8 +485,8 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
 
   return (
     <div className="sym-page">
-      {/* 1. Primary Card — Card Header */}
-      <article className="sym-card-primary sym-no-hover">
+      {/* 1. Primary Card — Card Header (§5.5 section sticky) */}
+      <article className="sym-card-primary sym-card-primary--section-sticky sym-no-hover">
         <header className="sym-card-header">
           <div className="sym-card-header__top">
             <h1 className="sym-card-title">

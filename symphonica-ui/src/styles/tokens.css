@@ -161,6 +161,9 @@
   --component-badge-warning-background: var(--semantic-color-warning-light);
   --component-badge-warning-foreground: var(--semantic-color-warning-dark);
   --component-badge-height: var(--core-size-28);
+  --component-card-header-sticky-offset-top: 0;
+  --component-card-header-sticky-z-index: 2;
+  --component-card-header-sticky-gap-cover: var(--layout-body-section-gap);
   --component-card-header-layout-direction: column;
   --component-card-header-layout-gap: var(--core-spacing-16);
   --component-card-header-top-layout-direction: column;

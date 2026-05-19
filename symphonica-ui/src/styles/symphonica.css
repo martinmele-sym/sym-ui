@@ -16,9 +16,12 @@
   margin-left: var(--sym-shell-sidebar-width);
   min-width: 0;
   min-height: 100vh;
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  box-sizing: border-box;
+  /* Must stay visible: overflow:hidden on this ancestor breaks §5.5 sticky in sym-app-body */
+  overflow: visible;
   transition:
     margin-left var(--core-motion-duration-base) var(--core-motion-easing-standard);
 }
@@ -38,10 +41,12 @@
 }
 
 .sym-app-body {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding-top: 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Large header: body overlaps lower band (§8 / layout.header.large) */
@@ -614,6 +619,28 @@
   background-color: var(--component-card-primary-background);
   border: var(--core-border-width-hairline) solid var(--component-card-primary-border);
   border-radius: var(--component-card-primary-border-radius);
+  box-shadow: var(--component-card-primary-shadow);
+}
+
+/* §5.5 — Primary Card header sticky (sym-app-body scrollport; never viewport fixed) */
+.sym-card-primary.sym-card-primary--section-sticky {
+  position: sticky;
+  top: var(--component-card-header-sticky-offset-top);
+  z-index: var(--component-card-header-sticky-z-index);
+  background-color: var(--component-card-primary-background);
+  /* Single elevation only — extra gapCover box-shadow painted a false “second card” lip */
+  box-shadow: var(--component-card-primary-shadow);
+}
+
+.sym-card-header--sticky {
+  position: sticky;
+  top: var(--component-card-header-sticky-offset-top);
+  z-index: var(--component-card-header-sticky-z-index);
+  margin-left: calc(-1 * var(--component-card-primary-padding));
+  margin-right: calc(-1 * var(--component-card-primary-padding));
+  padding-left: var(--component-card-primary-padding);
+  padding-right: var(--component-card-primary-padding);
+  background-color: var(--component-card-primary-background);
   box-shadow: var(--component-card-primary-shadow);
 }
 
@@ -1872,8 +1899,7 @@
 }
 
 /* --- Modal dialog (§5.10 showcase / Guía) ---
-   Mount markup via portal on document.body: .sym-app-main uses overflow:hidden, which clips
-   position:fixed descendants to the main column — sidebar would stay uncovered and dialogs skewed. */
+   Mount markup via portal on document.body (not inside sym-app-main) so overlays cover the sidebar. */
 
 .sym-modal-backdrop {
   position: fixed;

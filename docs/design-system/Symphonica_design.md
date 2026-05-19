@@ -867,8 +867,18 @@ Symphonica defines two main card types:
 
 Primary cards may include a header section used for navigation, filters, or actions.
 
-**Scope:** This **Card Header** is **not** the application **App Header** (§5.9). It sits **inside** the card and **scrolls with** the card body — **never** **`position: fixed`** to the viewport unless a dedicated sticky-card pattern is added to this spec.
+**Scope:** This **Card Header** is **not** the application **App Header** (§5.9). It is **section chrome** for the page region below it: it **must remain visible** at the top of the main-column scroll viewport (**`sym-app-body`**) while the user scrolls tables, secondary cards, and other content — the same *intent* as the App Header, but scoped to the page section.
 
+**Scroll (normative):** implement with **`position: sticky`**, **not** viewport **`position: fixed`**. Sticky keeps the header anchored to the **`sym-app-body`** scrollport (**`top: 0`** — the App Header already lives outside that scrollport and is reserved on **`sym-app-main`**). **Never** use viewport **`fixed`** for card headers (sidebar **`left`** / width / stacking bugs; duplicates App Header ownership).
+
+**Why sticky, not fixed?**
+
+| Approach | Verdict |
+|----------|---------|
+| **`position: sticky`** in **`sym-app-body`** | **Canonical** — no extra offset math; releases when the owning card scrolls out (if applicable) |
+| **`position: fixed`** on the card header | **Forbidden** — belongs to App Header shell only (§5.9) |
+
+See **Primary Card header — sticky scroll behavior** below for markup, tokens, and the two layout shapes (header-only card vs header + body in one card).
 
 **Source (reference):** [Guía de Estilos — Card Primary Header](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7230-4966) (variants **`Filter=NavPills`**, **`Filter=Simple` / `Filter=Advanced`**, **`Filter=Always`**, Scheduler-style **`Filter=Simple` / `Filter=Advanced` / `Filter=No`**, etc.).
 
@@ -908,6 +918,75 @@ Constraints:
 
 - Header height grows only as needed (e.g. **Simple** vs **Advanced** filter rows in Guía).
 - Remain consistent within a product area.
+
+#### Primary Card header — sticky scroll behavior
+
+Primary Card headers **do not scroll away** with page content in **`sym-app-body`**. They **stick** under the App Header band using **`position: sticky`**.
+
+| Layout shape | DOM | Sticky target | Scope class (implementation) |
+|--------------|-----|---------------|------------------------------|
+| **Section header card** | `<article class="sym-card-primary">` contains **only** **`sym-card-header`** (no table/body in the same article) | The **`<article>`** | **`sym-card-primary--section-sticky`** |
+| **Combined primary card** | `<article>` contains **`sym-card-header`** **and** body (table, nested cards, etc.) | **`sym-card-header`** only | **`sym-card-header--sticky`** (on the `<header>`) |
+
+Typical product layout (e.g. showcase inventory / service orders): **section header card** first on **`sym-page`**, then separate Primary/Secondary cards for data — the first card matches the **section header** row in the table above.
+
+**Tokens** (implementation): **`component.card.header.sticky.*`**
+
+| Token | Role |
+|-------|------|
+| **`offsetTop`** | **`0`** — stick to top of **`sym-app-body`** scrollport |
+| **`zIndex`** | Above scrolling page content, below modals/toasts (§5.10–§5.11) |
+| **`gapCover`** | Reserved token (alias **`layout.body.sectionGap`**). Keep normal **`sym-page`** **`gap`** between siblings — **do not** fake cover with negative **`margin-bottom`** or extra **`box-shadow`** spread (causes a visible “ghost” card edge). **Prerequisite:** **`sym-app-main`** **`overflow: visible`**; scroll only **`sym-app-body`** |
+
+**Surface while stuck:** opaque **`component.card.primary.background`** (+ card elevation token as today). **Advanced filters:** the full **`sym-card-header`** block sticks together (advanced row stays inside the header, not a separate stick boundary).
+
+**Do not flatten** **`sym-card-header__top`**, **`sym-card-header__bottom`**, and optional advanced rows — required for sticky height, motion, and accessibility (see Filters implementation contract).
+
+##### Sticky scroll — implementation contract (assistants / Cursor)
+
+Follow this checklist whenever you add or change a **Primary Card header** on a scrolling page. Full narrative: **§5.5 — Primary Card header — sticky scroll behavior** above.
+
+**Canonical references (working code):**
+
+| Pattern | Markup reference | CSS |
+|---------|------------------|-----|
+| **Section header card** (pills / filters, no table in same `<article>`) | `symphonica-ui/src/showcase/SymphonicaShowcase.tsx` — first `<article class="sym-card-primary sym-card-primary--section-sticky">` | `symphonica-ui/src/styles/symphonica.css` — `.sym-card-primary.sym-card-primary--section-sticky` |
+| **Section header card** (filters + advanced row) | `symphonica-ui/src/showcase/PartyDomainShowcase.tsx` — first `<article>` | Same CSS class as above |
+| **App shell** (scroll + sticky prerequisite) | `symphonica-ui/src/App.tsx` — `sym-app-main` + `sym-app-body` | `symphonica.css` — `.sym-app-main` (**`overflow: visible`**), `.sym-app-body` (**`overflow-y: auto`**) |
+
+**Step-by-step (section header card — most common):**
+
+1. **Page structure:** `sym-app-shell` → `sym-app-main` → `SymAppHeader` (fixed) + **`sym-app-body`** (scrolls) → **`sym-page`** (`gap: layout.body.sectionGap`) → siblings.
+2. **First sibling:** `<article class="sym-card-primary sym-card-primary--section-sticky sym-no-hover">` with **only** `<header class="sym-card-header">` inside (title, pills/filters, optional Create). **No** table or secondary content in this `<article>`.
+3. **Following siblings:** data cards (e.g. primary card with table in a **separate** `<article>`). Spacing between header card and data card comes from **`sym-page`** **`gap`** — **do not** remove or cancel it.
+4. **CSS:** use existing **`.sym-card-primary.sym-card-primary--section-sticky`** — do not reimplement sticky in inline styles or ad-hoc classes.
+5. **Tokens:** `component.card.header.sticky.offsetTop`, `.zIndex`; elevation = **`component.card.primary.shadow`** only (one shadow).
+
+**Step-by-step (combined primary card — header + body in one `<article>`):**
+
+1. `<article class="sym-card-primary">` contains `<header class="sym-card-header sym-card-header--sticky">` plus body (table, etc.).
+2. CSS: **`.sym-card-header--sticky`** in `symphonica.css` (horizontal bleed matches card padding).
+
+**App shell prerequisites (mandatory — sticky silently fails if violated):**
+
+| Element | Required | Forbidden |
+|---------|----------|-----------|
+| **`sym-app-main`** | `overflow: visible`, `max-height: 100vh`, `box-sizing: border-box`, flex column, `padding-top` = header stack height | **`overflow: hidden`** on `sym-app-main` (breaks **`position: sticky`** for all descendants of `sym-app-body`) |
+| **`sym-app-body`** | `flex: 1`, `min-height: 0`, **`overflow-y: auto`** (sole main-column scrollport) | Nesting scroll on `sym-page` instead of `sym-app-body` without re-validating sticky |
+| **`sym-app-header`** | `position: fixed`; **outside** `sym-app-body` | Card header `position: fixed` to viewport |
+
+**Anti-patterns (known regressions — do not reintroduce):**
+
+| Mistake | Symptom | Correct approach |
+|---------|---------|------------------|
+| **`sym-app-main { overflow: hidden }`** | Section header scrolls away with page; sticky appears “broken” | **`overflow: visible`** on `sym-app-main`; scroll only **`sym-app-body`** |
+| **`position: fixed`** on card header | Wrong `left`/width vs sidebar; fights App Header | **`position: sticky`** in **`sym-app-body`** |
+| **Missing `sym-card-primary--section-sticky`** | Header card scrolls off screen | Add scope class on header-only `<article>` |
+| **`margin-bottom: calc(-1 × sectionGap)`** on sticky article | Table card touches header; layout gap lost | Keep **`sym-page`** **`gap`**; no negative margin |
+| **Extra `box-shadow` spread** under sticky article (“gapCover”) | White “ghost” second card lip; clashes with table card | **One** `component.card.primary.shadow` only |
+| **Flattening** `sym-card-header__top` / `__bottom` / advanced row | Wrong sticky height; filters contract broken | Preserve header DOM structure per Filters contract |
+
+**`meta.llmImplementationNotes`:** `primaryCardHeaderStickyScroll` and `cardHeaderStickyImplementationContract` in **`design_tokens.json`**.
 
 #### Card Header Groups Usage
 
@@ -1012,7 +1091,7 @@ This subsection is the **machine- and human-readable contract** for rebuilding t
 
 **Non-negotiable DOM semantics:**
 
-1. **Do not flatten** title + toolbar + advanced row into one flex row. Keep **`sym-card-header__top`**, **`sym-card-header__bottom`**, and the **optional advanced block** as separate siblings inside **`sym-card-header`** so spacing (`component.card.header.layout.gap`) and future motion/sticky behavior stay correct.
+1. **Do not flatten** title + toolbar + advanced row into one flex row. Keep **`sym-card-header__top`**, **`sym-card-header__bottom`**, and the **optional advanced block** as separate siblings inside **`sym-card-header`** so spacing (`component.card.header.layout.gap`) and **sticky** scroll behavior (§5.5) stay correct.
 2. **Bottom row:** **`sym-card-header__bottom`** contains exactly **`sym-card-header__left`** then **`sym-card-header__right`**. The left group wraps the toolbar; the right group holds **only** the optional **primary Create** (never filter inputs in the right group).
 3. **Toolbar:** Inside **`sym-card-header__left`**, use a single **`sym-card-header__filters`** container for the **simple** row (leading optional refresh/download icon-only → fields → **`filter_alt_off`** → **`tune`**).
 4. **Advanced row:** When expanded, render **another** block **below** **`sym-card-header__bottom`**, still inside **`sym-card-header`**, with **`sym-card-header__advanced-row`** (and reuse **`sym-card-header__filters`** on that row for the same flex/wrap/gap behavior). Do **not** insert the advanced row inside **`sym-card-header__right`**.
@@ -1586,7 +1665,7 @@ Source (reference): [Guía de Estilos — Symphonica Header](https://www.figma.c
 #### Rules
 
 - Do **not** substitute Card Header patterns for the App Header; ownership stays with the **application shell**.
-- **App Header (§5.9)** uses **`position: fixed`** and **`top: 0`** relative to the **viewport**, spanning **only the main column** (horizontal **`left`** immediately **after** the **sidebar** — expanded vs collapsed width). It **must not scroll**: scrolling is confined to **`sym-app-body`** (or equivalent main-column viewport). Reserve **`padding-top`** on **`sym-app-main`** equal to **`layout.header.large.shellHeight`** (**Large**) or **`layout.header.small.stackHeight`** (**Small**) so layout clears the fixed chrome. **Card Headers** (§5.5) remain **inside** their cards — **not** viewport-fixed — unless a future sticky-card pattern is documented separately.
+- **App Header (§5.9)** uses **`position: fixed`** and **`top: 0`** relative to the **viewport**, spanning **only the main column** (horizontal **`left`** immediately **after** the **sidebar** — expanded vs collapsed width). It **must not scroll**: scrolling is confined to **`sym-app-body`** (or equivalent main-column viewport). Reserve **`padding-top`** on **`sym-app-main`** equal to **`layout.header.large.shellHeight`** (**Large**) or **`layout.header.small.stackHeight`** (**Small**) so layout clears the fixed chrome. **Primary Card headers** (§5.5) use **`position: sticky`** in **`sym-app-body`** so section chrome stays visible — **not** viewport-**`fixed`**.
 - Use **tokens only** for colors and spacing; optional illustration layers may ship from **design exports**, but the **default Large hero fill** is **`shellBackgroundBase` + `shellHeroLinearGradient`** — no raster gradient asset required.
 - **Small** variant must **not** apply the **Large** body overlap offset unless migrating layouts explicitly switch variants.
 
@@ -1647,7 +1726,7 @@ Multi-primary layouts (e.g. **Clone and Open Editor** + **Clone Model**): **both
 - **Escape** closes only when product rules allow; destructive dialogs should **not** silently discard without confirmation.
 - **`Focus`** returns to the invoking control on close.
 - **Z-index** stacks **above** App Header and sidebar chrome — above **`sym-app-header`** / **`sym-sidebar`** modal layer without obscuring required notifications policy.
-- **Viewport overlay geometry**: **`sym-app-main`** uses **`overflow: hidden`** for column chrome — **`position: fixed`** descendants rendered **inside** that subtree are **clipped** to the main column (sidebar stays uncovered; dialogs appear off-centre). **Mount** backdrop + dialog at **`document.body`** (or another portal root outside overflowing shells) so **`inset: 0`** truly spans the **viewport**.
+- **Viewport overlay geometry**: **`sym-app-main`** uses **`overflow: visible`** so **§5.5** **`position: sticky`** works in **`sym-app-body`** (an **`overflow: hidden`** ancestor breaks sticky). **Mount** backdrop + dialog at **`document.body`** (not inside **`sym-app-main`**) so **`inset: 0`** spans the **viewport** and covers the sidebar.
 
 #### Rules
 
@@ -1777,6 +1856,7 @@ Card Header owns:
 - **Exactly one** of: **Pills** placement **or** **Filters** placement **or** **segmented Button Group** placement on the bottom-left
 - Bottom-right placement: optional **primary Create**, **search + advanced**, or empty — per §5.5 variant
 - Header-level icon-only actions placement (refresh / download / clear / advanced triggers)
+- **Sticky scroll** in **`sym-app-body`** (§5.5): section chrome stays visible while page content scrolls — **`sym-card-primary--section-sticky`** or **`sym-card-header--sticky`** per layout shape
 
 Card Header does not own:
 - Table content
@@ -1887,7 +1967,7 @@ Symphonica uses a structured layout:
 
 - **App Header** — **§5.9**: **`position: fixed`**, **`top: 0`**, **main column only** (sidebar-aware **`left`** offset); **does not scroll** — **`sym-app-body`** scrolls instead; global search, utilities, user cluster, **Bootstrap breadcrumb**; variants **Large** (hero band + overlapping body) and **Small** (classic two-row stack).
 - **Sidebar** — **§5.8**: **`position: fixed`**, **`top: 0`**, **`left: 0`**, **`bottom: 0`**, width expanded/collapsed — **does not scroll** with the page body; **`sym-app-main`** **`margin-left`** tracks **`--sym-shell-sidebar-width`**; nav list scrolls internally only (`component.nav.sidebar`; **`layout.apiExplorer.sidebarColumnWidth`** when expanded unless tokens change).
-- **Main column scroll viewport** (`sym-app-body`) — **no `padding-top`** and **no positive `margin-top`** except the **Large** header overlap rule (**`layout.header.large.bodyOffsetTop` − `layout.header.large.shellHeight`**), which is layout geometry only.
+- **Main column scroll viewport** (`sym-app-body`) — **no `padding-top`** and **no positive `margin-top`** except the **Large** header overlap rule (**`layout.header.large.bodyOffsetTop` − `layout.header.large.shellHeight`**), which is layout geometry only. **Primary Card headers** (§5.5) **`position: sticky`** at **`top: 0`** within this viewport.
 - **Page composition wrapper** (first child inside the viewport, e.g. `sym-page`) — **`padding-top: 0`** and **`margin-top: 0`** (**both** **Large** and **Small** App Header). Do **not** use negative **`margin-top`** on **`sym-page`** — it pulls cards **under** the nav/breadcrumb. **Large** proximity to the hero band is **only** from **`sym-app-body`** overlap (**`layout.header.large`**). Horizontal and bottom inset use **`layout.body.sectionGap`**.
 - Body Content — positioning depends on **header variant** (see **§5.9** and **`layout.header`** tokens).
 - Footer (fixed bottom)
@@ -1965,8 +2045,9 @@ Top-level content inside the application body must use a consistent vertical gap
 
 #### Main column viewport vs page wrapper
 
-- **`sym-app-body`** (scroll viewport): **`padding-top: 0`**; **`margin-top: 0`** except **Large** header overlap (**`margin-top` = `layout.header.large.bodyOffsetTop` − `layout.header.large.shellHeight`** only).
-- **Page wrapper** (first composition layer inside the viewport, e.g. **`sym-page`**): **`padding-top: 0`**, **`margin-top: 0`** (**Large** and **Small**). Horizontal and bottom padding use **`layout.body.sectionGap`** (**24px**).
+- **`sym-app-main`**: **`max-height: 100vh`**, **`overflow: visible`**, flex column — **required** so **§5.5** **`position: sticky`** works in **`sym-app-body`** (see **Sticky scroll — implementation contract**).
+- **`sym-app-body`** (scroll viewport): **`flex: 1`**, **`min-height: 0`**, **`overflow-y: auto`**; **`padding-top: 0`**; **`margin-top: 0`** except **Large** header overlap (**`margin-top` = `layout.header.large.bodyOffsetTop` − `layout.header.large.shellHeight`** only). **Primary Card header** section cards stick at **`top: 0`** within this viewport.
+- **Page wrapper** (first composition layer inside the viewport, e.g. **`sym-page`**): **`padding-top: 0`**, **`margin-top: 0`** (**Large** and **Small**). Horizontal and bottom padding use **`layout.body.sectionGap`** (**24px**). **Vertical `gap` between siblings** (e.g. section header card → table card) must stay **`layout.body.sectionGap`** — sticky header cards **must not** cancel this gap with negative margins.
 
 Rules:
 - Direct child sections/cards inside Body Content must be separated by `Core/Spacing/24`
@@ -2006,6 +2087,8 @@ Use spacing tokens consistently:
 - Prefer flex/grid.
 - **Large App Header (§5.9)**: **`position: fixed`**, **`top: 0`** (main column); main body/content uses **`layout.header.large.bodyOffsetTop`** so content **overlaps** the lower hero band; keep stacking context explicit (`z-index`).
 - **Small App Header**: same **fixed-top** rule over the main column; reserve **`layout.header.small.stackHeight`** on **`sym-app-main`**; body scrolls in **`sym-app-body`** only.
+- **Primary Card header (§5.5)**: **`position: sticky`** at **`top: 0`** inside **`sym-app-body`** — **not** viewport **`fixed`**. Section header card → **`sym-card-primary--section-sticky`**; combined card → **`sym-card-header--sticky`**.
+- **`sym-app-main`**: **`overflow: visible`** (never **`hidden`** here — breaks card-header sticky).
 - Avoid ad-hoc absolute positioning elsewhere.
 
 ---
@@ -2160,8 +2243,9 @@ Figma → Code mapping:
 ## 12. Constraints for AI / Cursor
 - **Modal dialogs — §5.10**: Three **roles** — **Info** (ordinary actions → **`semantic.text.title`** + **`component.button.filled.primary`**), **Danger** (irrevocable → danger title ink + **`component.button.filled.danger`**), **Success** (e.g. publish → success title ink + **`component.button.filled.success`**). Footer **Cancel/Close** is **`component.button.outlined.primary`**, **`component.button.size.sm`**. Primary actions **`filled`**, **`sm`**. Panel **`Core/Border/Radius/Md`**, elevation **`core.shadow.modal`** (not **`core.shadow.card`**); backdrop scrim from **`Core/Color/Neutral/900`** ~**45%** opacity (token-derived); scrollable panel **`max-height: min(90vh, 720px)`**. Optional **24px** header icon + **20 semibold** title; **featured item** strip defaults **`semantic.color.secondary`** / **`semantic.text.primary`** unless spec uses role lights. Short forms use Bootstrap **`form-control`** / **`form-select`** + Symphonica field tokens; **`aria-modal`**, focus management, **Escape** policy per flow. Reference: [Guía Modal Dialog](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7273-4192).
 - **Toasts — §5.11**: **Success** | **Error** | **Info** roles; titles **Operation Successfully** / **Operation Failed** / **Operation Info** (templates); optional body **16** medium white; **sm** **outlined light** actions (white border + transparent fill); **`top: 40px`**, **`right: 24px`**; **500px** chip width when viewport **>767px**; **≤767px**: **`left`/`right` 24px** on stack, full-width chips; autohide **4s** short / **8s** long+actions; reading heuristic **~1s per 14 words + 2s** clamp; **critical Error** **no** autohide; **pause on hover**; never block page clicks; **`document.body`** portal; **`Core/Spacing/12`** between stacked chips; **`semantic.overlay.whiteOnBrand.emphasis`** (close **`:hover`**), **`semantic.overlay.whiteOnBrand.hover`** (outlined-light action **`:hover`**). Reference: [Guía Toasts](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=6621-29899).
-- **App shell layout**: **`sym-app-shell`** exposes **`--sym-shell-sidebar-width`** (expanded vs collapsed). **`sym-sidebar`**: **`position: fixed`**, **`top: 0`**, **`left: 0`**, **`bottom: 0`** — **does not scroll** with the main column. **`sym-app-main`** uses **`margin-left: var(--sym-shell-sidebar-width)`** so the main column clears the rail; **`padding-top`** reserves fixed App Header (**`layout.header.large.shellHeight`** / **`layout.header.small.stackHeight`**). **App Header**: **`position: fixed`**, **`top: 0`**, main column only (**`left`** after sidebar, aligned with **`margin-left`**) — **never** nest inside **`sym-app-body`**. **`sym-app-body`** scrolls only; **`padding-top: 0`**; **`margin-top`** only for **Large** overlap (**`layout.header.large.bodyOffsetTop`** math). **`sym-page`**: **`padding-top: 0`**, **`margin-top: 0`**; **`layout.body.sectionGap`** for horizontal/bottom padding and between sections. Implement **Small** vs **Large** variants per §5.9 (**Large** body overlaps lower hero band; **Small** no overlap); **`component.header.*`** for chrome.
+- **App shell layout**: **`sym-app-shell`** exposes **`--sym-shell-sidebar-width`** (expanded vs collapsed). **`sym-sidebar`**: **`position: fixed`**, **`top: 0`**, **`left: 0`**, **`bottom: 0`** — **does not scroll** with the main column. **`sym-app-main`**: **`margin-left: var(--sym-shell-sidebar-width)`**, **`max-height: 100vh`**, **`overflow: visible`** (required for §5.5 sticky — do not set **`overflow: hidden`** here); **`padding-top`** reserves fixed App Header (**`layout.header.large.shellHeight`** / **`layout.header.small.stackHeight`**). **App Header**: **`position: fixed`**, **`top: 0`**, main column only (**`left`** after sidebar) — **never** nest inside **`sym-app-body`**. **`sym-app-body`** scrolls only (**`overflow-y: auto`**, **`min-height: 0`**, **`flex: 1`**); **`padding-top: 0`**; **`margin-top`** only for **Large** overlap (**`layout.header.large.bodyOffsetTop`** math). **`sym-page`**: **`padding-top: 0`**, **`margin-top: 0`**; **`layout.body.sectionGap`** between sections. Implement **Small** vs **Large** variants per §5.9; **`component.header.*`** for chrome.
 - **Card nesting:** never nest a **Primary Card** inside a **Secondary Card**. **Secondary** may be nested **inside Primary**; use **`component.card.secondary.nestedInPrimary.background`** for nested default background (`LegacyNeutral/Subtle`). Standalone Secondary on app background keeps default white. See §5.5.
+- **Primary Card header scroll — §5.5:** **`position: sticky`** in **`sym-app-body`**; **never** viewport **`fixed`**. **`sym-app-main`** **`overflow: visible`** ( **`overflow: hidden`** breaks sticky). Section header card → **`sym-card-primary--section-sticky`** on header-only **`<article>`**; preserve **`sym-page`** **`gap`** (no negative margin; no extra gap-cover **`box-shadow`**). Combined card → **`sym-card-header--sticky`**. Contract: **§5.5 — Sticky scroll — implementation contract (assistants / Cursor)**; notes **`primaryCardHeaderStickyScroll`**, **`cardHeaderStickyImplementationContract`**.
 - **App sidebar** (primary Symphonica menu): **`aside.sym-sidebar`** is **viewport-fixed** per §5.8 — **do not** scroll the whole rail with page content; **nav list** scrolls internally only when expanded. Use **`component.nav.sidebar`** tokens and Material Icons Outlined; vertical rhythm = **`menuListGap`** (`Core/Spacing/16`) between rows plus **`itemPaddingY`** (`Core/Spacing/8`) inside each link/toggle; map each domain row’s leading icon color via **`itemIcon.*`** aliases — do not substitute ad-hoc colors or reuse Tabs Top / Card Header pill styles for this shell; **collapsed sidebar must not show a scrollbar** (overflow hidden per §5.8)
 - Circular icon buttons inside **table** action columns and **table footer** load-more must use `component.button.icon.primary` / `danger` (default hover: white), not **`primaryCard`** / **`dangerCard`**
 - **Table Actions column (body rows):** action buttons hidden by default, visible on **row hover**; keep keyboard access (e.g. **`:focus-within`**). Use motion tokens for `opacity` transitions; respect **`prefers-reduced-motion`**. Table footer load-more is not covered by this pattern. See **§5.4**, **Table Action Column**.
