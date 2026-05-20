@@ -288,6 +288,219 @@ function ShowcaseModal({
 
 type NavView = 'inventory' | 'service-orders'
 
+type FeaturedMetricTrend = 'down' | 'flat'
+
+type FeaturedMetricItem = {
+  label: string
+  value: string
+  hint: string
+  trend: FeaturedMetricTrend
+  trendValue: string
+}
+
+const featuredMetrics: FeaturedMetricItem[] = [
+  {
+    label: 'Order volume',
+    value: '26',
+    hint: 'Secondary text',
+    trend: 'down',
+    trendValue: '7.1%',
+  },
+  {
+    label: 'Error rate',
+    value: '0%',
+    hint: 'Secondary text',
+    trend: 'flat',
+    trendValue: '0%',
+  },
+  {
+    label: 'P50 latency',
+    value: '8.41s',
+    hint: 'Secondary text',
+    trend: 'flat',
+    trendValue: '0%',
+  },
+  {
+    label: 'Queue latency',
+    value: '0.07s',
+    hint: 'Secondary text',
+    trend: 'flat',
+    trendValue: '0%',
+  },
+  {
+    label: 'P95 latency',
+    value: '22.97s',
+    hint: 'Secondary text',
+    trend: 'flat',
+    trendValue: '0%',
+  },
+]
+
+function FeaturedMetricTrendBadge({
+  trend,
+  value,
+}: {
+  trend: FeaturedMetricTrend
+  value: string
+}) {
+  const icon = trend === 'down' ? 'arrow_downward' : 'arrow_forward'
+  return (
+    <span className="sym-badge-trend sym-badge-trend--info" aria-label={`Trend ${value}`}>
+      <span className="material-icons-outlined" aria-hidden>
+        {icon}
+      </span>
+      {value}
+    </span>
+  )
+}
+
+function FeaturedMetricsCard() {
+  return (
+    <article className="sym-card-primary sym-no-hover" aria-label="Selection metrics">
+      <p className="sym-card-featured-metrics__summary">
+        24 orders processed. 16.7% error rate and 16.94s P95 latency in the current selection.
+      </p>
+      <div className="sym-card-featured-metrics__grid">
+        {featuredMetrics.map((metric) => (
+          <div key={metric.label} className="sym-card-featured-metric">
+            <p className="sym-card-featured-metric__label">{metric.label}</p>
+            <p className="sym-card-featured-metric__value">{metric.value}</p>
+            <div className="sym-card-featured-metric__footer">
+              <p className="sym-card-featured-metric__hint">{metric.hint}</p>
+              <FeaturedMetricTrendBadge trend={metric.trend} value={metric.trendValue} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </article>
+  )
+}
+
+type InvestigationMetricVariant = 'danger' | 'info' | 'success'
+
+type InvestigationMetric = {
+  label: string
+  variant: InvestigationMetricVariant
+  value: string
+  icon?: string
+}
+
+const investigationMetrics: InvestigationMetric[] = [
+  { label: 'Error rate', variant: 'danger', value: '6.2%', icon: 'warning_amber' },
+  { label: 'Volume change', variant: 'info', value: '-7.1%' },
+  { label: 'Segment gap', variant: 'success', value: '92.4 pts' },
+  { label: 'Score', variant: 'success', value: '172' },
+]
+
+function MetricValueBadge({
+  variant,
+  value,
+  icon,
+}: {
+  variant: InvestigationMetricVariant
+  value: string
+  icon?: string
+}) {
+  return (
+    <span className={`sym-badge-trend sym-badge-trend--${variant}`} aria-label={value}>
+      {icon ? (
+        <span className="material-icons-outlined" aria-hidden>
+          {icon}
+        </span>
+      ) : null}
+      {value}
+    </span>
+  )
+}
+
+function InvestigationCard() {
+  return (
+    <article className="sym-card-primary sym-card-info flex-grow-1 sym-no-hover">
+      <div className="sym-card-info__heading">
+        <span className="material-icons-outlined" aria-hidden>
+          help_outline
+        </span>
+        <h2 className="sym-card-info__title">What should I investigate now?</h2>
+      </div>
+      <div className="sym-card-info__data-list" role="list">
+        {investigationMetrics.map((metric) => (
+          <div key={metric.label} className="sym-card-info__data-item" role="listitem">
+            <p className="sym-card-info__data-label">{metric.label}</p>
+            <MetricValueBadge variant={metric.variant} value={metric.value} icon={metric.icon} />
+          </div>
+        ))}
+      </div>
+      <button type="button" className="sym-btn-outlined-labeled-danger">
+        <span className="material-icons-outlined" aria-hidden>
+          warning_amber
+        </span>
+        Review errors
+      </button>
+    </article>
+  )
+}
+
+const operationalSignals = [
+  {
+    variant: 'danger' as const,
+    icon: 'warning_amber',
+    text: 'May 18 showed abnormal volume of 8 orders (638.5% above the window average).',
+  },
+  {
+    variant: 'light' as const,
+    icon: 'auto_graph',
+    text: '26 orders processed in the selected window.',
+  },
+  {
+    variant: 'light' as const,
+    icon: 'auto_graph',
+    text: 'Top order type: CHANGE_SERVICE at 96.2% of total volume.',
+  },
+]
+
+function OperationalSignalsCard() {
+  return (
+    <article className="sym-card-primary sym-card-info flex-grow-1 sym-no-hover">
+      <div className="sym-card-info__heading">
+        <span className="material-icons-outlined" aria-hidden>
+          troubleshoot
+        </span>
+        <h2 className="sym-card-info__title">Operational signals</h2>
+      </div>
+      <p className="sym-card-info__lead">
+        Up to 3 alerts and conclusions relevant for this window.
+      </p>
+      <div className="sym-card-info__alerts">
+        {operationalSignals.map((signal) => (
+          <div
+            key={signal.text}
+            className={`sym-alert sym-alert--${signal.variant} sym-alert--with-icon`}
+            role={signal.variant === 'danger' ? 'alert' : 'status'}
+          >
+            <span className="material-icons-outlined" aria-hidden>
+              {signal.icon}
+            </span>
+            <p className="sym-alert__text">{signal.text}</p>
+          </div>
+        ))}
+      </div>
+    </article>
+  )
+}
+
+function InsightCardsRow() {
+  return (
+    <div className="row sym-row">
+      <div className="col-lg-6 d-flex">
+        <InvestigationCard />
+      </div>
+      <div className="col-lg-6 d-flex">
+        <OperationalSignalsCard />
+      </div>
+    </div>
+  )
+}
+
 function OrdersTableCard({
   rows,
   selectedRowId,
@@ -547,6 +760,10 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
           </div>
         </header>
       </article>
+
+      <FeaturedMetricsCard />
+
+      <InsightCardsRow />
 
       {navView === 'inventory' && (
         <>

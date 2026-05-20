@@ -725,6 +725,202 @@
   color: var(--semantic-text-secondary);
 }
 
+/* Primary Card — featured metrics row (Guía Main Card Figma 7959-12050) */
+.sym-card-featured-metrics__summary {
+  margin: 0;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-16);
+  font-weight: var(--core-typography-font-weight-medium);
+  line-height: var(--core-typography-line-height-tight);
+  color: var(--semantic-text-primary);
+}
+
+.sym-card-featured-metrics__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--core-spacing-16);
+  width: 100%;
+}
+
+.sym-card-featured-metric {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: var(--core-spacing-8);
+  min-width: 170px;
+  padding: var(--core-spacing-8);
+  border-radius: var(--core-border-radius-md);
+  background-color: var(--semantic-color-secondary);
+}
+
+.sym-card-featured-metric__label {
+  margin: 0;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-12);
+  font-weight: var(--core-typography-font-weight-semibold);
+  line-height: var(--core-typography-line-height-tight);
+  color: var(--semantic-text-secondary);
+  text-transform: uppercase;
+}
+
+.sym-card-featured-metric__value {
+  margin: 0;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-size-32);
+  font-weight: var(--core-typography-font-weight-semibold);
+  line-height: var(--core-typography-line-height-tight);
+  color: var(--semantic-text-primary);
+}
+
+.sym-card-featured-metric__footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--core-spacing-8);
+  width: 100%;
+}
+
+.sym-card-featured-metric__hint {
+  margin: 0;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-12);
+  font-weight: var(--core-typography-font-weight-medium);
+  line-height: var(--core-typography-line-height-tight);
+  color: var(--semantic-text-secondary);
+}
+
+.sym-badge-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--core-spacing-4);
+  height: auto;
+  min-height: var(--core-size-28);
+  padding: var(--core-spacing-7) var(--core-spacing-8);
+  box-sizing: border-box;
+  border-radius: var(--component-badge-border-radius);
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--component-badge-font-size);
+  font-weight: var(--core-typography-font-weight-semibold);
+  line-height: var(--core-typography-line-height-solid);
+  text-transform: none;
+}
+
+.sym-badge-trend .material-icons-outlined {
+  font-size: var(--core-size-16);
+  line-height: 1;
+}
+
+.sym-badge-trend--info {
+  background-color: var(--component-badge-info-background);
+  color: var(--component-badge-info-foreground);
+}
+
+.sym-badge-trend--danger {
+  background-color: var(--component-badge-danger-background);
+  color: var(--component-badge-danger-foreground);
+}
+
+.sym-badge-trend--success {
+  background-color: var(--component-badge-success-background);
+  color: var(--component-badge-success-foreground);
+}
+
+/* Primary Card — Cards Info row (Guía Figma 7959-12858) */
+.sym-card-info {
+  flex: 1 1 0;
+  min-width: min(100%, 450px);
+}
+
+.sym-card-info__heading {
+  display: flex;
+  align-items: center;
+  gap: var(--core-spacing-8);
+}
+
+.sym-card-info__heading .material-icons-outlined {
+  font-size: var(--core-size-20);
+  line-height: 1;
+  color: var(--semantic-text-title);
+}
+
+.sym-card-info__title {
+  margin: 0;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-16);
+  font-weight: var(--core-typography-font-weight-semibold);
+  line-height: var(--core-typography-line-height-tight);
+  color: var(--semantic-text-title);
+}
+
+.sym-card-info__lead {
+  margin: 0;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-14);
+  font-weight: var(--core-typography-font-weight-medium);
+  line-height: var(--core-typography-line-height-tight);
+  color: var(--semantic-text-primary);
+}
+
+.sym-card-info__data-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-spacing-8);
+  width: 100%;
+}
+
+.sym-card-info__data-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--core-spacing-8);
+  width: 100%;
+  padding-bottom: var(--core-spacing-8);
+  border-bottom: var(--core-border-width-hairline) solid var(--core-color-legacy-neutral-soft);
+}
+
+.sym-card-info__data-label {
+  margin: 0;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-14);
+  font-weight: var(--core-typography-font-weight-medium);
+  line-height: var(--core-typography-line-height-tight);
+  color: var(--semantic-text-secondary);
+}
+
+.sym-card-info__alerts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-spacing-8);
+  width: 100%;
+}
+
+.sym-alert--light {
+  background-color: var(--core-color-neutral-white);
+  color: var(--semantic-text-primary);
+  border-color: var(--core-color-neutral-500);
+}
+
+.sym-alert--with-icon {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--core-spacing-8);
+  padding: var(--core-spacing-8);
+  font-size: var(--core-typography-font-size-16);
+  font-weight: var(--core-typography-font-weight-regular);
+}
+
+.sym-alert--with-icon .material-icons-outlined {
+  flex-shrink: 0;
+  font-size: var(--core-size-24);
+  line-height: 1;
+}
+
+.sym-alert--with-icon .sym-alert__text {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .sym-card-header {
   display: flex;
   flex-direction: var(--component-card-header-layout-direction);
