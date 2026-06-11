@@ -32,7 +32,7 @@ Meaning-based tokens used across UI.
 
 Includes:
 - Role colors (primary, success, danger, etc.)
-- Role variants (base / light / dark)
+- Role variants (base / light / lightAlert / dark / border)
 - Interaction states (hover / active / disabled)
 
 ---
@@ -93,8 +93,8 @@ Temporary tokens kept for migration:
 Base unit: **4px**
 
 Scale:
-- 4 / 8 / 12 / 16 / 20 / 24 / 32 / 40
-- **7** / **13** — compact control internals only when referenced by component tokens (e.g. **`component.buttonGroup.segment`** padding aliases **`Core/Spacing/7`** and **`Core/Spacing/13`**); do not use as general layout rhythm outside documented components.
+- 0 / 4 / 8 / 12 / 16 / 20 / 24 / 32 / 40
+- **`component.buttonGroup.segment`**: **`paddingX`** → **`Core/Spacing/12`**, **`paddingY`** → **`Core/Spacing/8`** (Guía frame proportions; resolve only via component tokens, not as ad-hoc layout rhythm elsewhere)
 
 Rules:
 - Always use tokens
@@ -110,7 +110,7 @@ Used for:
 - Compact UI
 
 Available size tokens:
-- 4 / 6 / 8 / 12 / 14 / 16 / 18 / 20 / 24 / 26 / 28 / 30 / 32 / 38 / 40 / 50
+- 0 / 4 / 6 / 8 / 12 / 14 / 16 / 18 / 20 / 24 / 26 / 28 / 30 / 32 / 38 / 40 / 50
 
 ---
 
@@ -308,10 +308,13 @@ Structure:
 - Border
 
 Rules:
-- Always use semantic variants
-- Background → Light
-- Foreground → Dark
-- Border → Base
+- Always use **`component.alert.*`** tokens (never raw semantic hex in markup)
+- **Primary**, **Danger**, **Info** backgrounds → **`Semantic/Color/*/Light Alert`** (`semantic.color.*.lightAlert`)
+- **Success**, **Warning** backgrounds → **`Semantic/Color/*/Light`** (`semantic.color.*.light`)
+- Foreground → **Dark** variant (`semantic.color.*.dark`; **Primary** uses **`semantic.color.dark`**)
+- **Primary**, **Success**, **Danger**, **Info** borders → **`Semantic/Color/*/Border`** (`semantic.color.*.border`)
+- **Warning** border → **`Semantic/Color/Warning/Base`** (`semantic.color.warning.base`) — Guía aliases warning base for alert stroke
+- **Badges** (§5.2) keep **`Semantic/Color/*/Light`** surfaces — not Light Alert
 
 ---
 
@@ -328,6 +331,8 @@ Typography:
 
 Sizing:
 - Height: `component.badge.height`
+- Horizontal padding: `component.badge.paddingX` (`Core/Spacing/8`)
+- Vertical padding: `component.badge.paddingY` (`0` — fixed height owns the vertical box; do not derive height from padding)
 - Badge height must not be derived from padding or line-height
 
 Typography Rules:
@@ -560,7 +565,7 @@ Source (reference): [Guía de Estilos — Button Group](https://www.figma.com/de
 - **Segments**: reference sets use **three** or **four** segments in one row; product may fix count per screen, but keep **one selected segment** at a time unless spec defines multi-select (default: single selection).
 - **Per segment**: primary **label** (Montserrat **16** / medium / line-height **1.5**) plus an optional trailing **count pill** (numeric only).
 - **Count pill**: pill radius (**`Core/Border/Radius/Full`**), background **`Semantic/Color/Secondary`**, numeral **`Semantic/Color/Primary`**, typography **`Core/Typography/FontSize/14`** + **`Core/Typography/FontWeight/Medium`** — **not** uppercase and **not** the global status-badge recipe in §5.2 (that remains **12px**, uppercase). Implement via **`component.buttonGroup.countBadge`**.
-- **Inside the segment**: horizontal gap between label and count pill **`component.buttonGroup.segment.labelBadgeGap`** (**`Core/Spacing/8`**); segment padding **`component.buttonGroup.segment.paddingX`** / **`paddingY`** (reference matches Guía frame proportions).
+- **Inside the segment**: horizontal gap between label and count pill **`component.buttonGroup.segment.labelBadgeGap`** (**`Core/Spacing/8`**); segment padding **`paddingX`** → **`Core/Spacing/12`**, **`paddingY`** → **`Core/Spacing/8`** (via **`component.buttonGroup.segment`**).
 - **Border**: shared **`Core/Border/Width/Hairline`** stroke in **`Semantic/Color/Primary`** around each segment; inner vertical edges align so the group reads as **one** segmented frame (Bootstrap **`btn-group`** border collapse / negative margin pattern).
 
 #### Selection visuals (primary segmented variant)
@@ -2225,6 +2230,18 @@ Figma → Code mapping:
 
 - `Semantic/Color/Success/Dark`
   → `semantic.color.success.dark`
+
+- `Semantic/Color/Primary/Light Alert`
+  → `semantic.color.primary.lightAlert`
+
+- `Semantic/Color/Primary/Border`
+  → `semantic.color.primary.border`
+
+- `Semantic/Color/Danger/Light Alert`
+  → `semantic.color.danger.lightAlert`
+
+- `Semantic/Color/Success/Border`
+  → `semantic.color.success.border`
 
 - `Component/Button/Icon/Primary/Icon/Active`
   → `component.button.icon.primary.icon.active`

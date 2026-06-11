@@ -794,8 +794,8 @@
   align-items: center;
   gap: var(--core-spacing-4);
   height: auto;
-  min-height: var(--core-size-28);
-  padding: var(--core-spacing-7) var(--core-spacing-8);
+  min-height: var(--component-badge-height);
+  padding: var(--component-badge-padding-y) var(--component-badge-padding-x);
   box-sizing: border-box;
   border-radius: var(--component-badge-border-radius);
   font-family: var(--core-typography-font-family-base);
@@ -1745,7 +1745,7 @@
   align-items: center;
   justify-content: center;
   height: var(--component-badge-height);
-  padding: 0 var(--core-spacing-8);
+  padding: var(--component-badge-padding-y) var(--component-badge-padding-x);
   box-sizing: border-box;
   border-radius: var(--component-badge-border-radius);
   font-family: var(--core-typography-font-family-base);
@@ -2371,7 +2371,7 @@
   align-items: center;
   justify-content: center;
   min-height: var(--component-button-size-sm-button);
-  padding: var(--core-spacing-7) var(--core-spacing-12);
+  padding: var(--core-spacing-8) var(--core-spacing-12);
   margin: 0;
   box-sizing: border-box;
   border: var(--core-border-width-hairline) solid var(--core-color-neutral-white);
