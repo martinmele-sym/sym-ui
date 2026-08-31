@@ -319,7 +319,7 @@
   --component-button-filled-info-hover: var(--semantic-action-info-hover);
   --component-button-filled-info-active: var(--semantic-action-info-active);
   --component-button-filled-info-disabled: var(--semantic-action-info-disabled);
-  --component-button-outlined-primary-background: var(--core-color-neutral-white);
+  --component-button-outlined-primary-background: var(--core-color-transparent);
   --component-button-outlined-primary-foreground: var(--semantic-color-primary-base);
   --component-button-outlined-primary-border: var(--semantic-color-primary-base);
   --component-button-outlined-primary-hover-background: var(--semantic-action-primary-hover);
@@ -328,10 +328,10 @@
   --component-button-outlined-primary-active-background: var(--semantic-action-primary-active);
   --component-button-outlined-primary-active-border: var(--semantic-action-primary-active);
   --component-button-outlined-primary-active-foreground: var(--component-button-filled-primary-foreground);
-  --component-button-outlined-primary-disabled-background: var(--core-color-neutral-white);
+  --component-button-outlined-primary-disabled-background: var(--core-color-transparent);
   --component-button-outlined-primary-disabled-border: var(--semantic-action-primary-disabled);
   --component-button-outlined-primary-disabled-foreground: var(--semantic-action-primary-disabled);
-  --component-button-outlined-danger-background: var(--core-color-neutral-white);
+  --component-button-outlined-danger-background: var(--core-color-transparent);
   --component-button-outlined-danger-foreground: var(--semantic-color-danger-base);
   --component-button-outlined-danger-border: var(--semantic-color-danger-base);
   --component-button-outlined-danger-hover-background: var(--semantic-action-danger-hover);
@@ -340,10 +340,10 @@
   --component-button-outlined-danger-active-background: var(--semantic-action-danger-active);
   --component-button-outlined-danger-active-border: var(--semantic-action-danger-active);
   --component-button-outlined-danger-active-foreground: var(--component-button-filled-danger-foreground);
-  --component-button-outlined-danger-disabled-background: var(--core-color-neutral-white);
+  --component-button-outlined-danger-disabled-background: var(--core-color-transparent);
   --component-button-outlined-danger-disabled-border: var(--semantic-action-danger-disabled);
   --component-button-outlined-danger-disabled-foreground: var(--semantic-action-danger-disabled);
-  --component-button-outlined-success-background: var(--core-color-neutral-white);
+  --component-button-outlined-success-background: var(--core-color-transparent);
   --component-button-outlined-success-foreground: var(--semantic-color-success-base);
   --component-button-outlined-success-border: var(--semantic-color-success-base);
   --component-button-outlined-success-hover-background: var(--semantic-action-success-hover);
@@ -352,7 +352,7 @@
   --component-button-outlined-success-active-background: var(--semantic-action-success-active);
   --component-button-outlined-success-active-border: var(--semantic-action-success-active);
   --component-button-outlined-success-active-foreground: var(--component-button-filled-success-foreground);
-  --component-button-outlined-success-disabled-background: var(--core-color-neutral-white);
+  --component-button-outlined-success-disabled-background: var(--core-color-transparent);
   --component-button-outlined-success-disabled-border: var(--semantic-action-success-disabled);
   --component-button-outlined-success-disabled-foreground: var(--semantic-action-success-disabled);
   --component-button-outlined-icon-only-size: var(--component-button-size-md-button);

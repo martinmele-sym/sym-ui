@@ -67,6 +67,13 @@ const NAV_ITEMS: NavItem[] = [
     iconColorVar: '--component-nav-sidebar-item-icon-resource-domain',
   },
   {
+    id: 'device-management',
+    label: 'Device Management',
+    icon: 'router',
+    to: '/device-management',
+    iconColorVar: '--component-nav-sidebar-item-icon-resource-domain',
+  },
+  {
     id: 'integration-domain',
     label: 'Integration domain',
     icon: 'hub',

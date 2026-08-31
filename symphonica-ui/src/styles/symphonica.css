@@ -62,6 +62,13 @@
   margin-top: 0;
 }
 
+/* Device Management — fill viewport; scroll only inside column lists */
+.sym-app-body:has(.sym-service-spec-dashboard) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .sym-page {
   display: flex;
   flex-direction: column;
@@ -1005,6 +1012,20 @@
   padding-top: 0;
   border-top: none;
   box-sizing: border-box;
+}
+
+/* Card Primary Header — selection path (Guía Figma 8899-30779 / 8949-28561) */
+.sym-card-header__selection-path {
+  margin: 0;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-16);
+  font-weight: var(--core-typography-font-weight-medium);
+  line-height: var(--core-typography-line-height-tight);
+}
+
+.sym-card-header__selection-value,
+.sym-card-header__selection-separator {
+  color: var(--semantic-text-title);
 }
 
 .sym-subtitle-label {
@@ -2240,7 +2261,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--core-spacing-16);
+  gap: var(--core-spacing-8);
   width: 100%;
 }
 
@@ -2405,4 +2426,800 @@
 
 .sym-btn--sm .material-icons-outlined {
   font-size: var(--component-button-size-sm-icon);
+}
+
+/* --- Service Spec Dashboard (Figma 8899:34145) — Vendor / Model / Version cascade --- */
+
+.sym-page.sym-service-spec-dashboard {
+  --sym-service-spec-footer-reserve: calc(
+    var(--core-spacing-16) + var(--core-size-20) + var(--core-spacing-16)
+  );
+  --sym-service-spec-column-min-height-mobile: 400px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  gap: var(--core-spacing-16);
+  padding-bottom: var(--sym-service-spec-footer-reserve);
+  box-sizing: border-box;
+}
+
+/* v2 — section Primary Card header + cascade grid as siblings (Figma 8899:33910) */
+.sym-page.sym-service-spec-dashboard.sym-service-spec-dashboard--section-card {
+  gap: var(--core-spacing-24);
+}
+
+.sym-service-spec-dashboard__section-card {
+  flex-shrink: 0;
+}
+
+.sym-service-spec-dashboard__section-card .sym-card-header__bottom,
+.sym-service-spec-dashboard__section-card .sym-card-header__left {
+  align-items: center;
+}
+
+.sym-service-spec-dashboard__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--core-spacing-24);
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sym-service-spec-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-spacing-16);
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sym-service-spec-column__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--core-spacing-8);
+}
+
+.sym-service-spec-column__title {
+  margin: 0;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-18);
+  font-weight: var(--core-typography-font-weight-semibold);
+  line-height: var(--core-typography-line-height-solid);
+  color: var(--semantic-text-title);
+}
+
+.sym-service-spec-column__search-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sym-service-spec-column__search {
+  padding-right: calc(var(--core-size-20) + var(--core-spacing-16));
+}
+
+.sym-service-spec-column__search-icon {
+  position: absolute;
+  right: var(--core-spacing-12);
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: var(--core-size-20);
+  line-height: var(--core-typography-line-height-solid);
+  color: var(--semantic-text-secondary);
+}
+
+.sym-service-spec-column__list-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.sym-service-spec-column__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-spacing-8);
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding-right: var(--core-spacing-4);
+  scrollbar-width: thin;
+  scrollbar-color: var(--core-color-neutral-400) transparent;
+}
+
+.sym-service-spec-column__list::-webkit-scrollbar {
+  width: var(--core-size-10);
+}
+
+.sym-service-spec-column__list::-webkit-scrollbar-thumb {
+  background-color: var(--core-color-neutral-400);
+  border-radius: var(--core-border-radius-full);
+}
+
+.sym-service-spec-column__empty {
+  margin: 0;
+  padding: var(--core-spacing-8);
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-14);
+  font-weight: var(--core-typography-font-weight-regular);
+  line-height: var(--core-typography-line-height-relaxed);
+  color: var(--semantic-text-secondary);
+}
+
+/* Item Button — Figma Guía 8929:22020 (Repose / Hovered / Active) */
+.sym-service-spec-item {
+  display: flex;
+  align-items: stretch;
+  gap: var(--core-spacing-8);
+  min-height: calc(2 * var(--core-spacing-8) + var(--core-size-28));
+  padding: 0;
+  border-radius: var(--core-border-radius-sm);
+  background-color: var(--core-color-legacy-neutral-subtle);
+  transition:
+    background-color var(--core-motion-duration-fast) var(--core-motion-easing-standard),
+    color var(--core-motion-duration-fast) var(--core-motion-easing-standard);
+}
+
+.sym-service-spec-item:hover:not(.sym-service-spec-item--selected),
+.sym-service-spec-item:focus-within:not(.sym-service-spec-item--selected) {
+  background-color: var(--core-color-neutral-300);
+}
+
+.sym-service-spec-item--selected {
+  background-color: var(--semantic-color-primary-base);
+}
+
+.sym-service-spec-item__main {
+  flex: 1 1 auto;
+  align-self: stretch;
+  min-width: 0;
+  margin: 0;
+  padding: var(--core-spacing-8) var(--core-spacing-16);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-14);
+  font-weight: var(--core-typography-font-weight-medium);
+  line-height: var(--core-typography-line-height-solid);
+  color: var(--semantic-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--core-spacing-8);
+}
+
+.sym-service-spec-item--selected .sym-service-spec-item__main {
+  color: var(--semantic-text-white);
+}
+
+.sym-service-spec-item__main:focus-visible {
+  outline: var(--core-border-width-focus-ring) solid var(--core-focus-ring-color);
+  outline-offset: var(--core-focus-ring-offset);
+  border-radius: var(--core-border-radius-sm);
+}
+
+.sym-service-spec-item__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--core-spacing-4);
+  flex-shrink: 0;
+  padding: var(--core-spacing-8) var(--core-spacing-16) var(--core-spacing-8) 0;
+}
+
+/* Edit + Delete — visible only in Active (selected) */
+.sym-service-spec-item__item-actions {
+  display: none;
+  align-items: center;
+  gap: var(--core-spacing-4);
+}
+
+.sym-service-spec-item--selected .sym-service-spec-item__item-actions,
+.sym-service-spec-item--selected:focus-within .sym-service-spec-item__item-actions {
+  display: inline-flex;
+}
+
+/* Btn — Figma 8928:21833: 28×28 circular, 20px icon */
+.sym-service-spec-item__icon-btn {
+  width: var(--core-size-28);
+  height: var(--core-size-28);
+  padding: var(--core-spacing-4);
+  box-sizing: border-box;
+}
+
+.sym-service-spec-item__icon-btn .material-icons-outlined {
+  font-size: var(--core-size-20);
+}
+
+/* Active row: edit/preview white repose; delete white repose, red on hover chip */
+.sym-service-spec-item--selected .sym-service-spec-item__icon-btn.sym-icon-btn--primary {
+  background-color: var(--component-button-icon-primary-background-default);
+  color: var(--semantic-text-white);
+}
+
+.sym-service-spec-item--selected .sym-service-spec-item__icon-btn.sym-icon-btn--primary:hover:not(:disabled) {
+  background-color: var(--component-button-icon-primary-background-hover);
+  color: var(--component-button-icon-primary-icon-hover);
+}
+
+.sym-service-spec-item--selected .sym-service-spec-item__icon-btn.sym-icon-btn--danger {
+  background-color: var(--component-button-icon-danger-background-default);
+  color: var(--semantic-text-white);
+}
+
+.sym-service-spec-item--selected .sym-service-spec-item__icon-btn.sym-icon-btn--danger:hover:not(:disabled) {
+  background-color: var(--component-button-icon-danger-background-hover);
+  color: var(--component-button-icon-danger-icon-hover);
+}
+
+/* Chevron — visible on Hovered and Active */
+.sym-service-spec-item__chevron {
+  display: none;
+  font-size: var(--core-size-20);
+  line-height: var(--core-typography-line-height-solid);
+  color: var(--semantic-text-primary);
+}
+
+.sym-service-spec-item:hover:not(.sym-service-spec-item--selected) .sym-service-spec-item__chevron,
+.sym-service-spec-item:focus-within:not(.sym-service-spec-item--selected) .sym-service-spec-item__chevron,
+.sym-service-spec-item--selected .sym-service-spec-item__chevron {
+  display: inline-flex;
+}
+
+.sym-service-spec-item--selected .sym-service-spec-item__chevron {
+  color: var(--semantic-text-white);
+}
+
+@media (max-width: 991.98px) {
+  .sym-app-body:has(.sym-service-spec-dashboard) {
+    overflow-y: auto;
+  }
+
+  .sym-page.sym-service-spec-dashboard {
+    flex: none;
+    overflow: visible;
+    min-height: auto;
+  }
+
+  .sym-service-spec-dashboard__grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-rows: var(--sym-service-spec-column-min-height-mobile);
+    flex: none;
+  }
+
+  .sym-service-spec-column {
+    min-height: var(--sym-service-spec-column-min-height-mobile);
+    height: var(--sym-service-spec-column-min-height-mobile);
+  }
+}
+
+.sym-service-spec-dashboard__footer {
+  position: fixed;
+  right: 0;
+  bottom: var(--core-spacing-16);
+  left: var(--sym-shell-sidebar-width);
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 var(--core-spacing-8);
+  box-sizing: border-box;
+  transition:
+    left var(--core-motion-duration-base) var(--core-motion-easing-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sym-service-spec-dashboard__footer {
+    transition: none;
+  }
+}
+
+.sym-service-spec-dashboard__copyright {
+  margin: 0;
+  text-align: center;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-12);
+  font-weight: var(--core-typography-font-weight-regular);
+  line-height: var(--core-typography-line-height-relaxed);
+  color: var(--semantic-text-secondary);
+}
+
+/* Vendor form — Figma Guía 8934:22277 (Add Vendor panel inside Card Vendor) */
+
+.sym-service-spec-vendor-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-spacing-16);
+  width: 100%;
+  min-width: 0;
+  padding: var(--core-spacing-16);
+  border: none;
+  border-radius: var(--core-size-8);
+  background-color: var(--core-color-legacy-neutral-subtle);
+  flex-shrink: 0;
+}
+
+.sym-service-spec-vendor-form__fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--core-spacing-16);
+  width: 100%;
+}
+
+.sym-service-spec-vendor-form__field {
+  display: flex;
+  flex: 1 1 200px;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: min(100%, 200px);
+}
+
+.sym-service-spec-vendor-form__label {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: var(--core-spacing-4);
+  margin: 0;
+  padding-bottom: var(--core-spacing-8);
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-16);
+  font-weight: var(--core-typography-font-weight-medium);
+  line-height: var(--core-typography-line-height-relaxed);
+  color: var(--semantic-text-secondary);
+}
+
+.sym-service-spec-vendor-form__required {
+  font-weight: var(--core-typography-font-weight-regular);
+  color: var(--semantic-color-danger-base);
+}
+
+.sym-service-spec-vendor-form__input {
+  width: 100%;
+  min-height: var(--component-button-size-sm-button);
+}
+
+.sym-service-spec-vendor-form__upload-row {
+  display: flex;
+  align-items: center;
+  gap: var(--core-spacing-8);
+  width: 100%;
+  min-width: min(100%, 200px);
+}
+
+.sym-service-spec-vendor-form__upload-card {
+  --sym-vendor-upload-thumb-size: calc(
+    2 * var(--core-spacing-16) + var(--component-button-size-sm-button)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: var(--core-spacing-16);
+  border-radius: var(--core-border-radius-sm);
+  background-color: var(--core-color-neutral-white);
+}
+
+.sym-service-spec-vendor-form__upload-card--filled {
+  width: var(--sym-vendor-upload-thumb-size);
+  height: var(--sym-vendor-upload-thumb-size);
+  padding: 0;
+  overflow: hidden;
+}
+
+.sym-service-spec-vendor-form__upload-btn {
+  width: var(--component-button-size-sm-button);
+  height: var(--component-button-size-sm-button);
+}
+
+.sym-service-spec-vendor-form__preview-btn {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: zoom-in;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.sym-service-spec-vendor-form__preview-btn:focus-visible {
+  outline: var(--core-border-width-focus-ring) solid var(--core-focus-ring-color);
+  outline-offset: var(--core-focus-ring-offset);
+}
+
+.sym-service-spec-vendor-form__preview-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sym-service-spec-vendor-form__preview-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: color-mix(in srgb, var(--core-color-neutral-900) 45%, transparent);
+  opacity: 0;
+  transition: opacity var(--core-motion-duration-fast) var(--core-motion-easing-standard);
+  pointer-events: none;
+}
+
+.sym-service-spec-vendor-form__preview-btn:hover .sym-service-spec-vendor-form__preview-overlay,
+.sym-service-spec-vendor-form__preview-btn:focus-visible .sym-service-spec-vendor-form__preview-overlay {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sym-service-spec-vendor-form__preview-overlay {
+    transition: none;
+  }
+}
+
+.sym-service-spec-vendor-form__preview-icon {
+  font-size: var(--core-typography-font-size-24);
+  line-height: var(--core-typography-line-height-solid);
+  color: var(--semantic-text-white);
+}
+
+.sym-service-spec-vendor-form__upload-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--core-spacing-8);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sym-service-spec-vendor-form__upload-label {
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-16);
+  font-weight: var(--core-typography-font-weight-medium);
+  line-height: var(--core-typography-line-height-relaxed);
+  color: var(--semantic-text-secondary);
+}
+
+.sym-service-spec-vendor-form__filename {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sym-service-spec-vendor-form__remove-image {
+  width: var(--core-size-28);
+  height: var(--core-size-28);
+  padding: var(--core-spacing-4);
+  flex-shrink: 0;
+}
+
+.sym-service-spec-vendor-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--core-spacing-8);
+  width: 100%;
+}
+
+.sym-service-spec-vendor-form__header-add {
+  opacity: 0.65;
+}
+
+/* Image preview lightbox (vendor upload, etc.) */
+
+.sym-image-preview-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--core-spacing-24);
+  box-sizing: border-box;
+  background-color: color-mix(in srgb, var(--core-color-neutral-900) 45%, transparent);
+}
+
+.sym-image-preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: min(960px, 100%);
+  max-height: min(90vh, 100%);
+}
+
+.sym-image-preview__img {
+  display: block;
+  max-width: 100%;
+  max-height: min(90vh, 720px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--core-border-radius-sm);
+  box-shadow: var(--core-shadow-modal);
+}
+
+.sym-image-preview__close {
+  position: absolute;
+  top: calc(-1 * var(--core-spacing-8));
+  right: calc(-1 * var(--core-spacing-8));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--core-size-32);
+  height: var(--core-size-32);
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--core-border-radius-full);
+  background-color: var(--core-color-neutral-white);
+  color: var(--semantic-text-primary);
+  cursor: pointer;
+  box-shadow: var(--core-shadow-card);
+}
+
+.sym-image-preview__close .material-icons-outlined {
+  font-size: var(--core-size-20);
+  line-height: var(--core-typography-line-height-solid);
+}
+
+.sym-image-preview__close:hover {
+  background-color: var(--core-color-neutral-200);
+}
+
+.sym-service-spec-item__avatar {
+  width: var(--core-size-20);
+  height: var(--core-size-20);
+  object-fit: cover;
+  border-radius: var(--core-border-radius-sm);
+  flex-shrink: 0;
+}
+
+.sym-service-spec-item__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Order Types multiselect — Figma SYM Service Specification 24:49569 / 24:50267 */
+
+.sym-multiselect {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-spacing-8);
+  width: 100%;
+}
+
+.sym-multiselect--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.sym-multiselect__label {
+  margin: 0;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-14);
+  font-weight: var(--core-typography-font-weight-medium);
+  line-height: var(--core-typography-line-height-relaxed);
+  color: var(--semantic-text-title);
+}
+
+.sym-multiselect__required {
+  color: var(--semantic-color-danger-base);
+}
+
+.sym-multiselect__control {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--core-spacing-8);
+  width: 100%;
+  min-height: var(--component-button-size-md-button);
+  margin: 0;
+  padding: var(--core-spacing-8) var(--core-spacing-12);
+  padding-right: calc(var(--core-size-20) + var(--core-spacing-16));
+  border: var(--core-border-width-hairline) solid var(--core-color-neutral-400);
+  border-radius: var(--core-border-radius-sm);
+  background-color: var(--core-color-neutral-white);
+  cursor: pointer;
+  text-align: left;
+  box-sizing: border-box;
+  position: relative;
+  transition: border-color var(--core-motion-duration-fast) var(--core-motion-easing-standard);
+}
+
+.sym-multiselect--open .sym-multiselect__control,
+.sym-multiselect__control:focus-visible {
+  outline: none;
+  border-color: var(--semantic-color-primary-base);
+  box-shadow: 0 0 0 var(--core-focus-ring-offset) var(--core-focus-ring-color);
+}
+
+.sym-multiselect__placeholder {
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-16);
+  font-weight: var(--core-typography-font-weight-regular);
+  line-height: var(--core-typography-line-height-relaxed);
+  color: var(--semantic-text-secondary);
+}
+
+.sym-multiselect__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--core-spacing-8);
+  flex: 1;
+  min-width: 0;
+}
+
+.sym-multiselect__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--core-spacing-8);
+  padding: var(--core-spacing-8);
+  border-radius: var(--core-border-radius-sm);
+  background-color: var(--semantic-color-primary-base);
+  color: var(--semantic-text-white);
+  max-width: 100%;
+}
+
+.sym-multiselect__chip-label {
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-12);
+  font-weight: var(--core-typography-font-weight-medium);
+  line-height: var(--core-typography-line-height-solid);
+  white-space: nowrap;
+}
+
+.sym-multiselect__chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sym-multiselect__chip-remove .material-icons-outlined {
+  font-size: var(--core-size-16);
+  line-height: var(--core-typography-line-height-solid);
+}
+
+.sym-multiselect__caret {
+  position: absolute;
+  right: var(--core-spacing-12);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--core-size-20);
+  line-height: var(--core-typography-line-height-solid);
+  color: var(--semantic-text-secondary);
+  pointer-events: none;
+}
+
+.sym-multiselect__panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + var(--core-spacing-4));
+  z-index: var(--component-card-header-sticky-z-index);
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-spacing-16);
+  padding: var(--core-spacing-16);
+  border: var(--core-border-width-hairline) solid var(--core-color-neutral-300);
+  border-radius: 6px;
+  background-color: var(--core-color-neutral-white);
+  box-shadow: var(--component-card-primary-shadow);
+}
+
+.sym-multiselect__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-spacing-0);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.sym-multiselect__option {
+  display: flex;
+  align-items: center;
+  gap: var(--core-spacing-8);
+  min-height: var(--core-size-32);
+  margin: 0;
+  padding: var(--core-spacing-4) 0;
+  cursor: pointer;
+}
+
+.sym-multiselect__checkbox {
+  width: var(--core-size-16);
+  height: var(--core-size-16);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.sym-multiselect__option-label {
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-16);
+  font-weight: var(--core-typography-font-weight-regular);
+  line-height: var(--core-typography-line-height-relaxed);
+  color: var(--semantic-text-primary);
+}
+
+.sym-multiselect__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--core-spacing-8);
+}
+
+.sym-service-spec-model-form .sym-multiselect {
+  width: 100%;
+  gap: 0;
+}
+
+.sym-service-spec-model-form__multiselect-field {
+  flex-basis: 100%;
+}
+
+.sym-service-spec-model-form .sym-multiselect__label {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: var(--core-spacing-4);
+  margin: 0;
+  padding-bottom: var(--core-spacing-8);
+  font-size: var(--core-typography-font-size-16);
+  font-weight: var(--core-typography-font-weight-medium);
+  line-height: var(--core-typography-line-height-relaxed);
+  color: var(--semantic-text-secondary);
+}
+
+.sym-service-spec-model-form .sym-multiselect__required {
+  font-weight: var(--core-typography-font-weight-regular);
+}
+
+.sym-service-spec-version-form__file-preview-btn {
+  cursor: pointer;
+}
+
+.sym-service-spec-version-form__file-preview-icon {
+  font-size: var(--core-size-40);
+  line-height: var(--core-typography-line-height-solid);
+  color: var(--semantic-color-primary-base);
+}
+
+.sym-service-spec-item__file-glyph {
+  font-size: var(--core-size-20);
+  line-height: var(--core-typography-line-height-solid);
+  flex-shrink: 0;
+}
+
+.sym-service-spec-item--selected .sym-service-spec-item__file-glyph {
+  color: var(--semantic-text-white);
+}
+
+.sym-service-spec-item:not(.sym-service-spec-item--selected) .sym-service-spec-item__file-glyph {
+  color: var(--semantic-color-primary-base);
+}
+
+.sym-service-spec-item:hover:not(.sym-service-spec-item--selected) .sym-service-spec-item__file-glyph,
+.sym-service-spec-item:focus-within:not(.sym-service-spec-item--selected) .sym-service-spec-item__file-glyph {
+  color: var(--semantic-color-primary-base);
 }

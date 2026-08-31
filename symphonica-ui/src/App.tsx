@@ -1,7 +1,8 @@
-import { Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { SymAppHeader, type AppHeaderBreadcrumbSegment } from './components/SymAppHeader'
 import { SymSidebar } from './components/SymSidebar'
 import { PartyDomainShowcase } from './showcase/PartyDomainShowcase'
+import { ServiceSpecDashboardShowcase } from './showcase/ServiceSpecDashboardShowcase'
 import { SymphonicaShowcase } from './showcase/SymphonicaShowcase'
 
 function AppLayout() {
@@ -9,7 +10,12 @@ function AppLayout() {
   const headerVariant = pathname === '/service-orders' ? 'small' : 'large'
 
   const breadcrumbItems: AppHeaderBreadcrumbSegment[] =
-    pathname === '/service-orders'
+    pathname === '/device-management'
+      ? [
+          { label: 'Resource Domain', href: '/device-management', leadingHome: true },
+          { label: 'Device Management', current: true },
+        ]
+      : pathname === '/service-orders'
       ? [
           { label: 'Customer Details', href: '/', leadingHome: true },
           { label: 'Telefónica', href: '/' },
@@ -45,6 +51,8 @@ export default function App() {
       <Route element={<AppLayout />}>
         <Route index element={<SymphonicaShowcase mode="home" />} />
         <Route path="party-domain" element={<PartyDomainShowcase />} />
+        <Route path="device-management" element={<ServiceSpecDashboardShowcase />} />
+        <Route path="device-management-2" element={<Navigate to="/device-management" replace />} />
         <Route path="service-orders" element={<SymphonicaShowcase mode="serviceOrders" />} />
       </Route>
     </Routes>
