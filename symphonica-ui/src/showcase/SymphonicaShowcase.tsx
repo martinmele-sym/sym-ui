@@ -137,9 +137,11 @@ function SymToastItem({
     return () => window.clearInterval(intervalId)
   }, [toast.id, toast.durationMs, onDismiss])
 
+  const isExpanded = Boolean(toast.body?.trim()) || Boolean(toast.actions?.length)
+
   return (
     <div
-      className={`sym-toast sym-toast--${toast.variant}`}
+      className={`sym-toast sym-toast--${toast.variant}${isExpanded ? ' sym-toast--expanded' : ''}`}
       role={toast.variant === 'error' ? 'alert' : 'status'}
       onMouseEnter={() => {
         pausedRef.current = true

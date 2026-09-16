@@ -700,7 +700,7 @@ Row state variants:
 - Default
 - Hover
 - Selected
-- New Item
+- New Item — transient persist feedback after a successful **create** or **edit** save (same visual; placement rules differ — see below)
 
 State priority:
 1. Selected
@@ -771,6 +771,115 @@ State behavior:
 - Selected state has priority over hover
 - New Item must be visually distinguishable from hover and selected
 - New Item must not conflict with semantic status colors used by badges
+
+##### New Item — persist feedback after create and edit
+
+After the user successfully saves from an add/create or edit form (drawer, modal, or inline panel), the affected table row must enter the **New Item** state so the user sees where their change landed. This is **transient** row feedback — not a permanent data flag.
+
+Visual contract:
+- Background: `component.table.row.new.background` (Success light — same token as `component.alert.success.background`)
+- Typography: `component.table.row.new.fontSize` / `component.table.row.new.foreground`
+- CSS hook: **`sym-table__row--new`** on primary tables (`.sym-table`) and nested secondary tables (`.sym-secondary-table`)
+- Hover on a New Item row keeps the New Item background (do not fall back to default row hover)
+- Row separators (`component.table.row.borderBottom`) remain visible on New Item rows
+
+Create vs edit — placement:
+| Save type | Row position | Sort interaction |
+|-----------|--------------|------------------|
+| **Create** (add) | **Prepend** — new row becomes the **first body row** | Reset active column sort to **default / unsorted** if needed so the new row is visible at the top |
+| **Edit** | **In place** — row keeps its **original index** in the dataset | Do **not** reorder; active sort may reposition the row only according to the sorted column |
+
+Editor dismissal:
+- After a successful **create** or **edit** save, close the blocking editor (drawer, modal, or equivalent) so the table feedback is visible behind it
+- Re-opening the same row for edit is allowed; the highlight rules below still apply
+
+Highlight dismissal:
+- New Item remains until the user interacts with a **different** row (row click / row select)
+- Clicking or selecting the **same** highlighted row again (e.g. to re-open edit) **keeps** the highlight
+- Starting edit on a **different** row in a nested table clears the prior highlight
+- Switching parent context (e.g. another characteristic in a drawer) clears nested-table highlights
+
+Scope:
+- Applies to **Primary Card** tables and to **nested secondary tables** inside drawers, tabs, or secondary panels (same token and class)
+- Does **not** replace **Selected** (violet) for active row selection while a drawer stays open — after save + editor close, only New Item applies until another row is chosen
+
+Implementation reference:
+- Primary table: `symphonica-ui/src/showcase/ServiceDomainShowcase.tsx`
+- Nested values table: `symphonica-ui/src/components/CharacteristicValuesPanel.tsx`
+- Styles: `symphonica-ui/src/styles/symphonica.css` (`.sym-table__row--new`, `.sym-secondary-table` variant)
+
+##### Row selection and detail drawer (toggle)
+
+When a table row drives a **non-blocking detail drawer** (`.sym-detail-drawer` — edit panel, values sub-panel, or equivalent):
+
+**Open**
+- First click on a row (outside the Actions column) selects the row (`sym-table__row--selected`) and opens the drawer for that entity
+- Clicking a **different** row replaces selection and swaps drawer content to the new entity
+
+**Content swap (drawer already open)**
+- When the drawer is **already open**, row-to-row navigation is for **fast inspection** — update the panel **in place**; do **not** remount the drawer or replay the slide-in (**enter**) animation
+- Keep a **single drawer instance** while open (no React `key` per row id); pass the new entity via props and sync form state (`useEffect` on entity id / mode)
+- Leave `motionPhase` at **open** during swaps; only run **enter → open** on first open after the drawer was closed or unmounted
+- Reset scroll to top when the bound entity changes so long forms start from the header fields
+
+**Toggle close**
+- If the row is **already Selected** and its drawer is **open**, clicking the **same row again** must **close** the drawer (toggle dismiss)
+- Applies regardless of which drawer panel is active (e.g. Edit vs Values)
+- Use the drawer **exit animation**; parent state (selection) clears only after the drawer fires `onClose` — do not unmount instantly by clearing selection without the exit transition
+- After close, clear **Selected** row state by default so the table returns to neutral
+
+**Actions column**
+- Icon buttons in the Actions column must **not** trigger row selection or drawer toggle (`stopPropagation` on the actions cell)
+
+**Relation to New Item highlight**
+- Toggle-close on the same row does **not** clear **New Item** highlight if that row was highlighted from a recent save
+- When the drawer is **closed**, clicking a **New Item** row again re-opens the drawer and keeps the highlight until the user selects a different row
+
+Implementation reference:
+- Drawer close hook: `EditCharacteristicDrawer` `closeRequestRef` + parent row handler
+- Primary table toggle: `symphonica-ui/src/showcase/ServiceDomainShowcase.tsx` (`handleRowSelect`)
+- Process Selection Rules (edit + create drawers): `symphonica-ui/src/showcase/ProcessSelectionRulesShowcase.tsx`, `EditProcessSelectionRuleDrawer.tsx`
+
+##### Detail drawer — shell layout and footer actions
+
+Non-blocking **detail drawers** (`.sym-detail-drawer`) slide in from the right alongside the table. They are **not** modals (contrast **§5.10**): the page stays interactive and no scrim is required.
+
+**Shell**
+- Width **650px** — CSS variable `--component-detail-drawer-width` on `.sym-page` hosts (e.g. `.sym-service-domain`, `.sym-process-selection-rules`)
+- Form shell padding **Core/Spacing/24** (`.sym-detail-drawer__form`)
+- **Header** (`.sym-detail-drawer__header`) stays at the top of the panel layout and does **not** scroll with the body
+- **Scroll region** — exactly one vertical scroll container per panel: `.sym-detail-drawer__scroll` (`overflow-y: auto`, `flex: 1`, `min-height: 0` inside `.sym-detail-drawer__panel-layout`)
+
+**Footer placement (required)**
+- Primary actions (e.g. **Save Changes** + **Close** / **Cancel**) live in `.sym-detail-drawer__footer`
+- The footer must be a **child of** `.sym-detail-drawer__scroll`, placed **after** the field stack (`.sym-detail-drawer__fields`) — **not** a sibling below the scroll area pinned to the drawer viewport bottom
+
+**Footer spacing and sticky behavior**
+- When all content fits without scrolling, footer actions sit **Core/Spacing/24** below the last field block — follow natural document flow; **do not** anchor the footer to the bottom of the drawer when content is short
+- When content exceeds the visible drawer height and `.sym-detail-drawer__scroll` overflows, footer uses **`position: sticky; bottom: 0`** on `.sym-detail-drawer__footer` so actions remain visible while the user scrolls fields above
+- Footer background must stay **opaque white** (`core.color.neutral.white`) so scrolled content does not bleed through the sticky bar
+
+**Markup contract (canonical)**
+
+```
+.sym-detail-drawer__panel-layout
+  header.sym-detail-drawer__header
+  div.sym-detail-drawer__scroll
+    div.sym-detail-drawer__fields
+      …
+    footer.sym-detail-drawer__footer
+```
+
+Rules:
+- Do **not** use a separate fixed/sticky footer row outside the scroll container for detail drawers
+- Do **not** use `margin-top: auto` or flex grow on the scroll area solely to push footer to the viewport bottom when content is short
+- Panel sub-navigation (e.g. Edit ↔ Values) may use `.sym-detail-drawer__panel-viewport`; each panel’s edit surface still follows the scroll + in-scroll footer pattern above
+
+Implementation reference:
+- Styles: `symphonica-ui/src/styles/symphonica.css` (`.sym-detail-drawer`, `.sym-detail-drawer__scroll`, `.sym-detail-drawer__footer`)
+- Characteristics edit drawer: `symphonica-ui/src/components/EditCharacteristicDrawer.tsx`
+- Process Selection Rule detail: `symphonica-ui/src/components/EditProcessSelectionRuleDrawer.tsx`
+- Figma: [Process Selection Rule detail](https://www.figma.com/design/9VN4wHeH1ujfBK5zwWrYxq/SYM---Process-Selection-Rules?node-id=2996-55274) · [Characteristics edit drawer](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=973-47114)
 
 ---
 
@@ -1759,6 +1868,10 @@ Multi-primary layouts (e.g. **Clone and Open Editor** + **Clone Model**): **both
 - **Typography**: title **`Core/Typography/FontSize/16`**, **`Semibold`**; optional body **16**, **`Medium`** (body slot below title).
 - **Elevation**: **`core.shadow.notificationToastr`** (**Shadows / Notification Toastr** from Guía — aligns to Figma **`Shadows/Notification Toastr`**; do **not** substitute **`core.shadow.card`** without review).
 - **Radius**: **`Core/Border/Radius/Md`** (**8px**). Padding **`Core/Spacing/16`**; vertical gap **`Core/Spacing/16`** between title row, body, and actions **inside** the chip.
+
+**Title row alignment (by content depth)**
+- **Title only** (no body, no actions): title and trailing **close** share one row with **`align-items: center`** so the label and **32×32** close control are vertically centered in the chip (`.sym-toast` without `.sym-toast--expanded`).
+- **Expanded** (optional body and/or action strip below): add **`.sym-toast--expanded`**; title row uses **`align-items: flex-start`** so the close icon aligns with the **first line** of the title while body and actions stack below with **`Core/Spacing/16`** gaps.
 
 #### Layout & placement
 

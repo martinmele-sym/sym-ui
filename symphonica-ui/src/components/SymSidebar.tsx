@@ -52,12 +52,14 @@ const NAV_ITEMS: NavItem[] = [
     id: 'service-domain',
     label: 'Service domain',
     icon: 'design_services',
+    to: '/service-domain',
     iconColorVar: '--component-nav-sidebar-item-icon-service-domain',
   },
   {
     id: 'workflow-domain',
     label: 'Workflow domain',
     icon: 'account_tree',
+    to: '/process-selection-rules',
     iconColorVar: '--component-nav-sidebar-item-icon-workflow-domain',
   },
   {
