@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
+import { orderManagementHref } from '../data/appNavConfig'
 import { SymIconTooltipButton } from '../components/SymIconTooltipButton'
 
 type SortPhase = 'idle' | 'asc' | 'desc'
@@ -690,7 +691,7 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
 
   function handleHeaderPillClick(index: number) {
     if (index === workflowOrdersPillIndex) {
-      navigate('/service-orders')
+      navigate(orderManagementHref('service-orders'))
       setPillSectionA(workflowOrdersPillIndex)
       return
     }

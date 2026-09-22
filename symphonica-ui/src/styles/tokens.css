@@ -460,6 +460,14 @@
   --component-nav-sidebar-item-active-background: var(--semantic-color-primary-light);
   --component-nav-sidebar-chevron-color: var(--core-color-neutral-500);
   --component-nav-sidebar-toggle-icon-color: var(--semantic-text-secondary);
+  --component-nav-sidebar-sub-item-label-color: var(--semantic-text-secondary);
+  --component-nav-sidebar-sub-item-active-foreground: var(--semantic-color-primary-base);
+  --component-nav-sidebar-sub-item-external-icon-size: var(--core-size-16);
+  --component-nav-sidebar-sub-item-external-icon-padding-right: var(--core-spacing-4);
+  --component-nav-sidebar-sub-item-list-gap: var(--core-spacing-4);
+  --component-nav-sidebar-list-scrollbar-width: var(--core-size-6);
+  --component-nav-sidebar-list-scrollbar-thumb-color: var(--core-color-neutral-400);
+  --component-nav-sidebar-list-scrollbar-thumb-hover-color: var(--core-color-neutral-500);
   --component-nav-sidebar-item-icon-home: var(--semantic-color-primary-base);
   --component-nav-sidebar-item-icon-party-domain: var(--semantic-action-primary-hover);
   --component-nav-sidebar-item-icon-order-management: var(--semantic-action-primary-active);

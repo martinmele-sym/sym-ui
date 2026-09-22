@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { workflowProcessSelectionRulesHref } from '../data/appNavConfig'
 import { EditProcessSelectionRuleDrawer } from '../components/EditProcessSelectionRuleDrawer'
 import { SymIconTooltipButton } from '../components/SymIconTooltipButton'
 import { SymToastStack, useSymToasts } from '../components/SymToast'
@@ -69,7 +70,7 @@ export function ProcessSelectionRulesShowcase() {
   }
 
   function handleOpenRulesAndConditions(rule: ProcessSelectionRule) {
-    navigate(`/process-selection-rules/${rule.id}/rules-and-conditions`)
+    navigate(workflowProcessSelectionRulesHref(rule.id))
   }
 
   function handleSaveRule(next: ProcessSelectionRule) {

@@ -7,6 +7,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { workflowDomainHref } from '../data/appNavConfig'
 import { RuleConditionCard } from '../components/RuleConditionCard'
 import { SymToastStack, useSymToasts } from '../components/SymToast'
 import {
@@ -162,7 +163,7 @@ export function RulesAndConditionsShowcase() {
   }, [draggingRuleId, finishRuleReorder, updateDragGhostPosition])
 
   if (!selectionRule) {
-    return <Navigate to="/process-selection-rules" replace />
+    return <Navigate to={workflowDomainHref('process-selection-rules')} replace />
   }
 
   function handleCreateRule() {
@@ -273,7 +274,7 @@ export function RulesAndConditionsShowcase() {
                   type="button"
                   className="sym-btn-outlined-icon-only"
                   aria-label="Back to Process Selection Rules"
-                  onClick={() => navigate('/process-selection-rules')}
+                  onClick={() => navigate(workflowDomainHref('process-selection-rules'))}
                 >
                   <span className="material-icons-outlined" aria-hidden>
                     arrow_back

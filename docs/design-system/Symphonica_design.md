@@ -1723,20 +1723,148 @@ The **Symphonica primary navigation** is a **vertical sidebar** (logo / wordmark
 - **Nav list**: `ul` / list with **`menuListGap`** = **`Core/Spacing/16`** between successive **list rows** (flex/`gap` between items — **not** row-internal padding). Each nav row uses **`itemPaddingY`** = **`Core/Spacing/8`** top and bottom on the interactive surface (**`sym-sidebar__link`**, and the collapse **`sym-sidebar__toggle`** uses the same token) so the **24px** leading icon and label have vertical air and a comfortable minimum hit height; horizontal inset remains **`itemPaddingX`** (`Core/Spacing/4`). Horizontal gap between leading icon and label: **`itemGap`** (`Core/Spacing/16`). Each row is a single interactive control (`button` or routed link) with:
   - Leading icon **24px** (`iconSize`), tinted per row using **`component.nav.sidebar.itemIcon.*`** (aliases to the semantic palette — e.g. Home → primary base, Service Domain → success base). Do **not** replace these with arbitrary hex outside tokens.
   - Label: Montserrat **`itemLabelFontSize` / `itemLabelFontWeight`**, `Semantic/Text/Primary`.
-  - Trailing **`chevron_right`** in `chevronColor`.
-- **Widths**: expanded → `component.nav.sidebar.widthExpanded` (aliases **`layout.apiExplorer.sidebarColumnWidth`**, 330px); collapsed → **`widthCollapsed`** (64px). Collapsed mode hides label, chevron, and search (visually / SR-friendly), centers row icons, tightens horizontal padding.
+  - Trailing **`chevron_right`** in `chevronColor` on all domain rows **except Home** (Home has no chevron).
+  - Optional inline badge (e.g. **NEW** on Integration Domain) between label and chevron — pill with **`semantic.gradient.heroPrimaryBand`**, white uppercase label (**12 semibold**).
+- **Widths**: expanded → `component.nav.sidebar.widthExpanded` (aliases **`layout.apiExplorer.sidebarColumnWidth`**, 330px); collapsed → **`widthCollapsed`** (64px). Collapsed mode hides label, chevron, badge, and search (visually / SR-friendly), centers row icons, tightens horizontal padding.
 
-#### States
+#### Canonical domain list (Guía)
 
-- **Row hover**: background `itemHoverBackground` (`Core/Color/Neutral/200`).
-- **Current / active route** (optional): background `itemActiveBackground` (`Semantic/Color/Primary/Light`); set `aria-current="page"` on the active control.
-- **Motion**: width and row transitions use `Core/Motion` tokens (respect reduced motion).
+Eight top-level rows — do not add extra shell rows without product review:
+
+| Row | Leading icon (Material Outlined) | Notes |
+|-----|-----------------------------------|--------|
+| Home | `home` | No chevron |
+| Party Domain | `groups` | |
+| Order Management | `assignment` | |
+| Service Domain | `layers` | |
+| Workflow Domain | `account_tree` | |
+| Resource Domain | `miscellaneous_services` | |
+| Integration Domain | `hub` | Expandable submenu; **NEW** badge on **parent row** (not sub rows) |
+| Global | `language` | Expandable submenu (seven sub rows) |
+
+Leading icon tint per row: **`component.nav.sidebar.itemIcon.*`** (semantic palette aliases — Home primary, Service success, Workflow danger, Resource warning, etc.). Icon colors **do not change** on hover or active; only the row background chip changes.
+
+#### Row interaction states
+
+Each nav row (`.sym-sidebar__link` on `NavLink` or `button`) is a **full-width rounded chip** inside the list — hover and active apply to the **entire row surface** (icon + label + badge + chevron), not to the icon alone.
+
+| State | When | Background | Label / icon | Other |
+|-------|------|------------|--------------|-------|
+| **Default** | Pointer not over row; row not current | Transparent (`core.color.transparent`) | Label **`semantic.text.primary`**; leading icon keeps **`itemIcon.*`** tint; chevron **`chevronColor`** (`neutral.500`) | No underline on links |
+| **Hover** | Pointer over a **non-current** row | **`itemHoverBackground`** → **`Core/Color/Neutral/200`** (~`#E9ECEF`) | Same as default — **do not** recolor icons or label on hover | Fast transition via **`Core/Motion`** |
+| **Active / current route** | Row matches current app route | **`itemActiveBackground`** → **`Semantic/Color/Primary/Light`** (~`#DFE3FA`) | Same as default — icon tints unchanged | Set **`aria-current="page"`** on the active **`NavLink`**; active background **persists while hovered** (active wins over hover) |
+| **Focus-visible** | Keyboard focus | Inherits default/active background | Unchanged | **`core.focus.ring`** outline + offset on the row control |
+
+**Routing contract**
+- Wired rows use **`NavLink`** (React Router or equivalent) so **`aria-current="page"`** is set on the active destination.
+- **Home** uses exact match (`end`) so only `/` is active, not every nested path.
+- Domain rows with nested POC routes (e.g. Workflow → Process Selection Rules + Rules and Conditions) stay active for the whole route prefix — do **not** use `end` on those links.
+- All eight canonical domain rows are wired with submenus where the Guía specifies nested destinations; only leaf **`NavLink`** sub rows receive **`aria-current="page"`**.
+
+**Implementation reference:** `symphonica-ui/src/components/SymSidebar.tsx`, `symphonica-ui/src/styles/symphonica.css` (`.sym-sidebar__link`, `.sym-sidebar__link:hover`, `.sym-sidebar__link[aria-current='page']`).
+
+#### Domain submenus (expand / collapse)
+
+Some domain rows expose **nested destinations** under the parent label (Guía accordion pattern — e.g. **Party Domain → Customer Search**).
+
+| Element | Behaviour | Visual |
+|---------|-----------|--------|
+| **Parent row** | **`button`** with **`aria-expanded`** + **`aria-controls`** pointing at the nested **`ul`** — toggles open/closed; **does not navigate** when children exist | Label **`semantic.text.secondary`** (`#565656` → **`core.color.legacyNeutralStrong`**, `.sym-sidebar__link--expandable`); trailing chevron **`chevron_right`** when collapsed, **`expand_more`** when expanded (expanded chevron tint **`semantic.color.primary.base`**) |
+| **Sub list** | Nested **`ul.sym-sidebar__sublist`** rendered only when parent is expanded and sidebar is not collapsed | Vertical gap **`component.nav.sidebar.subItem.listGap`** (`Core/Spacing/4`) under the parent |
+| **Sub row** | **`NavLink`** (`.sym-sidebar__sublink`) — **only sub rows** receive **`aria-current="page"`** for active route | Text indent aligns sub label with parent label: **`padding-left`** = parent **`itemPaddingX`** + **`iconSize`** + **`itemGap`**. **Default / hover label:** **`component.nav.sidebar.subItem.labelColor`** → **`semantic.text.secondary`** (`#565656`) — **same tone as the expandable domain parent**, not title black. **Active/current label + trailing icons:** **`component.nav.sidebar.subItem.activeForeground`** → **`semantic.color.primary.base`**; background **`itemActiveBackground`** (`primary.light`). Hover chip on non-current sub rows unchanged |
+| **External cue** | Optional trailing **`open_in_new`** after sub label (and optional badge) when the destination is a cross-surface link — omit for in-app sub rows (e.g. **Global → Import/Export**) | **`component.nav.sidebar.subItem.externalIconSize`** (16px). **`padding-right`** = **`subItem.externalIconPaddingRight`** (`Core/Spacing/4`) so the glyph column aligns with domain **`chevron_right`** / **`expand_more`**. Icon **`color: inherit`** — secondary at rest, **`activeForeground`** when sub row is current |
+| **Sub badge** | Optional inline **NEW** (or product badge) between sub label and **`open_in_new`** | Reuse top-level **`.sym-sidebar__badge`** styling (hero gradient, white uppercase 12 semibold). Modifier **`.sym-sidebar__badge--sub`** inside **`.sym-sidebar__sublink`** — badge colors **do not** switch to **`activeForeground`** when the sub row is current |
+
+**Auto-expand:** when the current route matches any child, the parent domain opens automatically (user may still collapse manually).
+
+**Collapsed sidebar:** sub lists are hidden with labels/chevrons; domain icons remain in the collapsed rail. When the current route matches a **sub row**, the **parent domain** row keeps the **active chip** (`itemActiveBackground`) and **`aria-current="page"`** on the parent control (`.sym-sidebar__link--child-active`) so the icon rail still shows which domain owns the open screen. When the sidebar is **expanded**, active styling stays on the **sub row** only — the parent does not duplicate the active chip.
+
+**Party Domain (canonical first submenu)**
+
+| Sub row | Route (POC) | Notes |
+|---------|-------------|--------|
+| Customer Search | `/customer-search` | Trailing **`open_in_new`**; POC reuses Home customer-details view |
+
+**Order Management (Guía submenu — nine rows, all with `open_in_new`)**
+
+| Sub row | Route (POC) | Notes |
+|---------|-------------|--------|
+| Service Orders | `/order-management/service-orders` | Full showcase; legacy `/service-orders` redirects here |
+| Cancel Service Orders | `/order-management/cancel-service-orders` | POC placeholder |
+| Workflow Orders | `/order-management/workflow-orders` | POC placeholder |
+| Cancel Workflow Orders | `/order-management/cancel-workflow-orders` | POC placeholder |
+| Resource Orders | `/order-management/resource-orders` | POC placeholder |
+| Integration Orders | `/order-management/integration-orders` | **NEW** badge |
+| Scheduled Orders | `/order-management/scheduled-orders` | **NEW** badge |
+| Bulk Orders | `/order-management/bulk-orders` | POC placeholder |
+| User Tasks | `/order-management/user-tasks` | POC placeholder |
+
+**Service Domain (Guía submenu — five rows, all with `open_in_new`)**
+
+| Sub row | Route (POC) | Notes |
+|---------|-------------|--------|
+| Catalog | `/service-domain/catalog` | POC placeholder |
+| Service Specifications | `/service-domain/service-specifications` | Full Service Domain showcase; legacy `/service-domain` redirects here |
+| Test Specifications | `/service-domain/test-specifications` | POC placeholder |
+| Extra Values | `/service-domain/extra-values` | POC placeholder |
+| Order Types | `/service-domain/order-types` | POC placeholder |
+
+**Workflow Domain (Guía submenu — five rows, all with `open_in_new`)**
+
+| Sub row | Route (POC) | Notes |
+|---------|-------------|--------|
+| Workflow Order Test | `/workflow-domain/workflow-order-test` | POC placeholder |
+| Workflow Order Spec | `/workflow-domain/workflow-order-spec` | POC placeholder |
+| Process Selection Rules | `/workflow-domain/process-selection-rules` | Full PSR dashboard; nested **`…/rules-and-conditions`**; legacy `/process-selection-rules` redirects here |
+| Process Manager | `/workflow-domain/process-manager` | POC placeholder |
+| Workflow Manager | `/workflow-domain/workflow-manager` | **NEW** badge |
+
+**Resource Domain (Guía submenu — twelve rows, all with `open_in_new`)**
+
+| Sub row | Route (POC) | Notes |
+|---------|-------------|--------|
+| Connector Studio | `/resource-domain/connector-studio` | **NEW** badge; POC placeholder |
+| Device Manager | `/resource-domain/device-manager` | Full Device Management showcase (Guía **Vendor-Model-Version** slot replaced by product POC label); legacy `/device-management` redirects here |
+| Resource Specification Types | `/resource-domain/resource-specification-types` | **NEW** badge; POC placeholder |
+| Resource Specification | `/resource-domain/resource-specification` | POC placeholder |
+| Resource Inventory | `/resource-domain/resource-inventory` | POC placeholder |
+| Resource Commands | `/resource-domain/resource-commands` | POC placeholder |
+| Resource Order Spec | `/resource-domain/resource-order-spec` | POC placeholder |
+| Resource Order Test | `/resource-domain/resource-order-test` | POC placeholder |
+| Constants | `/resource-domain/constants` | POC placeholder |
+| Errors | `/resource-domain/errors` | POC placeholder |
+| Translations | `/resource-domain/translations` | POC placeholder |
+| Connector Cluster | `/resource-domain/connector-cluster` | POC placeholder |
+
+**Integration Domain (Guía submenu — two rows, all with `open_in_new`; parent row keeps **NEW** badge)**
+
+| Sub row | Route (POC) | Notes |
+|---------|-------------|--------|
+| Integration Studio | `/integration-domain/integration-studio` | POC placeholder |
+| Storage Explorer | `/integration-domain/storage-explorer` | POC placeholder |
+
+**Global (Guía submenu — seven rows)**
+
+| Sub row | Route (POC) | Notes |
+|---------|-------------|--------|
+| Categories | `/global/categories` | **`open_in_new`** |
+| Regions | `/global/regions` | **`open_in_new`** |
+| Sources | `/global/sources` | **`open_in_new`** |
+| Bulk Loader | `/global/bulk-loader` | **`open_in_new`** |
+| Import/Export | `/global/import-export` | **No** trailing icon (in-app route) |
+| Maintenance Mode | `/global/maintenance-mode` | **NEW** badge + **`open_in_new`** |
+| MCP Server | `/global/mcp-server` | **NEW** badge + **`open_in_new`** |
+
+#### Motion
+
+- Width collapse/expand and row background transitions use **`Core/Motion`** tokens; honor **`prefers-reduced-motion`**.
 
 #### Rules
 
 - Implement with **`component.nav.sidebar`** only for sizes, colors, and spacing — see `design_tokens.json` and generated CSS variables.
 - Icons: **Material Icons Outlined** only, 24px row icons; toggle uses tokenized control styling (`toggleIconColor`).
 - **Scroll / overflow**: the **rail chrome** (aside) is **viewport-fixed** — **do not** attach vertical scroll to the whole **`aside`**. Expanded — overflow scrolls on the **nav list** (`sym-sidebar__list`) **only** (wordmark, toggle, and search stay visible above the scrolling region). Collapsed — **no visible scrollbar** on the sidebar; use **`overflow: hidden`** on chrome/nav wrappers so the narrow rail never shows a scroll track.
+- **Nav list scrollbar (expanded)**: use the **subtle scroll** pattern shared with Device Management **Vendor / Model / Version** column lists — **not** the OS default thick track. Tokens: **`component.nav.sidebar.listScrollbarWidth`** (`Core/Size/6`, 6px), **`listScrollbarThumbColor`** (`neutral.400`), **`listScrollbarThumbHoverColor`** (`neutral.500`); track **transparent**. **Hover-reveal:** thumb stays **invisible at rest**; when the pointer is over **`sym-sidebar__nav`**, the thumb fades in (WebKit + `scrollbar-color` on Firefox). Direct **`:hover`** on the thumb may darken one step. **`padding-right`** on the list = **`Core/Spacing/4`** so the thumb does not overlap row labels. Collapsed rail keeps **`scrollbar-width: none`** / hidden WebKit scrollbar per above.
 - Do not restyle sidebar rows as Bootstrap `nav-pills` or `nav-tabs`; this pattern is separate from Card Header pills and Secondary Card Tabs Top.
 - Product logo asset may replace the text wordmark; keep dimensions and spacing token-driven.
 
@@ -2376,7 +2504,7 @@ Figma → Code mapping:
 - **App shell layout**: **`sym-app-shell`** exposes **`--sym-shell-sidebar-width`** (expanded vs collapsed). **`sym-sidebar`**: **`position: fixed`**, **`top: 0`**, **`left: 0`**, **`bottom: 0`** — **does not scroll** with the main column. **`sym-app-main`**: **`margin-left: var(--sym-shell-sidebar-width)`**, **`max-height: 100vh`**, **`overflow: visible`** (required for §5.5 sticky — do not set **`overflow: hidden`** here); **`padding-top`** reserves fixed App Header (**`layout.header.large.shellHeight`** / **`layout.header.small.stackHeight`**). **App Header**: **`position: fixed`**, **`top: 0`**, main column only (**`left`** after sidebar) — **never** nest inside **`sym-app-body`**. **`sym-app-body`** scrolls only (**`overflow-y: auto`**, **`min-height: 0`**, **`flex: 1`**); **`padding-top: 0`**; **`margin-top`** only for **Large** overlap (**`layout.header.large.bodyOffsetTop`** math). **`sym-page`**: **`padding-top: 0`**, **`margin-top: 0`**; **`layout.body.sectionGap`** between sections. Implement **Small** vs **Large** variants per §5.9; **`component.header.*`** for chrome.
 - **Card nesting:** never nest a **Primary Card** inside a **Secondary Card**. **Secondary** may be nested **inside Primary**; use **`component.card.secondary.nestedInPrimary.background`** for nested default background (`LegacyNeutral/Subtle`). Standalone Secondary on app background keeps default white. See §5.5.
 - **Primary Card header scroll — §5.5:** **`position: sticky`** in **`sym-app-body`**; **never** viewport **`fixed`**. **`sym-app-main`** **`overflow: visible`** ( **`overflow: hidden`** breaks sticky). Section header card → **`sym-card-primary--section-sticky`** on header-only **`<article>`**; preserve **`sym-page`** **`gap`** (no negative margin; no extra gap-cover **`box-shadow`**). Combined card → **`sym-card-header--sticky`**. Contract: **§5.5 — Sticky scroll — implementation contract (assistants / Cursor)**; notes **`primaryCardHeaderStickyScroll`**, **`cardHeaderStickyImplementationContract`**.
-- **App sidebar** (primary Symphonica menu): **`aside.sym-sidebar`** is **viewport-fixed** per §5.8 — **do not** scroll the whole rail with page content; **nav list** scrolls internally only when expanded. Use **`component.nav.sidebar`** tokens and Material Icons Outlined; vertical rhythm = **`menuListGap`** (`Core/Spacing/16`) between rows plus **`itemPaddingY`** (`Core/Spacing/8`) inside each link/toggle; map each domain row’s leading icon color via **`itemIcon.*`** aliases — do not substitute ad-hoc colors or reuse Tabs Top / Card Header pill styles for this shell; **collapsed sidebar must not show a scrollbar** (overflow hidden per §5.8)
+- **App sidebar** (primary Symphonica menu): **`aside.sym-sidebar`** is **viewport-fixed** per §5.8 — **do not** scroll the whole rail with page content; **nav list** scrolls internally only when expanded. Use **`component.nav.sidebar`** tokens and Material Icons Outlined; vertical rhythm = **`menuListGap`** (`Core/Spacing/16`) between rows plus **`itemPaddingY`** (`Core/Spacing/8`) inside each link/toggle; map each domain row’s leading icon color via **`itemIcon.*`** aliases — do not substitute ad-hoc colors or reuse Tabs Top / Card Header pill styles for this shell; **collapsed sidebar must not show a scrollbar** (overflow hidden per §5.8); **expanded** nav list uses **subtle hover-reveal scroll** (6px `neutral.400` thumb — §5.8 **Nav list scrollbar**)
 - Circular icon buttons inside **table** action columns and **table footer** load-more must use `component.button.icon.primary` / `danger` (default hover: white), not **`primaryCard`** / **`dangerCard`**
 - **Table Actions column (body rows):** action buttons hidden by default, visible on **row hover**; keep keyboard access (e.g. **`:focus-within`**). Use motion tokens for `opacity` transitions; respect **`prefers-reduced-motion`**. Table footer load-more is not covered by this pattern. See **§5.4**, **Table Action Column**.
 - Circular icon buttons on **white card surfaces** use `component.button.icon.primaryCard` / `dangerCard`; **both** use hover background **`Core/Color/Neutral/200`** (same as Pills hover)—variant choice follows icon semantic role only
