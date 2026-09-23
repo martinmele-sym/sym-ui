@@ -663,7 +663,8 @@ Visual rules:
 - Text color: `component.table.header.foreground`
 - Font size: `component.table.header.fontSize`
 - Font weight: `component.table.header.fontWeight`
-- Bottom separator: `component.table.header.borderBottom`
+- **No bottom border** on the header row: `thead tr` and `th` must not render a solid bottom border or separator color — the header band ends flush against body rows; separation comes from the contrast between `component.table.header.background` and body row surfaces plus body row `border-bottom` tokens
+- **Header corner radius:** first `th` uses `border-radius: component.table.header.cornerRadius 0 0 component.table.header.cornerRadius` (left corners); last `th` uses `0 component.table.header.cornerRadius component.table.header.cornerRadius 0` (right corners). When the header is a single column, all four corners use `component.table.header.cornerRadius`. Token value is **6px** — slightly inset from the card radius (`core.border.radius.md`, 8px) so the header band aligns optically with the Primary Card shell instead of ending in a square corner.
 
 Sort icon rules:
 - Must use Google Material Icons only
@@ -689,6 +690,59 @@ Sort interaction feedback:
 - Table header text must always use `component.table.header.foreground`
 - Optional text emphasis may only change font weight, not color
 - Do not change header background aggressively
+
+#### Column settings (`more_horiz`)
+
+Large data tables may expose a trailing **settings** column (**`sym-table__col--settings`**, fixed width **`component.table.columnSettings.width`** / **`core.size.40`**, always last column) with a **`more_horiz`** control in **`thead` only**. Body rows render an empty **`sym-table__cell--settings`** ( **`aria-hidden`** ) to preserve column alignment.
+
+**Purpose:** Let users show or hide **data columns** via a compact popover — Figma Resource Inventory ([table](https://www.figma.com/design/QarS99TuWgzjkkKqGdOhm2/SYM---Resource-Inventory?node-id=5588-24935)).
+
+**Component:** **`SymTableColumnSettings`** (`symphonica-ui/src/components/SymTableColumnSettings.tsx`) + **`useSymTableColumnVisibility`** for state.
+
+| Region | Contract |
+|--------|----------|
+| Trigger | **`more_horiz`** Material icon; flat header tint **`component.table.header.icon.color`**; tooltip **Manage columns**; **`aria-haspopup="listbox"`** |
+| Popover | White panel, **`core.color.neutral.300`** border, **`core.shadow.card`**, **`component.table.columnSettings.panel.minWidth`** / **`maxHeight`**; **right-aligned** under trigger; **`z-index`** above sticky card header |
+| Visible row | Leading **`check`** (primary) + column label |
+| Hidden row | Leading **`close`** (**`core.color.neutral.500`**) + column label |
+| Interaction | **Immediate toggle** on option click (no Apply/Cancel); close on **outside click** or **Escape** |
+
+**Column scope:**
+- **In popover:** configurable data columns only (define **`SymTableColumnOption[]`** with **`id`**, **`label`**, optional **`defaultVisible`**).
+- **Always visible, never listed:** row multiselect checkbox column, **Status** (when the table exposes operational/status badges — see **Column order** below), **Actions**, settings column itself.
+
+**Column order (normative):**
+1. Multiselect checkbox (when present)
+2. Toggleable **data** columns (user order from catalog; visibility via popover)
+3. **Status** — when present, **always immediately before Actions** (`sym-table__col--status` / `sym-table__cell--status`); uses Badge component; not reorderable via popover
+4. **Actions**
+5. Settings (`more_horiz`, last column)
+
+Example (Resource Inventory): Name → … → Port → **Status** → Actions → `more_horiz`.
+
+**Implementation checklist:**
+1. Define column catalog (e.g. **`RESOURCE_INVENTORY_TABLE_COLUMNS`** in mock/data module).
+2. Filter **`thead` / `tbody`** cells with **`isColumnVisible(columnId)`**.
+3. Mount **`SymTableColumnSettings`** inside **`th.sym-table__col--settings`** — not a bare glyph span.
+4. Keep checkbox, Actions, and settings columns outside the visibility map.
+
+**Reference:** **`ResourceInventoryShowcase.tsx`**.
+
+#### Column resize
+
+Users may **optionally adjust data column widths** by dragging the boundary between header cells. The affordance stays **visually hidden** — no vertical grid lines or “spreadsheet” borders.
+
+| Region | Contract |
+|--------|----------|
+| Hit target | Invisible **`sym-table__col-resize-handle`** on the **right edge** of each resizable **`th`**; width **`component.table.columnResize.handleWidth`** (default **8px**); transparent background |
+| Cursor | **`component.table.columnResize.cursor`** (**`col-resize`**) on handle hover and for the whole document while dragging |
+| Excluded columns | Multiselect checkbox (**`sym-table__col--checkbox`**), **Actions** (**`sym-table__col--actions`** — width derived from button count, not user-resizable), settings (**`sym-table__col--settings`** — fixed **40px**, pinned as last column), or any **`sym-table__col--no-resize`** |
+| Drag behavior | Pointer drag updates column width via **`colgroup` / `col`** + **`table-layout: fixed`**; minimum width **`component.table.columnResize.minColumnWidth`** |
+| Visual rule | **Never** render persistent vertical separators between columns for resize |
+
+**Component:** prefer **`SymTable`** (`symphonica-ui/src/components/SymTable.tsx`) — it mounts **`useSymTableColumnResize`** automatically. Native **`<table class="sym-table">`** may call the hook with a ref.
+
+**Reference:** **`ResourceInventoryShowcase.tsx`**.
 
 ---
 
@@ -739,7 +793,7 @@ Implementation contract:
 When using native HTML tables, row height must not rely on `tr` alone.
 
 Rules:
-- Native tables must use `border-collapse: collapse`
+- Native tables must use `border-collapse: separate` with `border-spacing: 0` (`component.table.layout.borderCollapse` / `borderSpacing`) so header `th` corner radius clips correctly inside the card; row separators still come from per-cell `border-bottom` tokens, not from cell gaps
 - Row height must be enforced through both:
   - `tr` as the row container
   - `th` and `td` as the cell elements
@@ -760,7 +814,7 @@ Implementation requirements:
 - Do not depend on Bootstrap `.table` padding, `.table-sm`, or default line-height to define row height
 
 Row separator rules:
-- Header rows must use `component.table.header.borderBottom`
+- Header rows (`thead tr`, `th`) must **not** use a bottom border or hairline separator
 - Body rows must use `component.table.row.borderBottom`
 - Separator width/style/color must come from table borderBottom tokens
 - Do not use shadows, gaps, margins, or background bands as row separators
@@ -896,6 +950,7 @@ Actions column must use compact circular Icon Buttons.
 - For keyboard and assistive-tech use, ensure actions remain usable when the row or an action receives focus (e.g. show on **`:focus-within`** on the row, or an equivalent accessible pattern).
 
 Rules:
+- **Actions column width** must never be narrower than the row’s icon button toolbar: compute from the **maximum button count** across body rows (`buttonCount × component.button.icon.size + (buttonCount − 1) × component.table.actionsColumn.gap`, plus horizontal cell padding; also respect the **Actions** header label). Lock width in `colgroup` during column resize; buttons use **`flex-shrink: 0`** so icons do not deform
 - Table action buttons must use `component.button.icon`
 - Table action buttons must not use `component.button.outlined.iconOnly`
 - Table action buttons must not use Bootstrap outlined icon-only styles
@@ -1143,6 +1198,22 @@ The bottom-row **right** slot is **not** always “Create only”:
 
 **Primary Create button recipe (when used):** **`component.button.filled.primary`**; Material Icons Outlined **`add`** immediately **before** the label; visible label **`Create {entity}`** (e.g. “Create service order”) — **no** redundant **`+`** character in the string because **`add`** already communicates addition (matches Guía). §5.3 / Guía button tokens.
 
+##### Primary Create — responsive label (card header)
+
+Use **`SymHeaderCreateButton`** (`symphonica-ui/src/components/SymHeaderCreateButton.tsx`) in **`sym-card-header__right`**. The host **`sym-card-header__bottom`** is a **container query** (`container-name: sym-card-header-bottom`) so the label responds to **header strip width**, not viewport alone.
+
+| Tier | Condition (header bottom width) | Visible label | Tooltip |
+|------|----------------------------------|---------------|---------|
+| **Full** | **≥ 1600px** | **`Create {entity}`** | — (visible text is sufficient) |
+| **Short** | **480px – 1599px** | **`{entity}`** only ( **`add`** icon retained ) | — |
+| **Icon-only** | **≤ 479px** | **`add`** glyph only (`sym-btn-filled-primary--icon-only`) | **`Create {entity}`** via **`SymIconTooltipButton`** + **`aria-label`** |
+
+**Examples:** Resource Inventory — full *Create Resource* on very wide strips; typical desktop with dense filters → *Resource*; mobile → icon-only with tooltip *Create Resource*.
+
+**Implementation:** CSS **`@container sym-card-header-bottom`** toggles full vs short spans; **`ResizeObserver`** on the same container switches icon-only + Bootstrap tooltip (threshold **`SYM_HEADER_CREATE_ICON_ONLY_MAX_PX`** = **479**, kept in sync with CSS). Constants: **`SYM_HEADER_CREATE_FULL_LABEL_MIN_PX`** = **1600**.
+
+**Do not** hand-roll three separate buttons or viewport-only **`@media`** queries for this pattern.
+
 Rules:
 
 - Do not park unrelated secondary actions in the right group; icon-only utilities belong in the **left** group order for **Pills** / **Filters**.
@@ -1189,7 +1260,8 @@ Advanced behaviour:
 ##### Filters layout constraints
 
 - Align toolbar controls **`flex-end`** (baseline band): icon-only triggers share the same vertical band as inputs/selects (Guía filter rows).
-- Primary toolbar fields: target **`160px`–`300px`** width each (`max-width: 300px`, `min-width: 160px`), wrapping when the viewport is narrow — matches **Card Primary Header with filters** ([Figma](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7872-9277)).
+- Primary toolbar fields: target **`160px`–`300px`** width each (`min-width: 160px`, `max-width: 300px`), wrapping when the viewport is narrow — matches **Card Primary Header with filters** ([Figma](https://www.figma.com/design/7JdlMVI0UphCTyuHFF9Fww/Guia-de-Estilos-de-Symphonica?node-id=7872-9277)).
+- **Flex within the band:** `--primary-toolbar` fields use **`flex: 1 1 160px`** (not a fixed **`300px`** width). Siblings **share** leftover horizontal space up to the **300px** cap so dense toolbars (e.g. Resource Inventory: five filters + icon triggers) stay on **one row** at desktop widths (~**1920px**); when the row cannot satisfy **160px** minima for every field, **`flex-wrap`** on **`sym-card-header__filters`** breaks to the next line naturally.
 - Advanced row fields: same **min/max** band; prefer **`flex: 1 1 0`** so siblings share horizontal space up to the **300px** cap per field.
 - Fields must not force horizontal scroll; **wrap** to the next line when space is tight.
 - Do not shrink controls below a usable minimum width.
@@ -1221,12 +1293,12 @@ This subsection is the **machine- and human-readable contract** for rebuilding t
 | Left cluster | `sym-card-header__left` | **`flex: 1`**, **`min-width: 0`** so filters can wrap without breaking layout |
 | Right CTA | `sym-card-header__right` | **`flex-shrink: 0`**; optional **`sym-btn-filled-primary`** |
 | Simple toolbar | `sym-card-header__filters` | Wrap + **`align-items: flex-end`** + **`core.spacing.8`** gap |
-| Simple field wrapper | `sym-card-header__filter-field sym-card-header__filter-field--primary-toolbar` | **160px–300px** band; no **`flex: 1 1 10rem`** alone |
+| Simple field wrapper | `sym-card-header__filter-field sym-card-header__filter-field--primary-toolbar` | **`flex: 1 1 160px`**, **160–300px** band; inner **`form-control` / `form-select`** at **`width: 100%`** |
 | Advanced row container | `sym-card-header__advanced-row` (+ optional second `sym-card-header__filters`) | Full width; **no** top border (vertical rhythm = header layout gap) |
 | Advanced field wrapper | `sym-card-header__filter-field sym-card-header__filter-field--advanced-toolbar` | **`flex: 1 1 0`**, same **160–300px** cap |
 | Clear | `sym-btn-outlined-icon-only` | Icon **`filter_alt_off`** — **md** hit target (tokens **`component.button.outlined.iconOnly`**) |
 | Advanced toggle | `sym-btn-outlined-icon-only` **or** `sym-btn-filled-primary sym-btn-filled-primary--icon-only` | Outlined when collapsed; **filled icon-only** when row open — **same md square** as outlined (filled modifier reuses icon-only dimensions) |
-| Primary Create | `sym-btn-filled-primary` | Leading **`add`**; label **`Create {entity}`** — **no** literal **`+`** in string |
+| Primary Create | `SymHeaderCreateButton` (wraps `sym-btn-filled-primary`) | Leading **`add`**; responsive label tiers below — **no** literal **`+`** in string |
 
 **Bootstrap / Symphonica controls:** Inputs and selects use **`form-control sym-form-control`** / **`form-select sym-form-control`** (per §5.10 field styling). Icons: **`material-icons-outlined`**.
 
@@ -1950,7 +2022,7 @@ Optional when the context is obvious from the title alone.
 
 Examples: **Clone Process Model**, **Create Device** (vendor → model → version), optional description **textarea**.
 
-- Use Bootstrap **`form-control`** / **`form-select`** / **`form-label`** patterns styled with Symphonica field tokens (placeholder **`Semantic/Text`/`neutral` placeholder tones**, borders **`Core/Color/Neutral/400`** default, primary-focused ring per **`core.focus.ring`** / **`semantic.color.primary`** — **§5.12**).
+- Use Bootstrap **`form-control`** / **`form-select`** / **`form-label`** patterns styled with Symphonica field tokens (placeholder **`Semantic/Text`/`neutral` placeholder tones**, borders **`Core/Color/Neutral/400`** default, focused border **`semantic.color.primary.focusBorder`** + ring **`semantic.color.primary.focusRing`** — **§5.12**).
 - Required markers: **danger** asterisk (**`Semantic/Color/Danger/Base`**).
 - Stack fields with **`Core/Spacing/16`** (or tighter **12** only if Guía frame specifies); scrolling: **dialog body** scrolls, not the **backdrop**.
 
@@ -2035,23 +2107,33 @@ Multi-primary layouts (e.g. **Clone and Open Editor** + **Clone Model**): **both
 
 ### 5.12 Form controls — Bootstrap accents (Symphonica mapping)
 
-Bootstrap **Reboot** ships **default blue** (`#0d6efd`, `#86b7fe` focus tints) on **`form-control`**, **`form-select`**, **`form-check-input`** (checkbox / radio / switch), and **`form-range`**. In Symphonica apps those accents **must** track **`semantic.color.primary`** and **`core.focus.ring`**, not stock Bootstrap.
+Bootstrap **Reboot** ships **default blue** (`#0d6efd`, `#86b7fe` focus tints) on **`form-control`**, **`form-select`**, **`form-check-input`** (checkbox / radio / switch), and **`form-range`**. In Symphonica apps those accents **must** use the **form-field focus tokens** below — **not** stock Bootstrap blue and **not** **`core.focus.ring`** (which stays **`semantic.color.primary.base`** for **keyboard chrome** on nav, sidebar links, tabs, etc.).
 
 **Implementation:** `symphonica-ui/src/styles/symphonica.css` — block comment **`Bootstrap form accents — Symphonica tokens (§5.12)`**. Rules load **after** `bootstrap.min.css` via `global.css`, so they apply **globally** (including **`document.body`** portaled modals).
 
+**Figma reference (focused text field):** [Resource Inventory — input focused](https://www.figma.com/design/QarS99TuWgzjkkKqGdOhm2/SYM---Resource-Inventory?node-id=5588-28299) — **Components/Input Focused Border** + **Active Shadow/Outline Primary** (4px spread).
+
+| Token | Value | Role |
+|-------|-------|------|
+| **`semantic.color.primary.focusBorder`** | **`#A9A5DB`** | Focused field **border** |
+| **`semantic.color.primary.focusRing`** | **`#D6DBF8`** | Focused field **outer ring** (soft halo) |
+| **`component.form.field.focus.ringSpread`** | **`4px`** | Bootstrap-style **`box-shadow`** spread ( **`0 0 0 4px`** ) |
+
 | Bootstrap construct | Symphonica mapping |
 |---------------------|-------------------|
-| **`form-control` / `form-select` `:focus`** | Border **`semantic.color.primary.base`**; ring **`core.focus.ring`** (**width**, **offset**, **color** → primary base) — matches **`sym-form-control`** intent |
+| **`form-control` / `form-select` `:focus` / `:focus-visible`** | Border **`component.form.field.focus.borderColor`**; **`box-shadow: 0 0 0 ringSpread ringColor`** — applies to **`sym-form-control`** |
 | **Checkbox / radio `border`** | Default **`core.color.neutral.400`**; surface **`core.color.neutral.white`** |
-| **Checkbox / radio `:focus`** | Same ring as fields |
+| **Checkbox / radio `:focus` / `:focus-visible`** | Same **focusBorder** + **focusRing** as text fields |
 | **`:checked` / `:indeterminate`** | Fill + border **`semantic.color.primary.base`** (check / dash / radio dot SVGs stay white — Bootstrap defaults OK) |
-| **Switch `:focus` thumb** | Replace Bootstrap blue thumb with **`semantic.color.primary.light`** (**`#DFE3FA`**) in the SVG data-URL so focus matches primary family |
+| **Switch `:focus` thumb** | Replace Bootstrap blue thumb with **`semantic.color.primary.focusRing`** (**`#D6DBF8`**) in the SVG data-URL |
 | **`form-range` thumb** | **`semantic.color.primary.base`**; **`:active`** thumb → **`semantic.color.primary.light`** |
-| **`form-range` `:focus` thumb halo** | **`core.focus.ring`** (doubled shadow pattern preserved from Bootstrap) |
+| **`form-range` `:focus` thumb halo** | Same **focusRing** + **ringSpread** (doubled shadow pattern preserved from Bootstrap) |
+| **Custom field shells** (e.g. **`sym-multiselect__control`**, **`sym-sidebar__search`**) | Reuse **`component.form.field.focus.*`** — do **not** wire **`core.focus.ring`** on inputs |
 
 Rules:
 
 - Do **not** rely on Bootstrap’s compiled blue hex values for Symphonica branded surfaces.
+- Do **not** use **`semantic.color.primary.base`** for **field focus rings** — that token is for **filled buttons**, **checked** controls, and **non-field** **`core.focus.ring`** outlines.
 - **Card Subtitle Label + switch** (§5.5): composes Bootstrap **`form-switch`**; styling inherits from this section — the switch track **`checked`** fill comes from **`:checked`** rules above; bar role (**info / success / error**) does **not** recolor the switch (see Card Subtitle Label rules).
 
 ---

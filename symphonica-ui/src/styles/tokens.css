@@ -86,6 +86,8 @@
   --semantic-color-primary-light: #DFE3FA;
   --semantic-color-primary-light-alert: #EFF1FD;
   --semantic-color-primary-border: #C7C2FD;
+  --semantic-color-primary-focus-border: #A9A5DB;
+  --semantic-color-primary-focus-ring: #D6DBF8;
   --semantic-color-secondary: #F6F3FF;
   --semantic-color-dark: var(--core-color-neutral-900);
   --semantic-color-success-base: #2DCE89;
@@ -169,6 +171,9 @@
   --component-badge-padding-x: var(--core-spacing-8);
   --component-badge-padding-y: 0px;
   --component-badge-height: var(--core-size-28);
+  --component-form-field-focus-border-color: var(--semantic-color-primary-focus-border);
+  --component-form-field-focus-ring-spread: 4px;
+  --component-form-field-focus-ring-color: var(--semantic-color-primary-focus-ring);
   --component-card-header-layout-direction: column;
   --component-card-header-layout-gap: var(--core-spacing-16);
   --component-card-header-top-layout-direction: column;
@@ -223,6 +228,13 @@
   --component-card-subtitle-label-surface-error: var(--semantic-color-danger-light);
   --component-card-subtitle-label-variants-text-only: true;
   --component-card-subtitle-label-variants-with-switch: true;
+  --component-table-column-settings-width: var(--core-size-40);
+  --component-table-column-settings-panel-min-width: 220px;
+  --component-table-column-settings-panel-max-height: 320px;
+  --component-table-column-resize-handle-width: 8px;
+  --component-table-column-resize-min-column-width: 80px;
+  --component-table-column-resize-cursor: col-resize;
+  --component-table-actions-column-gap: var(--core-spacing-8);
   --component-table-header-sortable: true;
   --component-table-header-height: var(--core-size-40);
   --component-table-header-icon-size: var(--core-size-16);
@@ -232,9 +244,10 @@
   --component-table-header-foreground: var(--semantic-text-primary);
   --component-table-header-font-size: var(--core-typography-font-size-14);
   --component-table-header-font-weight: var(--core-typography-font-weight-semibold);
-  --component-table-header-border-bottom-width: 1px;
-  --component-table-header-border-bottom-style: solid;
-  --component-table-header-border-bottom-color: var(--core-color-neutral-300);
+  --component-table-header-border-bottom-width: 0;
+  --component-table-header-border-bottom-style: none;
+  --component-table-header-border-bottom-color: transparent;
+  --component-table-header-corner-radius: 6px;
   --component-table-row-height: var(--core-size-40);
   --component-table-row-default-background: var(--core-color-neutral-white);
   --component-table-row-default-font-size: var(--core-typography-font-size-12);
@@ -274,7 +287,8 @@
   --component-table-cell-vertical-align: middle;
   --component-table-cell-display: table-cell;
   --component-table-cell-height-behavior: must-not-expand-row-height;
-  --component-table-layout-border-collapse: collapse;
+  --component-table-layout-border-collapse: separate;
+  --component-table-layout-border-spacing: 0;
   --component-table-layout-table-layout: auto;
   --component-pill-font-size: var(--core-typography-font-size-14);
   --component-pill-font-weight: var(--core-typography-font-weight-medium);

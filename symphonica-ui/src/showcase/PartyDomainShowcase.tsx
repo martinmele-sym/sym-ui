@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SymHeaderCreateButton } from '../components/SymHeaderCreateButton'
 import { SymIconTooltipButton } from '../components/SymIconTooltipButton'
 
 function Badge({
@@ -110,12 +111,7 @@ export function PartyDomainShowcase() {
               </div>
             </div>
             <div className="sym-card-header__right">
-              <button type="button" className="sym-btn-filled-primary">
-                <span className="material-icons-outlined" aria-hidden>
-                  add
-                </span>
-                Create party
-              </button>
+              <SymHeaderCreateButton entityLabel="party" />
             </div>
           </div>
           {advancedFiltersOpen ? (

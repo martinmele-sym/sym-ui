@@ -381,9 +381,8 @@ export function CharacteristicValuesPanel({
         </div>
       </header>
 
-      <div className="sym-detail-drawer__main">
-        <div className="sym-detail-drawer__scroll">
-          <div className="sym-detail-drawer__values-content">
+      <div className="sym-detail-drawer__scroll">
+        <div className="sym-detail-drawer__values-content">
             <ul className="nav nav-tabs sym-nav-tabs-top" role="tablist" aria-label="Values tabs">
               <li className="nav-item" role="presentation">
                 <button
@@ -562,7 +561,6 @@ export function CharacteristicValuesPanel({
                 />
               </form>
             )}
-          </div>
         </div>
 
         <footer className="sym-detail-drawer__footer">

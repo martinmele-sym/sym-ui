@@ -2,7 +2,14 @@ import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { workflowProcessSelectionRulesHref } from '../data/appNavConfig'
 import { EditProcessSelectionRuleDrawer } from '../components/EditProcessSelectionRuleDrawer'
+import { SymHeaderCreateButton } from '../components/SymHeaderCreateButton'
+import { SymTable } from '../components/SymTable'
 import { SymIconTooltipButton } from '../components/SymIconTooltipButton'
+import {
+  SymTableColumnSettings,
+  useSymTableColumnVisibility,
+  type SymTableColumnOption,
+} from '../components/SymTableColumnSettings'
 import { SymToastStack, useSymToasts } from '../components/SymToast'
 import {
   createEmptyProcessSelectionRule,
@@ -12,6 +19,13 @@ import {
 } from '../data/processSelectionRulesMockData'
 
 type SortPhase = 'idle' | 'asc' | 'desc'
+
+const PSR_TABLE_COLUMNS: SymTableColumnOption[] = [
+  { id: 'serviceSpecification', label: 'Service Specification', defaultVisible: true },
+  { id: 'actionType', label: 'Action Type', defaultVisible: true },
+  { id: 'actionName', label: 'Action Name', defaultVisible: true },
+  { id: 'description', label: 'Description', defaultVisible: true },
+]
 
 function SortIcon({ phase }: { phase: SortPhase }) {
   const name =
@@ -33,6 +47,7 @@ export function ProcessSelectionRulesShowcase() {
   const [highlightedRuleId, setHighlightedRuleId] = useState<string | null>(null)
   const drawerCloseRef = useRef<(() => void) | null>(null)
   const { toasts, pushToast, dismissToast } = useSymToasts()
+  const columnVisibility = useSymTableColumnVisibility(PSR_TABLE_COLUMNS)
 
   const rows = useMemo(() => {
     const copy = [...rules]
@@ -162,16 +177,10 @@ export function ProcessSelectionRulesShowcase() {
               </div>
             </div>
             <div className="sym-card-header__right">
-              <button
-                type="button"
-                className="sym-btn-filled-primary"
+              <SymHeaderCreateButton
+                entityLabel="Service Spec"
                 onClick={handleCreateServiceSpec}
-              >
-                <span className="material-icons-outlined" aria-hidden>
-                  add
-                </span>
-                Create Service Spec
-              </button>
+              />
             </div>
           </div>
         </header>
@@ -186,6 +195,9 @@ export function ProcessSelectionRulesShowcase() {
           onCycleServiceSpecSort={cycleServiceSpecSort}
           onRowSelect={handleRowSelect}
           onOpenRulesAndConditions={handleOpenRulesAndConditions}
+          isColumnVisible={columnVisibility.isColumnVisible}
+          columnVisibility={columnVisibility.visibility}
+          onToggleColumn={columnVisibility.toggleColumn}
         />
       </article>
 
@@ -212,6 +224,9 @@ function ProcessSelectionRulesTable({
   onCycleServiceSpecSort,
   onRowSelect,
   onOpenRulesAndConditions,
+  isColumnVisible,
+  columnVisibility,
+  onToggleColumn,
 }: {
   rows: ProcessSelectionRule[]
   selectedRowId: string | null
@@ -220,6 +235,9 @@ function ProcessSelectionRulesTable({
   onCycleServiceSpecSort: () => void
   onRowSelect: (rowId: string) => void
   onOpenRulesAndConditions: (rule: ProcessSelectionRule) => void
+  isColumnVisible: (columnId: string) => boolean
+  columnVisibility: Record<string, boolean>
+  onToggleColumn: (columnId: string) => void
 }) {
   const sortableHeader = (label: string, onSort?: () => void, sortPhase?: SortPhase) =>
     onSort ? (
@@ -233,22 +251,32 @@ function ProcessSelectionRulesTable({
 
   return (
     <>
-      <table className="sym-table" aria-label="Process selection rules">
+      <SymTable aria-label="Process selection rules">
         <thead>
           <tr>
-            <th scope="col">
-              {sortableHeader('Service Specification', onCycleServiceSpecSort, serviceSpecSort)}
-            </th>
-            <th scope="col">{sortableHeader('Action Type')}</th>
-            <th scope="col">{sortableHeader('Action Name')}</th>
-            <th scope="col">{sortableHeader('Description')}</th>
-            <th scope="col" style={{ width: 'var(--core-size-56)' }}>
+            {isColumnVisible('serviceSpecification') ? (
+              <th scope="col">
+                {sortableHeader('Service Specification', onCycleServiceSpecSort, serviceSpecSort)}
+              </th>
+            ) : null}
+            {isColumnVisible('actionType') ? (
+              <th scope="col">{sortableHeader('Action Type')}</th>
+            ) : null}
+            {isColumnVisible('actionName') ? (
+              <th scope="col">{sortableHeader('Action Name')}</th>
+            ) : null}
+            {isColumnVisible('description') ? (
+              <th scope="col">{sortableHeader('Description')}</th>
+            ) : null}
+            <th scope="col" className="sym-table__col--actions">
               Actions
             </th>
-            <th scope="col" className="sym-table__col--settings" aria-label="Table settings">
-              <span className="material-icons-outlined" aria-hidden>
-                more_horiz
-              </span>
+            <th scope="col" className="sym-table__col--settings">
+              <SymTableColumnSettings
+                columns={PSR_TABLE_COLUMNS}
+                visibility={columnVisibility}
+                onToggleColumn={onToggleColumn}
+              />
             </th>
           </tr>
         </thead>
@@ -266,10 +294,10 @@ function ProcessSelectionRulesTable({
               onClick={() => onRowSelect(row.id)}
               aria-selected={row.id === selectedRowId}
             >
-              <td>{row.serviceSpecification}</td>
-              <td>{row.actionType}</td>
-              <td>{row.actionName}</td>
-              <td>{row.description}</td>
+              {isColumnVisible('serviceSpecification') ? <td>{row.serviceSpecification}</td> : null}
+              {isColumnVisible('actionType') ? <td>{row.actionType}</td> : null}
+              {isColumnVisible('actionName') ? <td>{row.actionName}</td> : null}
+              {isColumnVisible('description') ? <td>{row.description}</td> : null}
               <td className="sym-table__cell--actions">
                 <div className="sym-table-actions" onClick={(e) => e.stopPropagation()}>
                   <SymIconTooltipButton
@@ -297,7 +325,7 @@ function ProcessSelectionRulesTable({
             </tr>
           ))}
         </tbody>
-      </table>
+      </SymTable>
       <footer className="sym-table-footer">
         <span />
         <div className="sym-table-footer__center">

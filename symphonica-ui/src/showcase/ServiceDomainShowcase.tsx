@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { EditCharacteristicDrawer } from '../components/EditCharacteristicDrawer'
+import { SymTable } from '../components/SymTable'
 import { SymIconTooltipButton } from '../components/SymIconTooltipButton'
 import {
   createEmptyServiceSpecCharacteristic,
@@ -248,7 +249,7 @@ function CharacteristicsTable({
 
   return (
     <>
-      <table className="sym-table" aria-label="Service specification characteristics">
+      <SymTable aria-label="Service specification characteristics">
         <thead>
           <tr>
             <th scope="col">{sortableHeader('Name', onCycleNameSort, nameSort)}</th>
@@ -259,7 +260,7 @@ function CharacteristicsTable({
             <th scope="col">{sortableHeader('SubCharacteristics')}</th>
             <th scope="col">{sortableHeader('Min Cardinality')}</th>
             <th scope="col">{sortableHeader('Max cardinality')}</th>
-            <th scope="col" style={{ width: 'var(--core-size-56)' }}>
+            <th scope="col" className="sym-table__col--actions">
               Actions
             </th>
           </tr>
@@ -312,7 +313,7 @@ function CharacteristicsTable({
             </tr>
           ))}
         </tbody>
-      </table>
+      </SymTable>
       <footer className="sym-table-footer">
         <span />
         <span />

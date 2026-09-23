@@ -4,7 +4,12 @@ export type DomainSubRoute = {
   id: string
   path: string
   title: string
-  showcase?: 'serviceOrders' | 'serviceSpecifications' | 'processSelectionRules' | 'deviceManager'
+  showcase?:
+    | 'serviceOrders'
+    | 'serviceSpecifications'
+    | 'processSelectionRules'
+    | 'deviceManager'
+    | 'resourceInventory'
   badge?: string
   /** Guía trailing open_in_new; default true when omitted. */
   externalLink?: boolean
@@ -120,7 +125,12 @@ export const RESOURCE_DOMAIN_SUBROUTES: DomainSubRoute[] = [
     badge: 'NEW',
   },
   { id: 'resource-specification', path: 'resource-specification', title: 'Resource Specification' },
-  { id: 'resource-inventory', path: 'resource-inventory', title: 'Resource Inventory' },
+  {
+    id: 'resource-inventory',
+    path: 'resource-inventory',
+    title: 'Resource Inventory',
+    showcase: 'resourceInventory',
+  },
   { id: 'resource-commands', path: 'resource-commands', title: 'Resource Commands' },
   { id: 'resource-order-spec', path: 'resource-order-spec', title: 'Resource Order Spec' },
   { id: 'resource-order-test', path: 'resource-order-test', title: 'Resource Order Test' },

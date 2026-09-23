@@ -29,6 +29,7 @@ import { PartyDomainShowcase } from './showcase/PartyDomainShowcase'
 import { ProcessSelectionRulesShowcase } from './showcase/ProcessSelectionRulesShowcase'
 import { RulesAndConditionsShowcase } from './showcase/RulesAndConditionsShowcase'
 import { ServiceDomainShowcase } from './showcase/ServiceDomainShowcase'
+import { ResourceInventoryShowcase } from './showcase/ResourceInventoryShowcase'
 import { ServiceSpecDashboardShowcase } from './showcase/ServiceSpecDashboardShowcase'
 import { SymphonicaShowcase } from './showcase/SymphonicaShowcase'
 
@@ -52,6 +53,8 @@ function renderDomainSubRoute(row: DomainSubRoute) {
       return <ProcessSelectionRulesShowcase />
     case 'deviceManager':
       return <ServiceSpecDashboardShowcase />
+    case 'resourceInventory':
+      return <ResourceInventoryShowcase />
     default:
       return <OrderManagementSubShowcase title={row.title} />
   }

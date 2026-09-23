@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { orderManagementHref } from '../data/appNavConfig'
+import { SymHeaderCreateButton } from '../components/SymHeaderCreateButton'
+import { SymTable } from '../components/SymTable'
 import { SymIconTooltipButton } from '../components/SymIconTooltipButton'
 
 type SortPhase = 'idle' | 'asc' | 'desc'
@@ -545,7 +547,7 @@ function OrdersTableCard({
 
   return (
     <article className="sym-card-primary sym-no-hover">
-      <table className="sym-table" aria-label={ariaLabel}>
+      <SymTable aria-label={ariaLabel}>
         <thead>
           <tr>
             <th scope="col">
@@ -572,7 +574,7 @@ function OrdersTableCard({
                 <SortIcon phase={dateSort} />
               </button>
             </th>
-            <th scope="col" style={{ width: 'var(--core-size-56)' }}>
+            <th scope="col" className="sym-table__col--actions">
               Actions
             </th>
           </tr>
@@ -625,7 +627,7 @@ function OrdersTableCard({
             )
           })}
         </tbody>
-      </table>
+      </SymTable>
       <footer className="sym-table-footer">
         <span />
         <div className="sym-table-footer__center">
@@ -753,12 +755,7 @@ export function SymphonicaShowcase({ mode }: { mode: 'home' | 'serviceOrders' })
               </div>
             </div>
             <div className="sym-card-header__right">
-              <button type="button" className="sym-btn-filled-primary">
-                <span className="material-icons-outlined" aria-hidden>
-                  add
-                </span>
-                Create service order
-              </button>
+              <SymHeaderCreateButton entityLabel="service order" />
             </div>
           </div>
         </header>

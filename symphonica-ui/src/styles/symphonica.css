@@ -452,10 +452,12 @@
   color: var(--component-nav-sidebar-search-placeholder-color);
 }
 
-.sym-sidebar__search:focus {
+.sym-sidebar__search:focus,
+.sym-sidebar__search:focus-visible {
   outline: none;
-  border-color: var(--semantic-color-primary-base);
-  box-shadow: 0 0 0 var(--core-focus-ring-offset) var(--core-focus-ring-color);
+  border-color: var(--component-form-field-focus-border-color);
+  box-shadow: 0 0 0 var(--component-form-field-focus-ring-spread)
+    var(--component-form-field-focus-ring-color);
 }
 
 .sym-sidebar__search-glyph {
@@ -563,11 +565,6 @@
 }
 
 .sym-sidebar__toggle:focus-visible {
-  outline: var(--core-border-width-focus-ring) solid var(--core-focus-ring-color);
-  outline-offset: var(--core-focus-ring-offset);
-}
-
-.sym-sidebar__search:focus-visible {
   outline: var(--core-border-width-focus-ring) solid var(--core-focus-ring-color);
   outline-offset: var(--core-focus-ring-offset);
 }
@@ -811,16 +808,148 @@
 /* Service Domain — non-blocking detail drawer (Figma 973:47114) */
 
 .sym-service-domain,
-.sym-process-selection-rules {
+.sym-process-selection-rules,
+.sym-resource-inventory {
   position: relative;
+}
+
+.sym-table__col--checkbox,
+.sym-table__cell--checkbox {
+  width: var(--core-size-48);
+  min-width: var(--core-size-48);
+  max-width: var(--core-size-48);
+  padding-top: var(--core-spacing-4);
+  padding-bottom: var(--core-spacing-4);
+  padding-left: var(--core-spacing-16);
+  padding-right: var(--core-spacing-8);
+  vertical-align: middle;
+  overflow: visible;
+}
+
+/* Bootstrap .form-check uses padding-left + negative input margin for labels — reset in table cells */
+.sym-table__checkbox.form-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--core-size-24);
+  margin: 0;
+  padding: 0;
+}
+
+.sym-table__checkbox .sym-table__checkbox-input.form-check-input {
+  width: var(--core-size-16);
+  height: var(--core-size-16);
+  margin: 0;
+  margin-left: 0;
+  float: none;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.sym-table__col--actions,
+.sym-table__cell--actions {
+  box-sizing: border-box;
+  white-space: nowrap;
 }
 
 .sym-table__col--settings,
 .sym-table__cell--settings {
-  width: var(--core-size-36);
+  width: var(--component-table-column-settings-width);
+  min-width: var(--component-table-column-settings-width);
+  max-width: var(--component-table-column-settings-width);
   padding-left: var(--core-spacing-8);
   padding-right: var(--core-spacing-8);
   text-align: center;
+  box-sizing: border-box;
+}
+
+.sym-table__col--settings {
+  position: relative;
+  overflow: visible;
+}
+
+/* §5.4 — Table column settings (`more_horiz` popover) */
+.sym-table-column-settings {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sym-table-column-settings__trigger.sym-icon-btn {
+  width: auto;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  background-color: transparent;
+  color: var(--component-table-header-icon-color);
+}
+
+.sym-table-column-settings__trigger.sym-icon-btn:hover:not(:disabled),
+.sym-table-column-settings__trigger.sym-icon-btn:focus-visible:not(:disabled) {
+  background-color: transparent;
+  color: var(--semantic-color-primary-base);
+}
+
+.sym-table-column-settings__trigger .material-icons-outlined {
+  font-size: var(--component-table-header-icon-size);
+  line-height: var(--core-typography-line-height-solid);
+}
+
+.sym-table-column-settings__panel {
+  position: absolute;
+  top: calc(100% + var(--core-spacing-4));
+  right: 0;
+  z-index: calc(var(--component-card-header-sticky-z-index) + 2);
+  display: flex;
+  flex-direction: column;
+  min-width: var(--component-table-column-settings-panel-min-width);
+  max-height: var(--component-table-column-settings-panel-max-height);
+  overflow-y: auto;
+  padding: var(--core-spacing-8) 0;
+  border: var(--core-border-width-hairline) solid var(--core-color-neutral-300);
+  border-radius: var(--core-border-radius-sm);
+  background-color: var(--core-color-neutral-white);
+  box-shadow: var(--core-shadow-card);
+}
+
+.sym-table-column-settings__option {
+  display: flex;
+  align-items: center;
+  gap: var(--core-spacing-8);
+  width: 100%;
+  min-height: var(--core-size-32);
+  margin: 0;
+  padding: var(--core-spacing-4) var(--core-spacing-16);
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sym-table-column-settings__option:hover,
+.sym-table-column-settings__option:focus-visible {
+  background-color: var(--core-color-neutral-100);
+  outline: none;
+}
+
+.sym-table-column-settings__option-icon {
+  flex-shrink: 0;
+  font-size: var(--core-size-16);
+  line-height: var(--core-typography-line-height-solid);
+  color: var(--semantic-color-primary-base);
+}
+
+.sym-table-column-settings__option-icon--hidden {
+  color: var(--core-color-neutral-500);
+}
+
+.sym-table-column-settings__option-label {
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--core-typography-font-size-14);
+  font-weight: var(--core-typography-font-weight-regular);
+  line-height: var(--core-typography-line-height-tight);
+  color: var(--semantic-text-primary);
 }
 
 .sym-table tbody tr.sym-table__row--interactive {
@@ -910,14 +1039,6 @@
   overflow: hidden;
 }
 
-.sym-detail-drawer__main {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-}
-
 .sym-detail-drawer__scroll {
   flex: 1 1 auto;
   min-height: 0;
@@ -993,7 +1114,8 @@
 .sym-secondary-table {
   width: 100%;
   min-width: 0;
-  border-collapse: collapse;
+  border-collapse: var(--component-table-layout-border-collapse);
+  border-spacing: var(--component-table-layout-border-spacing);
   table-layout: fixed;
 }
 
@@ -1024,6 +1146,20 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.sym-secondary-table thead th:first-child {
+  border-radius: var(--component-table-header-corner-radius) 0 0
+    var(--component-table-header-corner-radius);
+}
+
+.sym-secondary-table thead th:last-child {
+  border-radius: 0 var(--component-table-header-corner-radius)
+    var(--component-table-header-corner-radius) 0;
+}
+
+.sym-secondary-table thead th:first-child:last-child {
+  border-radius: var(--component-table-header-corner-radius);
 }
 
 .sym-secondary-table tbody td {
@@ -2183,6 +2319,8 @@
 }
 
 .sym-card-header__bottom {
+  container-type: inline-size;
+  container-name: sym-card-header-bottom;
   display: flex;
   flex-direction: var(--component-card-header-bottom-layout-direction);
   align-items: var(--component-card-header-bottom-layout-align-items);
@@ -2210,6 +2348,26 @@
   margin-left: auto;
 }
 
+/* §5.5 — Primary Create responsive label (SymHeaderCreateButton) */
+.sym-header-create-btn-wrap {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.sym-header-create-btn__label--short {
+  display: none;
+}
+
+@container sym-card-header-bottom (max-width: 1599px) {
+  .sym-header-create-btn__label--full {
+    display: none;
+  }
+
+  .sym-header-create-btn__label--short {
+    display: inline;
+  }
+}
+
 /* Primary Card header — §5.5 Filters pattern (inputs/selects + clear/advanced icon-only) */
 .sym-card-header__filters {
   display: flex;
@@ -2228,10 +2386,16 @@
 
 /* Guía Card Primary Header + filters (Figma 7872:9277): toolbar fields min 160px, max 300px */
 .sym-card-header__filter-field--primary-toolbar {
-  flex: 0 1 auto;
-  width: 300px;
-  max-width: min(100%, 300px);
+  flex: 1 1 160px;
+  width: auto;
   min-width: min(100%, 160px);
+  max-width: min(100%, 300px);
+}
+
+.sym-card-header__filter-field--primary-toolbar .form-control,
+.sym-card-header__filter-field--primary-toolbar .form-select {
+  width: 100%;
+  min-width: 0;
 }
 
 .sym-card-header__filter-field--advanced-toolbar {
@@ -3052,18 +3216,24 @@
 .sym-table {
   width: 100%;
   border-collapse: var(--component-table-layout-border-collapse);
+  border-spacing: var(--component-table-layout-border-spacing);
   table-layout: var(--component-table-layout-table-layout);
 }
 
-.sym-table thead tr,
+.sym-table thead tr {
+  height: var(--component-table-header-height);
+  min-height: var(--component-table-header-height);
+  max-height: var(--component-table-header-height);
+  background-color: var(--component-table-header-background);
+  border-bottom: none;
+}
+
 .sym-table thead th {
   height: var(--component-table-header-height);
   min-height: var(--component-table-header-height);
   max-height: var(--component-table-header-height);
   background-color: var(--component-table-header-background);
-  border-bottom: var(--component-table-header-border-bottom-width)
-    var(--component-table-header-border-bottom-style)
-    var(--component-table-header-border-bottom-color);
+  border-bottom: none;
   font-family: var(--core-typography-font-family-base);
   font-size: var(--component-table-header-font-size);
   font-weight: var(--component-table-header-font-weight);
@@ -3073,6 +3243,47 @@
   vertical-align: var(--component-table-cell-vertical-align);
   padding: var(--component-table-cell-padding-y) var(--component-table-cell-padding-x);
   box-sizing: border-box;
+}
+
+.sym-table thead th:first-child {
+  border-radius: var(--component-table-header-corner-radius) 0 0
+    var(--component-table-header-corner-radius);
+}
+
+.sym-table thead th:last-child {
+  border-radius: 0 var(--component-table-header-corner-radius)
+    var(--component-table-header-corner-radius) 0;
+}
+
+.sym-table thead th:first-child:last-child {
+  border-radius: var(--component-table-header-corner-radius);
+}
+
+/* §5.4 — Column resize (invisible header edge handles) */
+.sym-table thead th.sym-table__col--resizable {
+  position: relative;
+}
+
+.sym-table__col-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  width: var(--component-table-column-resize-handle-width);
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: var(--component-table-column-resize-cursor);
+  touch-action: none;
+  user-select: none;
+}
+
+body.sym-table-column-resizing,
+body.sym-table-column-resizing * {
+  cursor: var(--component-table-column-resize-cursor) !important;
+  user-select: none;
 }
 
 .sym-table tbody tr,
@@ -3126,6 +3337,12 @@
 .sym-table tbody td.sym-table__cell--actions {
   overflow: visible;
   white-space: normal;
+}
+
+.sym-table thead th.sym-table__col--checkbox,
+.sym-table tbody td.sym-table__cell--checkbox,
+.sym-table thead th.sym-table__col--settings {
+  overflow: visible;
 }
 
 .sym-table tbody tr .sym-table-actions {
@@ -3308,14 +3525,18 @@
 
 /**
  * Bootstrap form accents — Symphonica tokens (§5.12).
- * Maps reboot defaults (Bootstrap blue #0d6efd / #86b7fe) to semantic primary + core.focus.ring.
+ * Field focus: Figma Components/Input Focused Border (#A9A5DB) + focus ring (#D6DBF8, 4px spread).
+ * core.focus.ring (primary.base) remains for keyboard chrome (nav, sidebar links, tabs).
  * Loaded after bootstrap.min.css — overrides apply app-wide (including portaled modals on body).
  */
 .form-control:focus,
-.form-select:focus {
-  border-color: var(--semantic-color-primary-base);
+.form-control:focus-visible,
+.form-select:focus,
+.form-select:focus-visible {
+  border-color: var(--component-form-field-focus-border-color);
   outline: 0;
-  box-shadow: 0 0 0 var(--core-focus-ring-offset) var(--core-focus-ring-color);
+  box-shadow: 0 0 0 var(--component-form-field-focus-ring-spread)
+    var(--component-form-field-focus-ring-color);
 }
 
 .form-check-input {
@@ -3323,10 +3544,12 @@
   background-color: var(--core-color-neutral-white);
 }
 
-.form-check-input:focus {
-  border-color: var(--semantic-color-primary-base);
+.form-check-input:focus,
+.form-check-input:focus-visible {
+  border-color: var(--component-form-field-focus-border-color);
   outline: 0;
-  box-shadow: 0 0 0 var(--core-focus-ring-offset) var(--core-focus-ring-color);
+  box-shadow: 0 0 0 var(--component-form-field-focus-ring-spread)
+    var(--component-form-field-focus-ring-color);
 }
 
 .form-check-input:checked,
@@ -3335,9 +3558,9 @@
   border-color: var(--semantic-color-primary-base);
 }
 
-/* Switch: Bootstrap encodes focus thumb fill — replace blue with primary-light (#DFE3FA) */
+/* Switch: Bootstrap encodes focus thumb fill — replace blue with primary focus ring (#D6DBF8) */
 .form-switch .form-check-input:focus {
-  --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23DFE3FA'/%3e%3c/svg%3e");
+  --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23D6DBF8'/%3e%3c/svg%3e");
 }
 
 .form-range:focus {
@@ -3347,13 +3570,13 @@
 .form-range:focus::-webkit-slider-thumb {
   box-shadow:
     0 0 0 1px var(--core-color-neutral-white),
-    0 0 0 var(--core-focus-ring-offset) var(--core-focus-ring-color);
+    0 0 0 var(--component-form-field-focus-ring-spread) var(--component-form-field-focus-ring-color);
 }
 
 .form-range:focus::-moz-range-thumb {
   box-shadow:
     0 0 0 1px var(--core-color-neutral-white),
-    0 0 0 var(--core-focus-ring-offset) var(--core-focus-ring-color);
+    0 0 0 var(--component-form-field-focus-ring-spread) var(--component-form-field-focus-ring-color);
 }
 
 .form-range::-webkit-slider-thumb {
@@ -3395,10 +3618,16 @@
 }
 
 .sym-table-actions {
-  display: flex;
+  display: inline-flex;
   flex-direction: row;
+  flex-shrink: 0;
   align-items: center;
-  gap: var(--core-spacing-8);
+  width: max-content;
+  gap: var(--component-table-actions-column-gap);
+}
+
+.sym-table__cell--actions .sym-icon-btn {
+  flex-shrink: 0;
 }
 
 .sym-row {
@@ -4350,8 +4579,9 @@
 .sym-multiselect--open .sym-multiselect__control,
 .sym-multiselect__control:focus-visible {
   outline: none;
-  border-color: var(--semantic-color-primary-base);
-  box-shadow: 0 0 0 var(--core-focus-ring-offset) var(--core-focus-ring-color);
+  border-color: var(--component-form-field-focus-border-color);
+  box-shadow: 0 0 0 var(--component-form-field-focus-ring-spread)
+    var(--component-form-field-focus-ring-color);
 }
 
 .sym-multiselect__placeholder {
