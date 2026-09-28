@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { workflowProcessSelectionRulesHref } from '../data/appNavConfig'
 import { EditProcessSelectionRuleDrawer } from '../components/EditProcessSelectionRuleDrawer'
 import { SymHeaderCreateButton } from '../components/SymHeaderCreateButton'
+import { SymPageCopyrightFooter } from '../components/SymPageCopyrightFooter'
+import { SymTableCardSplitScroll } from '../components/SymTableCardSplitScroll'
 import { SymTable } from '../components/SymTable'
 import { SymIconTooltipButton } from '../components/SymIconTooltipButton'
 import {
@@ -10,6 +12,7 @@ import {
   useSymTableColumnVisibility,
   type SymTableColumnOption,
 } from '../components/SymTableColumnSettings'
+import { useSymTableCardScrollLayout } from '../components/useSymTableCardScrollLayout'
 import { SymToastStack, useSymToasts } from '../components/SymToast'
 import {
   createEmptyProcessSelectionRule,
@@ -48,6 +51,8 @@ export function ProcessSelectionRulesShowcase() {
   const drawerCloseRef = useRef<(() => void) | null>(null)
   const { toasts, pushToast, dismissToast } = useSymToasts()
   const columnVisibility = useSymTableColumnVisibility(PSR_TABLE_COLUMNS)
+  const tablePanelRef = useRef<HTMLElement>(null)
+  const tableScrollRef = useRef<HTMLDivElement>(null)
 
   const rows = useMemo(() => {
     const copy = [...rules]
@@ -58,6 +63,12 @@ export function ProcessSelectionRulesShowcase() {
     }
     return copy
   }, [rules, serviceSpecSort])
+
+  const hasMoreRows = rows.length < PROCESS_SELECTION_RULES_TOTAL
+
+  useSymTableCardScrollLayout(tablePanelRef, tableScrollRef, [hasMoreRows], {
+    fillViewport: hasMoreRows,
+  })
 
   const selectedRule = useMemo(
     () => rules.find((row) => row.id === selectedRowId) ?? null,
@@ -123,7 +134,8 @@ export function ProcessSelectionRulesShowcase() {
     selectedRule ?? (isCreatingRule ? createEmptyProcessSelectionRule() : null)
 
   return (
-    <div className="sym-page sym-process-selection-rules">
+    <div className="sym-page sym-process-selection-rules sym-page--table-dashboard">
+      <div className="sym-page__dashboard-stack">
       <article className="sym-card-primary sym-card-primary--section-sticky sym-no-hover">
         <header className="sym-card-header">
           <div className="sym-card-header__top">
@@ -186,8 +198,12 @@ export function ProcessSelectionRulesShowcase() {
         </header>
       </article>
 
-      <article className="sym-card-primary sym-no-hover">
+      <article
+        ref={tablePanelRef}
+        className="sym-card-primary sym-card-primary--table-panel sym-no-hover"
+      >
         <ProcessSelectionRulesTable
+          scrollRef={tableScrollRef}
           rows={rows}
           selectedRowId={selectedRowId}
           highlightedRuleId={highlightedRuleId}
@@ -200,6 +216,8 @@ export function ProcessSelectionRulesShowcase() {
           onToggleColumn={columnVisibility.toggleColumn}
         />
       </article>
+      </div>
+      <SymPageCopyrightFooter />
 
       {drawerRule ? (
         <EditProcessSelectionRuleDrawer
@@ -217,6 +235,7 @@ export function ProcessSelectionRulesShowcase() {
 }
 
 function ProcessSelectionRulesTable({
+  scrollRef,
   rows,
   selectedRowId,
   highlightedRuleId,
@@ -228,6 +247,7 @@ function ProcessSelectionRulesTable({
   columnVisibility,
   onToggleColumn,
 }: {
+  scrollRef: React.RefObject<HTMLDivElement | null>
   rows: ProcessSelectionRule[]
   selectedRowId: string | null
   highlightedRuleId: string | null
@@ -251,36 +271,43 @@ function ProcessSelectionRulesTable({
 
   return (
     <>
-      <SymTable aria-label="Process selection rules">
-        <thead>
-          <tr>
-            {isColumnVisible('serviceSpecification') ? (
-              <th scope="col">
-                {sortableHeader('Service Specification', onCycleServiceSpecSort, serviceSpecSort)}
-              </th>
-            ) : null}
-            {isColumnVisible('actionType') ? (
-              <th scope="col">{sortableHeader('Action Type')}</th>
-            ) : null}
-            {isColumnVisible('actionName') ? (
-              <th scope="col">{sortableHeader('Action Name')}</th>
-            ) : null}
-            {isColumnVisible('description') ? (
-              <th scope="col">{sortableHeader('Description')}</th>
-            ) : null}
-            <th scope="col" className="sym-table__col--actions">
-              Actions
-            </th>
-            <th scope="col" className="sym-table__col--settings">
-              <SymTableColumnSettings
-                columns={PSR_TABLE_COLUMNS}
-                visibility={columnVisibility}
-                onToggleColumn={onToggleColumn}
-              />
-            </th>
-          </tr>
-        </thead>
-        <tbody>
+      <SymTableCardSplitScroll
+        scrollRef={scrollRef}
+        headerTable={
+          <SymTable className="sym-table--header-pane">
+            <thead>
+              <tr>
+                {isColumnVisible('serviceSpecification') ? (
+                  <th scope="col">
+                    {sortableHeader('Service Specification', onCycleServiceSpecSort, serviceSpecSort)}
+                  </th>
+                ) : null}
+                {isColumnVisible('actionType') ? (
+                  <th scope="col">{sortableHeader('Action Type')}</th>
+                ) : null}
+                {isColumnVisible('actionName') ? (
+                  <th scope="col">{sortableHeader('Action Name')}</th>
+                ) : null}
+                {isColumnVisible('description') ? (
+                  <th scope="col">{sortableHeader('Description')}</th>
+                ) : null}
+                <th scope="col" className="sym-table__col--actions">
+                  Actions
+                </th>
+                <th scope="col" className="sym-table__col--settings">
+                  <SymTableColumnSettings
+                    columns={PSR_TABLE_COLUMNS}
+                    visibility={columnVisibility}
+                    onToggleColumn={onToggleColumn}
+                  />
+                </th>
+              </tr>
+            </thead>
+          </SymTable>
+        }
+        bodyTable={
+          <SymTable aria-label="Process selection rules">
+            <tbody>
           {rows.map((row) => (
             <tr
               key={row.id}
@@ -324,8 +351,10 @@ function ProcessSelectionRulesTable({
               <td className="sym-table__cell--settings" aria-hidden />
             </tr>
           ))}
-        </tbody>
-      </SymTable>
+            </tbody>
+          </SymTable>
+        }
+      />
       <footer className="sym-table-footer">
         <span />
         <div className="sym-table-footer__center">

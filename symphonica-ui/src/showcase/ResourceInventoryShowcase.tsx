@@ -1,5 +1,16 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react'
 import { SymHeaderCreateButton } from '../components/SymHeaderCreateButton'
+import { SymPageCopyrightFooter } from '../components/SymPageCopyrightFooter'
+import { SymTableCardSplitScroll } from '../components/SymTableCardSplitScroll'
 import { SymTable } from '../components/SymTable'
 import { SymIconTooltipButton } from '../components/SymIconTooltipButton'
 import {
@@ -8,13 +19,24 @@ import {
   type SymTableColumnOption,
 } from '../components/SymTableColumnSettings'
 import {
+  restoreSymTableAppendScroll,
+  snapshotSymTableAppendScroll,
+  type SymTableAppendScrollSnapshot,
+} from '../components/symTableAppendScroll'
+import {
+  useSymTableCardScrollLayout,
+  type SymTableScrollMetrics,
+} from '../components/useSymTableCardScrollLayout'
+import {
+  buildResourceInventoryCatalog,
+  sliceResourceInventoryCatalog,
+} from '../data/resourceInventoryCatalog'
+import {
   RESOURCE_INVENTORY_NMS,
   RESOURCE_INVENTORY_REGIONS,
-  RESOURCE_INVENTORY_ROWS,
   RESOURCE_INVENTORY_SPECIFICATIONS,
   RESOURCE_INVENTORY_STATUS_COLUMN,
   RESOURCE_INVENTORY_TABLE_COLUMNS,
-  RESOURCE_INVENTORY_TOTAL,
   type ResourceInventoryColumnId,
   type ResourceInventoryRow,
   type ResourceOperationalStatus,
@@ -22,6 +44,10 @@ import {
 
 const RESOURCE_INVENTORY_COLUMN_OPTIONS: SymTableColumnOption[] =
   RESOURCE_INVENTORY_TABLE_COLUMNS.map((column) => ({ ...column }))
+
+const RESOURCE_INVENTORY_CATALOG = buildResourceInventoryCatalog()
+const RESOURCE_INVENTORY_INITIAL_PAGE_SIZE = 10
+const RESOURCE_INVENTORY_LOAD_MORE_BATCH = 15
 
 type SortPhase = 'idle' | 'asc' | 'desc'
 
@@ -54,12 +80,21 @@ export function ResourceInventoryShowcase() {
   const [nmsFilter, setNmsFilter] = useState('')
   const [nameSort, setNameSort] = useState<SortPhase>('idle')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [visibleCount, setVisibleCount] = useState(RESOURCE_INVENTORY_INITIAL_PAGE_SIZE)
+  const [scrollMetrics, setScrollMetrics] = useState<SymTableScrollMetrics | null>(null)
+  const tablePanelRef = useRef<HTMLElement>(null)
+  const tableScrollRef = useRef<HTMLDivElement>(null)
+  const pendingFocusRowIdRef = useRef<string | null>(null)
+  const appendScrollSnapshotRef = useRef<SymTableAppendScrollSnapshot | null>(null)
+  const loadMoreInFlightRef = useRef(false)
+  const visibleCountRef = useRef(visibleCount)
+  visibleCountRef.current = visibleCount
   const columnVisibility = useSymTableColumnVisibility(RESOURCE_INVENTORY_COLUMN_OPTIONS)
 
-  const filteredRows = useMemo(() => {
+  const filteredCatalog = useMemo(() => {
     const nameQuery = nameFilter.trim().toLowerCase()
     const publicIdQuery = publicIdFilter.trim().toLowerCase()
-    let copy = RESOURCE_INVENTORY_ROWS.filter((row) => {
+    let copy = RESOURCE_INVENTORY_CATALOG.filter((row) => {
       if (nameQuery && !row.name.toLowerCase().includes(nameQuery)) return false
       if (publicIdQuery && !row.publicIdentifier.toLowerCase().includes(publicIdQuery)) return false
       if (specFilter && row.specification !== specFilter) return false
@@ -72,6 +107,93 @@ export function ResourceInventoryShowcase() {
     }
     return copy
   }, [nameFilter, publicIdFilter, specFilter, nameSort])
+
+  const filteredRows = useMemo(
+    () => sliceResourceInventoryCatalog(filteredCatalog, visibleCount),
+    [filteredCatalog, visibleCount],
+  )
+
+  const hasMoreRows = visibleCount < filteredCatalog.length
+
+  const handleScrollMetrics = useCallback((metrics: SymTableScrollMetrics) => {
+    setScrollMetrics(metrics)
+  }, [])
+
+  useSymTableCardScrollLayout(
+    tablePanelRef,
+    tableScrollRef,
+    [hasMoreRows],
+    { fillViewport: hasMoreRows, onMetrics: handleScrollMetrics },
+  )
+
+  useEffect(() => {
+    setVisibleCount(RESOURCE_INVENTORY_INITIAL_PAGE_SIZE)
+  }, [nameFilter, publicIdFilter, regionFilter, specFilter, nmsFilter, nameSort])
+
+  useEffect(() => {
+    if (!scrollMetrics || !hasMoreRows) return
+    if (visibleCount !== RESOURCE_INVENTORY_INITIAL_PAGE_SIZE) return
+    const target = Math.min(filteredCatalog.length, scrollMetrics.rowsThatFit)
+    if (target <= visibleCount) return
+    const scroll = tableScrollRef.current
+    if (scroll) {
+      appendScrollSnapshotRef.current = snapshotSymTableAppendScroll(scroll)
+    }
+    setVisibleCount(target)
+  }, [scrollMetrics, hasMoreRows, filteredCatalog.length, visibleCount])
+
+  useLayoutEffect(() => {
+    const scroll = tableScrollRef.current
+    const snapshot = appendScrollSnapshotRef.current
+    appendScrollSnapshotRef.current = null
+
+    if (scroll && snapshot) {
+      restoreSymTableAppendScroll(scroll, snapshot)
+    }
+
+    requestAnimationFrame(() => {
+      loadMoreInFlightRef.current = false
+    })
+
+    const rowId = pendingFocusRowIdRef.current
+    pendingFocusRowIdRef.current = null
+    if (!rowId || !scroll) return
+    const row = scroll.querySelector<HTMLElement>(`[data-row-id="${rowId}"]`)
+    row?.focus({ preventScroll: true })
+  }, [visibleCount])
+
+  const handleLoadMore = useCallback(() => {
+    if (loadMoreInFlightRef.current) return
+    const count = visibleCountRef.current
+    if (count >= filteredCatalog.length) return
+
+    loadMoreInFlightRef.current = true
+    const scroll = tableScrollRef.current
+    if (scroll) {
+      appendScrollSnapshotRef.current = snapshotSymTableAppendScroll(scroll)
+    }
+    const firstNewRow = filteredCatalog[count]
+    if (firstNewRow) {
+      pendingFocusRowIdRef.current = firstNewRow.id
+    }
+    setVisibleCount(Math.min(filteredCatalog.length, count + RESOURCE_INVENTORY_LOAD_MORE_BATCH))
+  }, [filteredCatalog.length])
+
+  useEffect(() => {
+    const root = tableScrollRef.current
+    if (!root || !hasMoreRows) return
+
+    const onScroll = () => {
+      if (loadMoreInFlightRef.current) return
+      if (root.scrollHeight <= root.clientHeight + 1) return
+      const distanceFromBottom = root.scrollHeight - root.scrollTop - root.clientHeight
+      if (distanceFromBottom > 96) return
+      handleLoadMore()
+    }
+
+    root.addEventListener('scroll', onScroll, { passive: true })
+    return () => root.removeEventListener('scroll', onScroll)
+  }, [hasMoreRows, handleLoadMore])
 
   const allVisibleSelected =
     filteredRows.length > 0 && filteredRows.every((row) => selectedIds.has(row.id))
@@ -127,7 +249,8 @@ export function ResourceInventoryShowcase() {
     )
 
   return (
-    <div className="sym-page sym-resource-inventory">
+    <div className="sym-page sym-resource-inventory sym-page--table-dashboard">
+      <div className="sym-page__dashboard-stack">
       <article className="sym-card-primary sym-card-primary--section-sticky sym-no-hover">
         <header className="sym-card-header">
           <div className="sym-card-header__top">
@@ -247,9 +370,16 @@ export function ResourceInventoryShowcase() {
         </header>
       </article>
 
-      <article className="sym-card-primary sym-no-hover">
+      <article
+        ref={tablePanelRef}
+        className="sym-card-primary sym-card-primary--table-panel sym-no-hover"
+      >
         <ResourceInventoryTable
+          scrollRef={tableScrollRef}
           rows={filteredRows}
+          totalCount={filteredCatalog.length}
+          hasMoreRows={hasMoreRows}
+          onLoadMore={handleLoadMore}
           selectedIds={selectedIds}
           allVisibleSelected={allVisibleSelected}
           someVisibleSelected={someVisibleSelected}
@@ -263,6 +393,8 @@ export function ResourceInventoryShowcase() {
           isColumnVisible={columnVisibility.isColumnVisible}
         />
       </article>
+      </div>
+      <SymPageCopyrightFooter />
     </div>
   )
 }
@@ -296,7 +428,11 @@ function renderResourceInventoryCell(
 }
 
 function ResourceInventoryTable({
+  scrollRef,
   rows,
+  totalCount,
+  hasMoreRows,
+  onLoadMore,
   selectedIds,
   allVisibleSelected,
   someVisibleSelected,
@@ -309,7 +445,11 @@ function ResourceInventoryTable({
   onToggleColumn,
   isColumnVisible,
 }: {
+  scrollRef: RefObject<HTMLDivElement | null>
   rows: ResourceInventoryRow[]
+  totalCount: number
+  hasMoreRows: boolean
+  onLoadMore: () => void
   selectedIds: Set<string>
   allVisibleSelected: boolean
   someVisibleSelected: boolean
@@ -336,46 +476,53 @@ function ResourceInventoryTable({
 
   return (
     <>
-      <SymTable aria-label="Resource inventory">
-        <thead>
-          <tr>
-            <th scope="col" className="sym-table__col--checkbox">
-              <div className="form-check sym-table__checkbox">
-                <input
-                  className="form-check-input sym-table__checkbox-input"
-                  type="checkbox"
-                  aria-label="Select all resources"
-                  checked={allVisibleSelected}
-                  ref={selectAllRef}
-                  onChange={onToggleSelectAll}
-                />
-              </div>
-            </th>
-            {visibleColumns.map((column) => (
-              <th key={column.id} scope="col">
-                {column.id === 'name'
-                  ? sortableHeader(column.label, onCycleNameSort, nameSort)
-                  : sortableHeader(column.label)}
-              </th>
-            ))}
-            <th scope="col" className="sym-table__col--status">
-              {sortableHeader(RESOURCE_INVENTORY_STATUS_COLUMN.label)}
-            </th>
-            <th scope="col" className="sym-table__col--actions">
-              Actions
-            </th>
-            <th scope="col" className="sym-table__col--settings">
-              <SymTableColumnSettings
-                columns={RESOURCE_INVENTORY_COLUMN_OPTIONS}
-                visibility={columnVisibility}
-                onToggleColumn={onToggleColumn}
-              />
-            </th>
-          </tr>
-        </thead>
-        <tbody>
+      <SymTableCardSplitScroll
+        scrollRef={scrollRef}
+        headerTable={
+          <SymTable className="sym-table--header-pane">
+            <thead>
+              <tr>
+                <th scope="col" className="sym-table__col--checkbox">
+                  <div className="form-check sym-table__checkbox">
+                    <input
+                      className="form-check-input sym-table__checkbox-input"
+                      type="checkbox"
+                      aria-label="Select all resources"
+                      checked={allVisibleSelected}
+                      ref={selectAllRef}
+                      onChange={onToggleSelectAll}
+                    />
+                  </div>
+                </th>
+                {visibleColumns.map((column) => (
+                  <th key={column.id} scope="col">
+                    {column.id === 'name'
+                      ? sortableHeader(column.label, onCycleNameSort, nameSort)
+                      : sortableHeader(column.label)}
+                  </th>
+                ))}
+                <th scope="col" className="sym-table__col--status">
+                  {sortableHeader(RESOURCE_INVENTORY_STATUS_COLUMN.label)}
+                </th>
+                <th scope="col" className="sym-table__col--actions">
+                  Actions
+                </th>
+                <th scope="col" className="sym-table__col--settings">
+                  <SymTableColumnSettings
+                    columns={RESOURCE_INVENTORY_COLUMN_OPTIONS}
+                    visibility={columnVisibility}
+                    onToggleColumn={onToggleColumn}
+                  />
+                </th>
+              </tr>
+            </thead>
+          </SymTable>
+        }
+        bodyTable={
+          <SymTable aria-label="Resource inventory">
+            <tbody>
           {rows.map((row) => (
-            <tr key={row.id}>
+            <tr key={row.id} data-row-id={row.id} tabIndex={-1}>
               <td className="sym-table__cell--checkbox">
                 <div className="form-check sym-table__checkbox">
                   <input
@@ -427,22 +574,27 @@ function ResourceInventoryTable({
               <td className="sym-table__cell--settings" aria-hidden />
             </tr>
           ))}
-        </tbody>
-      </SymTable>
+            </tbody>
+          </SymTable>
+        }
+      />
       <footer className="sym-table-footer">
         <span />
         <div className="sym-table-footer__center">
-          <SymIconTooltipButton
-            className="sym-icon-btn sym-icon-btn--primary sym-table-footer__load-more"
-            aria-label="Load more items"
-          >
-            <span className="material-icons-outlined" aria-hidden>
-              add
-            </span>
-          </SymIconTooltipButton>
+          {hasMoreRows ? (
+            <SymIconTooltipButton
+              className="sym-icon-btn sym-icon-btn--primary sym-table-footer__load-more"
+              aria-label="Load more items"
+              onClick={onLoadMore}
+            >
+              <span className="material-icons-outlined" aria-hidden>
+                add
+              </span>
+            </SymIconTooltipButton>
+          ) : null}
         </div>
         <div className="sym-table-footer__counter">
-          Showing {rows.length} of {RESOURCE_INVENTORY_TOTAL} items
+          Showing {rows.length} of {totalCount} items
         </div>
       </footer>
     </>

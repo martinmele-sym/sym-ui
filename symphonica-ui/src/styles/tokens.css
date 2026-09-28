@@ -533,6 +533,10 @@
   /* --- layout --- */
   --layout-body-background: var(--semantic-color-secondary);
   --layout-body-section-gap: var(--core-spacing-24);
+  --layout-body-page-copyright-gap: var(--core-spacing-16);
+  --layout-body-page-copyright-font-size: var(--core-typography-font-size-12);
+  --layout-body-page-copyright-line-height: var(--core-typography-line-height-relaxed);
+  --layout-body-page-copyright-reserve: calc(var(--core-spacing-16) + 1.5em + var(--core-spacing-16));
   --layout-api-explorer-sidebar-column-width: 330px;
   --layout-header-large-shell-height: 156px;
   --layout-header-large-body-offset-top: 94px;

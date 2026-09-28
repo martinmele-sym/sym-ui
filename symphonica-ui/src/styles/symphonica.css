@@ -83,6 +83,152 @@
   box-sizing: border-box;
 }
 
+/* §5.4 — Table dashboard page: grow with rows; fill viewport when tall; 16px above copyright */
+.sym-app-body:has(.sym-page--table-dashboard) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sym-page.sym-page--table-dashboard {
+  --sym-page-copyright-reserve: var(--layout-body-page-copyright-reserve);
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 0;
+  padding-bottom: var(--sym-page-copyright-reserve);
+  box-sizing: border-box;
+}
+
+.sym-page__dashboard-stack {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(min-content, 1fr);
+  gap: var(--layout-body-section-gap);
+  width: 100%;
+}
+
+.sym-card-primary.sym-card-primary--table-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+  align-self: stretch;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.sym-card-primary--table-panel > :not(.sym-table-card__scroll):not(.sym-table-footer):not(
+    .sym-table-card__table-split
+  ) {
+  flex-shrink: 0;
+}
+
+.sym-table-card__table-split {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+}
+
+.sym-card-primary--table-panel--fill .sym-table-card__table-split {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sym-table-card__table-head {
+  flex-shrink: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.sym-card-primary--table-panel--fill .sym-table-footer {
+  margin-top: auto;
+}
+
+.sym-table-card__scroll {
+  flex: 0 0 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+.sym-table-card__table-split .sym-table-card__scroll {
+  flex: 1 1 auto;
+}
+
+.sym-table-card__table-head .sym-table,
+.sym-table-card__scroll .sym-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.sym-page-copyright {
+  position: fixed;
+  right: 0;
+  bottom: var(--layout-body-page-copyright-gap);
+  left: var(--sym-shell-sidebar-width);
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 var(--core-spacing-8);
+  box-sizing: border-box;
+  pointer-events: none;
+  transition: left var(--core-motion-duration-base) var(--core-motion-easing-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sym-page-copyright {
+    transition: none;
+  }
+}
+
+.sym-page-copyright__text {
+  margin: 0;
+  text-align: center;
+  font-family: var(--core-typography-font-family-base);
+  font-size: var(--layout-body-page-copyright-font-size);
+  font-weight: var(--core-typography-font-weight-regular);
+  line-height: var(--layout-body-page-copyright-line-height);
+  color: var(--semantic-text-secondary);
+}
+
+@media (max-width: 991.98px) {
+  .sym-app-body:has(.sym-page--table-dashboard) {
+    overflow-y: auto;
+  }
+
+  .sym-page.sym-page--table-dashboard {
+    flex: none;
+    min-height: auto;
+    overflow: visible;
+  }
+
+  .sym-page__dashboard-stack {
+    flex: none;
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sym-card-primary.sym-card-primary--table-panel {
+    overflow: visible;
+  }
+
+  .sym-table-card__table-split {
+    flex: none;
+    min-height: auto;
+  }
+
+  .sym-table-card__scroll {
+    flex: none;
+    min-height: auto;
+    overflow: visible;
+  }
+}
+
 /* --- App header / Symphonica shell top (§5.9) — hero band: base + linear-gradient tokens --- */
 
 .sym-app-header {
@@ -3380,6 +3526,14 @@ body.sym-table-column-resizing * {
   font-size: var(--component-table-header-icon-size);
   line-height: var(--core-typography-line-height-solid);
   color: var(--component-table-header-icon-color);
+}
+
+.sym-table__load-more-sentinel td {
+  height: 1px;
+  padding: 0;
+  border: none;
+  line-height: 0;
+  pointer-events: none;
 }
 
 .sym-table-footer {

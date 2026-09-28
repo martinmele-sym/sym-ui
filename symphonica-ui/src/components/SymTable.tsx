@@ -30,6 +30,18 @@ function countActionButtons(actionsRoot: Element): number {
   return actionsRoot.querySelectorAll('.sym-icon-btn').length
 }
 
+function getPairedBodyTable(table: HTMLTableElement): HTMLTableElement | null {
+  const split = table.closest('.sym-table-card__table-split')
+  if (!split || !table.closest('.sym-table-card__table-head')) return null
+  return split.querySelector<HTMLTableElement>('.sym-table-card__scroll .sym-table')
+}
+
+function tableColumnCount(table: HTMLTableElement): number {
+  const headerCount = table.querySelectorAll('thead tr:first-child > th').length
+  if (headerCount > 0) return headerCount
+  return table.querySelectorAll('tbody tr:first-child > *').length
+}
+
 function measureActionsColumnWidth(table: HTMLTableElement, th: HTMLTableCellElement): string {
   const buttonSize = parseFloat(readCssLength('--component-button-icon-size', '30px'))
   const gap = parseFloat(
@@ -66,7 +78,7 @@ function getFixedColumnWidth(table: HTMLTableElement, th: HTMLTableCellElement):
     return readCssLength('--core-size-48', '48px')
   }
   if (th.matches('.sym-table__col--actions')) {
-    return measureActionsColumnWidth(table, th)
+    return measureActionsColumnWidth(getPairedBodyTable(table) ?? table, th)
   }
   return null
 }
@@ -82,8 +94,7 @@ function lockColumnWidth(cell: HTMLElement, col: HTMLTableColElement | undefined
 
 function ensureColgroup(table: HTMLTableElement): HTMLTableColElement[] {
   let colgroup = table.querySelector('colgroup')
-  const headerCells = table.querySelectorAll<HTMLTableCellElement>('thead tr:first-child > th')
-  const count = headerCells.length
+  const count = tableColumnCount(table)
 
   if (!colgroup) {
     colgroup = document.createElement('colgroup')
@@ -100,19 +111,52 @@ function ensureColgroup(table: HTMLTableElement): HTMLTableColElement[] {
   return Array.from(colgroup.querySelectorAll('col'))
 }
 
+function syncColumnWidthAcrossSplit(
+  headerTable: HTMLTableElement,
+  colIndex: number,
+  widthValue: string,
+  headerCol?: HTMLTableColElement,
+) {
+  const paired = getPairedBodyTable(headerTable)
+  const pairedCols = paired ? ensureColgroup(paired) : null
+
+  if (headerCol) {
+    headerCol.style.width = widthValue
+  }
+  if (pairedCols?.[colIndex]) {
+    pairedCols[colIndex].style.width = widthValue
+  }
+
+  const tables = paired ? [headerTable, paired] : [headerTable]
+  tables.forEach((target) => {
+    target
+      .querySelectorAll<HTMLTableCellElement>(`tbody tr > *:nth-child(${colIndex + 1})`)
+      .forEach((cell) => {
+        cell.style.width = widthValue
+        cell.style.minWidth = widthValue
+        cell.style.maxWidth = ''
+      })
+  })
+}
+
 function applyFixedColumnWidths(table: HTMLTableElement) {
   const headerCells = Array.from(
     table.querySelectorAll<HTMLTableCellElement>('thead tr:first-child > th'),
   )
+  if (headerCells.length === 0) return
+
   const cols = ensureColgroup(table)
+  const paired = getPairedBodyTable(table)
+  if (paired) {
+    ensureColgroup(paired)
+    paired.style.tableLayout = 'fixed'
+  }
 
   headerCells.forEach((th, colIndex) => {
     const fixedWidth = getFixedColumnWidth(table, th)
     if (!fixedWidth) return
     lockColumnWidth(th, cols[colIndex], fixedWidth)
-    table.querySelectorAll<HTMLTableCellElement>(`tbody tr > *:nth-child(${colIndex + 1})`).forEach((cell) => {
-      lockColumnWidth(cell, undefined, fixedWidth)
-    })
+    syncColumnWidthAcrossSplit(table, colIndex, fixedWidth, cols[colIndex])
   })
 }
 
@@ -160,14 +204,7 @@ function attachColumnResize(table: HTMLTableElement): () => void {
         th.style.width = widthValue
         th.style.minWidth = widthValue
         th.style.maxWidth = ''
-        if (cols[colIndex]) {
-          cols[colIndex].style.width = widthValue
-        }
-        table.querySelectorAll<HTMLTableCellElement>(`tbody tr > *:nth-child(${colIndex + 1})`).forEach((cell) => {
-          cell.style.width = widthValue
-          cell.style.minWidth = widthValue
-          cell.style.maxWidth = ''
-        })
+        syncColumnWidthAcrossSplit(table, colIndex, widthValue, cols[colIndex])
         applyFixedColumnWidths(table)
       }
 
@@ -215,8 +252,20 @@ export function useSymTableColumnResize(tableRef: RefObject<HTMLTableElement | n
     })
     observer.observe(headerRow, { childList: true })
 
+    const paired = getPairedBodyTable(table)
+    const bodyObserver =
+      paired &&
+      new MutationObserver(() => {
+        applyFixedColumnWidths(table)
+      })
+    const pairedBody = paired?.querySelector('tbody')
+    if (bodyObserver && pairedBody) {
+      bodyObserver.observe(pairedBody, { childList: true })
+    }
+
     return () => {
       observer.disconnect()
+      bodyObserver?.disconnect()
       detach()
       document.body.classList.remove(RESIZING_BODY_CLASS)
     }

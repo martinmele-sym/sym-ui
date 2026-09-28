@@ -1,5 +1,8 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, type RefObject } from 'react'
 import { EditCharacteristicDrawer } from '../components/EditCharacteristicDrawer'
+import { SymPageCopyrightFooter } from '../components/SymPageCopyrightFooter'
+import { useSymTableCardScrollLayout } from '../components/useSymTableCardScrollLayout'
+import { SymTableCardSplitScroll } from '../components/SymTableCardSplitScroll'
 import { SymTable } from '../components/SymTable'
 import { SymIconTooltipButton } from '../components/SymIconTooltipButton'
 import {
@@ -117,9 +120,16 @@ export function ServiceDomainShowcase() {
 
   const drawerCharacteristic =
     selectedCharacteristic ?? (isAddingCharacteristic ? createEmptyServiceSpecCharacteristic() : null)
+  const tablePanelRef = useRef<HTMLElement>(null)
+  const tableScrollRef = useRef<HTMLDivElement>(null)
+
+  useSymTableCardScrollLayout(tablePanelRef, tableScrollRef, [], {
+    fillViewport: false,
+  })
 
   return (
-    <div className="sym-page sym-service-domain">
+    <div className="sym-page sym-service-domain sym-page--table-dashboard">
+      <div className="sym-page__dashboard-stack">
       <article className="sym-card-primary sym-card-primary--section-sticky sym-no-hover">
         <header className="sym-card-header">
           <div className="sym-card-header__top">
@@ -164,7 +174,10 @@ export function ServiceDomainShowcase() {
         </header>
       </article>
 
-      <article className="sym-card-primary sym-no-hover">
+      <article
+        ref={tablePanelRef}
+        className="sym-card-primary sym-card-primary--table-panel sym-no-hover"
+      >
         <div className="sym-card-header__bottom sym-service-domain__table-toolbar">
           <div className="sym-card-header__left">
             <button
@@ -195,6 +208,7 @@ export function ServiceDomainShowcase() {
         </div>
 
         <CharacteristicsTable
+          scrollRef={tableScrollRef}
           rows={rows}
           selectedRowId={selectedRowId}
           highlightedCharacteristicId={highlightedCharacteristicId}
@@ -204,6 +218,8 @@ export function ServiceDomainShowcase() {
           onOpenValues={handleOpenValues}
         />
       </article>
+      </div>
+      <SymPageCopyrightFooter />
 
       {drawerCharacteristic ? (
         <EditCharacteristicDrawer
@@ -221,6 +237,7 @@ export function ServiceDomainShowcase() {
 }
 
 function CharacteristicsTable({
+  scrollRef,
   rows,
   selectedRowId,
   highlightedCharacteristicId,
@@ -229,6 +246,7 @@ function CharacteristicsTable({
   onRowSelect,
   onOpenValues,
 }: {
+  scrollRef: RefObject<HTMLDivElement | null>
   rows: ServiceSpecCharacteristic[]
   selectedRowId: string | null
   highlightedCharacteristicId: string | null
@@ -249,23 +267,30 @@ function CharacteristicsTable({
 
   return (
     <>
-      <SymTable aria-label="Service specification characteristics">
-        <thead>
-          <tr>
-            <th scope="col">{sortableHeader('Name', onCycleNameSort, nameSort)}</th>
-            <th scope="col">{sortableHeader('Value Type')}</th>
-            <th scope="col">{sortableHeader('Configurable')}</th>
-            <th scope="col">{sortableHeader('Mutable')}</th>
-            <th scope="col">{sortableHeader('Unique')}</th>
-            <th scope="col">{sortableHeader('SubCharacteristics')}</th>
-            <th scope="col">{sortableHeader('Min Cardinality')}</th>
-            <th scope="col">{sortableHeader('Max cardinality')}</th>
-            <th scope="col" className="sym-table__col--actions">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody>
+      <SymTableCardSplitScroll
+        scrollRef={scrollRef}
+        headerTable={
+          <SymTable className="sym-table--header-pane">
+            <thead>
+              <tr>
+                <th scope="col">{sortableHeader('Name', onCycleNameSort, nameSort)}</th>
+                <th scope="col">{sortableHeader('Value Type')}</th>
+                <th scope="col">{sortableHeader('Configurable')}</th>
+                <th scope="col">{sortableHeader('Mutable')}</th>
+                <th scope="col">{sortableHeader('Unique')}</th>
+                <th scope="col">{sortableHeader('SubCharacteristics')}</th>
+                <th scope="col">{sortableHeader('Min Cardinality')}</th>
+                <th scope="col">{sortableHeader('Max cardinality')}</th>
+                <th scope="col" className="sym-table__col--actions">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+          </SymTable>
+        }
+        bodyTable={
+          <SymTable aria-label="Service specification characteristics">
+            <tbody>
           {rows.map((row) => (
             <tr
               key={row.id}
@@ -312,8 +337,10 @@ function CharacteristicsTable({
               </td>
             </tr>
           ))}
-        </tbody>
-      </SymTable>
+            </tbody>
+          </SymTable>
+        }
+      />
       <footer className="sym-table-footer">
         <span />
         <span />

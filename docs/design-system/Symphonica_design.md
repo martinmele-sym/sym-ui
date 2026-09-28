@@ -1012,6 +1012,36 @@ Item counter:
 - Must use `component.table.footer.counter` tokens
 - Do not hardcode item counter typography
 
+#### Table dashboard layout
+
+Primary **table dashboard** pages (section header card + data table card — e.g. Order Types, Resource Inventory) use a **viewport-aware** layout so the table card grows with row count when content is short, and **fills the main column** when many rows require progressive loading.
+
+**Page structure:**
+
+| Layer | Markup / class | Role |
+|--------|----------------|------|
+| Page | **`sym-page sym-page--table-dashboard`** | Fills **`sym-app-body`**; reserves space for copyright |
+| Stack | **`sym-page__dashboard-stack`** | Grid: **`auto`** (section header card) + **`minmax(min-content, 1fr)`** (table card) |
+| Section header | **`sym-card-primary sym-card-primary--section-sticky`** | Filters / Create — sticky in **`sym-app-body`** (§5.5) |
+| Table card | **`sym-card-primary sym-card-primary--table-panel`** | Flex column; **`min-height: 0`** |
+| Table scroll | **`sym-table-card__scroll`** | **`overflow: auto`**; **`thead th`** **`position: sticky; top: 0`** |
+| Table footer | **`sym-table-footer`** | Sibling **below** scroll (load-more + counter), not inside scroll |
+| Copyright | **`SymPageCopyrightFooter`** | Fixed; **`bottom: layout.body.pageCopyright.gap`** (**16px**); centered in main column |
+
+**Behavior:**
+- **Few rows:** table card height follows content (**`minmax(min-content, 1fr)`** does not force empty stretch).
+- **Many rows / load-more visible:** table card expands to available viewport height between the section header and the copyright reserve; **only** **`sym-table-card__scroll`** scrolls (desktop).
+- **`sym-app-body:has(.sym-page--table-dashboard)`** uses **`overflow: hidden`** and flex so the page — not the body — owns vertical overflow (same intent as Device Management dashboard).
+- **Mobile (≤991px):** revert to **`sym-app-body`** scroll; disable internal table scroll and sticky **`thead`** (see CSS).
+
+**Spacing:** page **`padding-bottom`** = **`layout.body.pageCopyright.reserve`** so the table card bottom stays **16px** above the copyright line (Figma Order Types).
+
+**Scroll sizing (`useSymTableCardScrollLayout`):** measure available height from **`sym-app-body`** (not raw **`100vh`** alone) minus section header, card footer, and copyright reserve. Set **`sym-table-card__scroll`** height to **`min(table content, scroll max)`** so empty white space does not appear below rows on large displays. When **`fillViewport: true`** (progressive load / more rows available), the table panel fills the remaining viewport slot.
+
+**Progressive load (`+`):** append the next batch; **`scrollIntoView`** the first newly loaded row inside **`sym-table-card__scroll`** and move focus to that row (**`tabIndex={-1}`**, **`data-row-id`**). On large viewports, auto-expand the first page to **`rowsThatFit`** when more catalog items exist (no manual click required to fill the viewport).
+
+**Reference:** **`ResourceInventoryShowcase.tsx`**, **`useSymTableCardScrollLayout.ts`**, **`SymPageCopyrightFooter.tsx`**, **`symphonica.css`** (`.sym-page--table-dashboard`, `.sym-table-card__scroll`).
+
 ---
 
 #### Accessibility
