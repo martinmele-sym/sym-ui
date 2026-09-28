@@ -1,12 +1,11 @@
 import {
-  useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
   type RefObject,
+  type WheelEvent,
 } from 'react'
 import { SymHeaderCreateButton } from '../components/SymHeaderCreateButton'
 import { SymPageCopyrightFooter } from '../components/SymPageCopyrightFooter'
@@ -18,19 +17,8 @@ import {
   useSymTableColumnVisibility,
   type SymTableColumnOption,
 } from '../components/SymTableColumnSettings'
-import {
-  restoreSymTableAppendScroll,
-  snapshotSymTableAppendScroll,
-  type SymTableAppendScrollSnapshot,
-} from '../components/symTableAppendScroll'
-import {
-  useSymTableCardScrollLayout,
-  type SymTableScrollMetrics,
-} from '../components/useSymTableCardScrollLayout'
-import {
-  buildResourceInventoryCatalog,
-  sliceResourceInventoryCatalog,
-} from '../data/resourceInventoryCatalog'
+import { useSymTableProgressiveLoad } from '../components/useSymTableProgressiveLoad'
+import { buildResourceInventoryCatalog } from '../data/resourceInventoryCatalog'
 import {
   RESOURCE_INVENTORY_NMS,
   RESOURCE_INVENTORY_REGIONS,
@@ -46,10 +34,6 @@ const RESOURCE_INVENTORY_COLUMN_OPTIONS: SymTableColumnOption[] =
   RESOURCE_INVENTORY_TABLE_COLUMNS.map((column) => ({ ...column }))
 
 const RESOURCE_INVENTORY_CATALOG = buildResourceInventoryCatalog()
-const RESOURCE_INVENTORY_PAGE_SIZE = 20
-const RESOURCE_INVENTORY_SCROLL_LOAD_THRESHOLD_PX = 96
-const RESOURCE_INVENTORY_SCROLL_LOAD_REARM_PX = 120
-
 type SortPhase = 'idle' | 'asc' | 'desc'
 
 function SortIcon({ phase }: { phase: SortPhase }) {
@@ -81,20 +65,8 @@ export function ResourceInventoryShowcase() {
   const [nmsFilter, setNmsFilter] = useState('')
   const [nameSort, setNameSort] = useState<SortPhase>('idle')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [visibleCount, setVisibleCount] = useState(RESOURCE_INVENTORY_PAGE_SIZE)
-  const [scrollMetrics, setScrollMetrics] = useState<SymTableScrollMetrics | null>(null)
   const tablePanelRef = useRef<HTMLElement>(null)
   const tableScrollRef = useRef<HTMLDivElement>(null)
-  const appendScrollSnapshotRef = useRef<SymTableAppendScrollSnapshot | null>(null)
-  const loadMoreInFlightRef = useRef(false)
-  const suppressScrollLoadRef = useRef(false)
-  const scrollLoadArmedRef = useRef(true)
-  const viewportFilledRef = useRef(false)
-  const userExpandedRef = useRef(false)
-  const pinScrollTopRef = useRef(false)
-  const [appendingRowIds, setAppendingRowIds] = useState<ReadonlySet<string>>(() => new Set())
-  const visibleCountRef = useRef(visibleCount)
-  visibleCountRef.current = visibleCount
   const columnVisibility = useSymTableColumnVisibility(RESOURCE_INVENTORY_COLUMN_OPTIONS)
 
   const filteredCatalog = useMemo(() => {
@@ -114,111 +86,22 @@ export function ResourceInventoryShowcase() {
     return copy
   }, [nameFilter, publicIdFilter, specFilter, nameSort])
 
-  const filteredRows = useMemo(
-    () => sliceResourceInventoryCatalog(filteredCatalog, visibleCount),
-    [filteredCatalog, visibleCount],
-  )
-
-  const hasMoreRows = visibleCount < filteredCatalog.length
-
-  const handleScrollMetrics = useCallback((metrics: SymTableScrollMetrics) => {
-    setScrollMetrics(metrics)
-  }, [])
-
-  useSymTableCardScrollLayout(
-    tablePanelRef,
-    tableScrollRef,
-    [hasMoreRows],
-    { fillViewport: hasMoreRows, onMetrics: handleScrollMetrics },
-  )
-
-  useEffect(() => {
-    scrollLoadArmedRef.current = true
-    viewportFilledRef.current = false
-    userExpandedRef.current = false
-    pinScrollTopRef.current = true
-    setAppendingRowIds(new Set())
-    setVisibleCount(RESOURCE_INVENTORY_PAGE_SIZE)
-    const scroll = tableScrollRef.current
-    if (scroll) scroll.scrollTop = 0
-  }, [nameFilter, publicIdFilter, regionFilter, specFilter, nmsFilter, nameSort])
-
-  useEffect(() => {
-    if (!scrollMetrics || viewportFilledRef.current) return
-    viewportFilledRef.current = true
-    if (userExpandedRef.current) return
-    pinScrollTopRef.current = true
-    const target = Math.min(filteredCatalog.length, scrollMetrics.rowsThatFit)
-    setVisibleCount(target)
-  }, [scrollMetrics, filteredCatalog.length])
-
-  useEffect(() => {
-    if (appendingRowIds.size === 0) return
-    const durationMs = 280
-    const timer = window.setTimeout(() => setAppendingRowIds(new Set()), durationMs)
-    return () => window.clearTimeout(timer)
-  }, [appendingRowIds])
-
-  useLayoutEffect(() => {
-    const scroll = tableScrollRef.current
-    const snapshot = appendScrollSnapshotRef.current
-    appendScrollSnapshotRef.current = null
-
-    const releaseLoadMore = () => {
-      requestAnimationFrame(() => {
-        suppressScrollLoadRef.current = false
-        loadMoreInFlightRef.current = false
-      })
-    }
-
-    if (scroll && pinScrollTopRef.current) {
-      pinScrollTopRef.current = false
-      scroll.scrollTop = 0
-      releaseLoadMore()
-    } else if (scroll && snapshot) {
-      suppressScrollLoadRef.current = true
-      restoreSymTableAppendScroll(scroll, snapshot, releaseLoadMore)
-    } else {
-      releaseLoadMore()
-    }
-  }, [visibleCount])
-
-  const handleLoadMore = useCallback(() => {
-    if (loadMoreInFlightRef.current) return
-    const count = visibleCountRef.current
-    if (count >= filteredCatalog.length) return
-
-    const nextCount = Math.min(filteredCatalog.length, count + RESOURCE_INVENTORY_PAGE_SIZE)
-    userExpandedRef.current = true
-    loadMoreInFlightRef.current = true
-    scrollLoadArmedRef.current = false
-    setAppendingRowIds(
-      new Set(filteredCatalog.slice(count, nextCount).map((row) => row.id)),
-    )
-    const scroll = tableScrollRef.current
-    if (scroll) {
-      appendScrollSnapshotRef.current = snapshotSymTableAppendScroll(scroll, { animate: true })
-    }
-    setVisibleCount(nextCount)
-  }, [filteredCatalog])
-
-  const tryLoadMoreFromScroll = useCallback(() => {
-    if (suppressScrollLoadRef.current) return
-    if (!hasMoreRows || loadMoreInFlightRef.current) return
-    const root = tableScrollRef.current
-    if (!root) return
-
-    const distanceFromBottom = root.scrollHeight - root.scrollTop - root.clientHeight
-    if (distanceFromBottom > RESOURCE_INVENTORY_SCROLL_LOAD_REARM_PX) {
-      scrollLoadArmedRef.current = true
-    }
-    if (!scrollLoadArmedRef.current) return
-    if (root.scrollHeight <= root.clientHeight + 1) return
-    if (distanceFromBottom > RESOURCE_INVENTORY_SCROLL_LOAD_THRESHOLD_PX) return
-
-    scrollLoadArmedRef.current = false
-    handleLoadMore()
-  }, [hasMoreRows, handleLoadMore])
+  const {
+    visibleRows: filteredRows,
+    totalCount,
+    hasMoreRows,
+    handleLoadMore,
+    tryLoadMoreFromScroll,
+    handleTableBodyWheel,
+    appendingRowIds,
+  } = useSymTableProgressiveLoad(filteredCatalog, tablePanelRef, tableScrollRef, [
+    nameFilter,
+    publicIdFilter,
+    regionFilter,
+    specFilter,
+    nmsFilter,
+    nameSort,
+  ])
 
   const allVisibleSelected =
     filteredRows.length > 0 && filteredRows.every((row) => selectedIds.has(row.id))
@@ -408,10 +291,11 @@ export function ResourceInventoryShowcase() {
         <ResourceInventoryTable
           scrollRef={tableScrollRef}
           rows={filteredRows}
-          totalCount={filteredCatalog.length}
+          totalCount={totalCount}
           hasMoreRows={hasMoreRows}
           onLoadMore={handleLoadMore}
           onBodyScroll={tryLoadMoreFromScroll}
+          onBodyWheel={handleTableBodyWheel}
           appendingRowIds={appendingRowIds}
           selectedIds={selectedIds}
           allVisibleSelected={allVisibleSelected}
@@ -467,6 +351,7 @@ function ResourceInventoryTable({
   hasMoreRows,
   onLoadMore,
   onBodyScroll,
+  onBodyWheel,
   appendingRowIds,
   selectedIds,
   allVisibleSelected,
@@ -486,6 +371,7 @@ function ResourceInventoryTable({
   hasMoreRows: boolean
   onLoadMore: () => void
   onBodyScroll?: () => void
+  onBodyWheel?: (event: WheelEvent<HTMLDivElement>) => void
   appendingRowIds: ReadonlySet<string>
   selectedIds: Set<string>
   allVisibleSelected: boolean
@@ -516,6 +402,7 @@ function ResourceInventoryTable({
       <SymTableCardSplitScroll
         scrollRef={scrollRef}
         onBodyScroll={onBodyScroll}
+        onBodyWheel={onBodyWheel}
         headerTable={
           <SymTable className="sym-table--header-pane">
             <thead>

@@ -10,6 +10,7 @@ export type DomainSubRoute = {
     | 'processSelectionRules'
     | 'deviceManager'
     | 'resourceInventory'
+    | 'resourceSpecification'
   badge?: string
   /** Guía trailing open_in_new; default true when omitted. */
   externalLink?: boolean
@@ -124,7 +125,12 @@ export const RESOURCE_DOMAIN_SUBROUTES: DomainSubRoute[] = [
     title: 'Resource Specification Types',
     badge: 'NEW',
   },
-  { id: 'resource-specification', path: 'resource-specification', title: 'Resource Specification' },
+  {
+    id: 'resource-specification',
+    path: 'resource-specification',
+    title: 'Resource Specification',
+    showcase: 'resourceSpecification',
+  },
   {
     id: 'resource-inventory',
     path: 'resource-inventory',

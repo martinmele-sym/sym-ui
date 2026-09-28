@@ -30,6 +30,7 @@ import { ProcessSelectionRulesShowcase } from './showcase/ProcessSelectionRulesS
 import { RulesAndConditionsShowcase } from './showcase/RulesAndConditionsShowcase'
 import { ServiceDomainShowcase } from './showcase/ServiceDomainShowcase'
 import { ResourceInventoryShowcase } from './showcase/ResourceInventoryShowcase'
+import { ResourceSpecificationShowcase } from './showcase/ResourceSpecificationShowcase'
 import { ServiceSpecDashboardShowcase } from './showcase/ServiceSpecDashboardShowcase'
 import { SymphonicaShowcase } from './showcase/SymphonicaShowcase'
 
@@ -55,6 +56,8 @@ function renderDomainSubRoute(row: DomainSubRoute) {
       return <ServiceSpecDashboardShowcase />
     case 'resourceInventory':
       return <ResourceInventoryShowcase />
+    case 'resourceSpecification':
+      return <ResourceSpecificationShowcase />
     default:
       return <OrderManagementSubShowcase title={row.title} />
   }

@@ -1014,7 +1014,7 @@ Item counter:
 
 #### Table dashboard layout
 
-Primary **table dashboard** pages (section header card + data table card — e.g. Order Types, Resource Inventory) use a **viewport-aware** layout so the table card grows with row count when content is short, and **fills the main column** when many rows require progressive loading.
+Primary **table dashboard** pages (section header card + data table card — e.g. Order Types, Resource Inventory, Resource Specification) use a **viewport-aware** layout so the table card grows with row count when content is short, and **fills the main column** when many rows require progressive loading.
 
 **Page structure:**
 
@@ -1024,23 +1024,37 @@ Primary **table dashboard** pages (section header card + data table card — e.g
 | Stack | **`sym-page__dashboard-stack`** | Grid: **`auto`** (section header card) + **`minmax(min-content, 1fr)`** (table card) |
 | Section header | **`sym-card-primary sym-card-primary--section-sticky`** | Filters / Create — sticky in **`sym-app-body`** (§5.5) |
 | Table card | **`sym-card-primary sym-card-primary--table-panel`** | Flex column; **`min-height: 0`** |
-| Table scroll | **`sym-table-card__scroll`** | **`overflow: auto`**; **`thead th`** **`position: sticky; top: 0`** |
+| Table scroll | **`SymTableCardSplitScroll`** → **`sym-table-card__scroll`** (body) + fixed header pane | Body **`overflow: auto`**; header row does **not** scroll vertically with body |
 | Table footer | **`sym-table-footer`** | Sibling **below** scroll (load-more + counter), not inside scroll |
-| Copyright | **`SymPageCopyrightFooter`** | Fixed; **`bottom: layout.body.pageCopyright.gap`** (**16px**); centered in main column |
+| Copyright | **`SymPageCopyrightFooter`** | Fixed; gap measured to **`.sym-page-copyright__text`** top (**16px** reserve); centered in main column |
 
 **Behavior:**
 - **Few rows:** table card height follows content (**`minmax(min-content, 1fr)`** does not force empty stretch).
-- **Many rows / load-more visible:** table card expands to available viewport height between the section header and the copyright reserve; **only** **`sym-table-card__scroll`** scrolls (desktop).
+- **Many rows / load-more visible:** add **`sym-page__dashboard-stack--table-fill`** on the stack when **`hasMoreRows`**; table card expands to available viewport height between the section header and the copyright reserve; **only** the split-scroll **body** pane scrolls (desktop).
 - **`sym-app-body:has(.sym-page--table-dashboard)`** uses **`overflow: hidden`** and flex so the page — not the body — owns vertical overflow (same intent as Device Management dashboard).
-- **Mobile (≤991px):** revert to **`sym-app-body`** scroll; disable internal table scroll and sticky **`thead`** (see CSS).
+- **Mobile (≤991px):** revert to **`sym-app-body`** scroll; disable internal table scroll and split header (see CSS).
 
-**Spacing:** page **`padding-bottom`** = **`layout.body.pageCopyright.reserve`** so the table card bottom stays **16px** above the copyright line (Figma Order Types).
+**Spacing:** panel height from **`useSymTableCardScrollLayout`** subtracts section header, table footer, and the distance from the table panel bottom to **`.sym-page-copyright__text`** (target **16px** gap — do not double-subtract copyright reserve in JS and CSS).
 
-**Scroll sizing (`useSymTableCardScrollLayout`):** measure available height from **`sym-app-body`** (not raw **`100vh`** alone) minus section header, card footer, and copyright reserve. Set **`sym-table-card__scroll`** height to **`min(table content, scroll max)`** so empty white space does not appear below rows on large displays. When **`fillViewport: true`** (progressive load / more rows available), the table panel fills the remaining viewport slot.
+**Scroll sizing (`useSymTableCardScrollLayout`):** measure available height from **`sym-app-body`** (not raw **`100vh`** alone). Set body scroll height to **`min(table content, scroll max)`** so empty white space does not appear below rows on large displays. When **`fillViewport: true`** (progressive load / more rows available), the table panel fills the remaining viewport slot. Expose **`rowsThatFit`** via **`onMetrics`** for viewport autofill.
 
-**Progressive load (`+`):** append the next batch; **`scrollIntoView`** the first newly loaded row inside **`sym-table-card__scroll`** and move focus to that row (**`tabIndex={-1}`**, **`data-row-id`**). On large viewports, auto-expand the first page to **`rowsThatFit`** when more catalog items exist (no manual click required to fill the viewport).
+**Split header (`SymTableCardSplitScroll`):** render **`thead`** in a non-scrolling header pane; **`tbody`** in **`sym-table-card__scroll`**. Wire **`onBodyScroll`** and **`onBodyWheel`** for progressive load. Horizontal scroll on the body syncs the header pane.
 
-**Reference:** **`ResourceInventoryShowcase.tsx`**, **`useSymTableCardScrollLayout.ts`**, **`SymPageCopyrightFooter.tsx`**, **`symphonica.css`** (`.sym-page--table-dashboard`, `.sym-table-card__scroll`).
+**Progressive load (normative — `useSymTableProgressiveLoad`):**
+
+| Mechanism | Rule |
+|-----------|------|
+| Batch size | **`SYM_TABLE_PROGRESSIVE_PAGE_SIZE` = 20** |
+| Initial / filter reset | Reset to 20 visible; **`scrollTop = 0`**; re-arm scroll-load |
+| Viewport autofill | Once per mount/filter, expand visible count to **`min(catalog.length, rowsThatFit)`** unless the user already expanded via **`+`** or scroll-load |
+| **`+` footer button | Append next batch; **`restoreSymTableAppendScroll`** with **`{ animate: true }`**; row enter via **`sym-table__row--append-in`**; **does not** disarm scroll-load |
+| Scroll / wheel near bottom | **`evaluateScrollLoad`**: within **96px** of bottom; one auto-load per bottom pass (**`scrollLoadArmedRef`**); re-arm after scrolling **120px** up or wheel up; **`suppressScrollLoadRef`** during restore/animation |
+| No overflow | Pin **`scrollTop = 0`** on restore; wheel down may load one batch when catalog has more rows |
+| Row markers | **`data-row-id`**, **`tabIndex={-1}`** on body rows for scroll restore targeting |
+
+Append scroll implementation: **`symTableAppendScroll.ts`** (**`snapshotSymTableAppendScroll`**, **`restoreSymTableAppendScroll`**). Do **not** use **`scrollIntoView`** for load-more — it caused mid-list jumps and fought split-scroll layout.
+
+**Reference implementations:** **`ResourceInventoryShowcase.tsx`**, **`ResourceSpecificationShowcase.tsx`**, **`useSymTableProgressiveLoad.ts`**, **`SymTableCardSplitScroll.tsx`**, **`useSymTableCardScrollLayout.ts`**, **`symTableAppendScroll.ts`**, **`SymPageCopyrightFooter.tsx`**, **`symphonica.css`** (`.sym-page--table-dashboard`, `.sym-table-card__scroll`, `.sym-table__row--append-in`).
 
 ---
 
