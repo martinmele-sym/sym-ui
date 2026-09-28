@@ -50,22 +50,28 @@ export function useSymTableCardScrollLayout(
         ),
         16,
       )
-      const copyrightLine = readPx(
-        getComputedStyle(document.documentElement).getPropertyValue(
-          '--layout-body-page-copyright-font-size',
-        ),
-        12,
-      ) * 1.5
       const pagePaddingBottom = readPx(pageStyle.paddingBottom, 0)
-
       const bottomLimit = appBody
         ? appBody.getBoundingClientRect().bottom
         : window.innerHeight
       const panelTop = panel.getBoundingClientRect().top
-      const panelMaxHeight = Math.max(
-        120,
-        bottomLimit - panelTop - pagePaddingBottom - copyrightGap - copyrightLine,
-      )
+      const copyrightText = appBody?.querySelector<HTMLElement>('.sym-page-copyright__text')
+      const panelMaxHeight = copyrightText
+        ? Math.max(120, copyrightText.getBoundingClientRect().top - copyrightGap - panelTop)
+        : Math.max(
+            120,
+            bottomLimit -
+              panelTop -
+              pagePaddingBottom -
+              copyrightGap -
+              readPx(
+                getComputedStyle(document.documentElement).getPropertyValue(
+                  '--layout-body-page-copyright-font-size',
+                ),
+                12,
+              ) *
+                1.5,
+          )
 
       const panelComputed = getComputedStyle(panel)
       const panelPaddingY =
@@ -116,6 +122,7 @@ export function useSymTableCardScrollLayout(
         const bodyOverflows = bodyContentHeight > scrollMaxForBody
         const useFixedBodyViewport = fillViewport || bodyOverflows
         scroll.style.maxHeight = `${scrollMaxForBody}px`
+        scroll.style.minHeight = '0'
         scroll.style.height = `${useFixedBodyViewport ? scrollMaxForBody : bodyContentHeight}px`
         scroll.style.flex = useFixedBodyViewport ? '1 1 auto' : '0 0 auto'
       } else {
@@ -151,6 +158,7 @@ export function useSymTableCardScrollLayout(
       panel.style.height = ''
       panel.style.maxHeight = ''
       scroll.style.maxHeight = ''
+      scroll.style.minHeight = ''
       scroll.style.height = ''
       scroll.style.flex = ''
     }

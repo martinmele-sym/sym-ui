@@ -46,8 +46,9 @@ const RESOURCE_INVENTORY_COLUMN_OPTIONS: SymTableColumnOption[] =
   RESOURCE_INVENTORY_TABLE_COLUMNS.map((column) => ({ ...column }))
 
 const RESOURCE_INVENTORY_CATALOG = buildResourceInventoryCatalog()
-const RESOURCE_INVENTORY_INITIAL_PAGE_SIZE = 10
-const RESOURCE_INVENTORY_LOAD_MORE_BATCH = 15
+const RESOURCE_INVENTORY_PAGE_SIZE = 20
+const RESOURCE_INVENTORY_SCROLL_LOAD_THRESHOLD_PX = 96
+const RESOURCE_INVENTORY_SCROLL_LOAD_REARM_PX = 120
 
 type SortPhase = 'idle' | 'asc' | 'desc'
 
@@ -80,13 +81,18 @@ export function ResourceInventoryShowcase() {
   const [nmsFilter, setNmsFilter] = useState('')
   const [nameSort, setNameSort] = useState<SortPhase>('idle')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [visibleCount, setVisibleCount] = useState(RESOURCE_INVENTORY_INITIAL_PAGE_SIZE)
+  const [visibleCount, setVisibleCount] = useState(RESOURCE_INVENTORY_PAGE_SIZE)
   const [scrollMetrics, setScrollMetrics] = useState<SymTableScrollMetrics | null>(null)
   const tablePanelRef = useRef<HTMLElement>(null)
   const tableScrollRef = useRef<HTMLDivElement>(null)
-  const pendingFocusRowIdRef = useRef<string | null>(null)
   const appendScrollSnapshotRef = useRef<SymTableAppendScrollSnapshot | null>(null)
   const loadMoreInFlightRef = useRef(false)
+  const suppressScrollLoadRef = useRef(false)
+  const scrollLoadArmedRef = useRef(true)
+  const viewportFilledRef = useRef(false)
+  const userExpandedRef = useRef(false)
+  const pinScrollTopRef = useRef(false)
+  const [appendingRowIds, setAppendingRowIds] = useState<ReadonlySet<string>>(() => new Set())
   const visibleCountRef = useRef(visibleCount)
   visibleCountRef.current = visibleCount
   const columnVisibility = useSymTableColumnVisibility(RESOURCE_INVENTORY_COLUMN_OPTIONS)
@@ -127,39 +133,54 @@ export function ResourceInventoryShowcase() {
   )
 
   useEffect(() => {
-    setVisibleCount(RESOURCE_INVENTORY_INITIAL_PAGE_SIZE)
+    scrollLoadArmedRef.current = true
+    viewportFilledRef.current = false
+    userExpandedRef.current = false
+    pinScrollTopRef.current = true
+    setAppendingRowIds(new Set())
+    setVisibleCount(RESOURCE_INVENTORY_PAGE_SIZE)
+    const scroll = tableScrollRef.current
+    if (scroll) scroll.scrollTop = 0
   }, [nameFilter, publicIdFilter, regionFilter, specFilter, nmsFilter, nameSort])
 
   useEffect(() => {
-    if (!scrollMetrics || !hasMoreRows) return
-    if (visibleCount !== RESOURCE_INVENTORY_INITIAL_PAGE_SIZE) return
+    if (!scrollMetrics || viewportFilledRef.current) return
+    viewportFilledRef.current = true
+    if (userExpandedRef.current) return
+    pinScrollTopRef.current = true
     const target = Math.min(filteredCatalog.length, scrollMetrics.rowsThatFit)
-    if (target <= visibleCount) return
-    const scroll = tableScrollRef.current
-    if (scroll) {
-      appendScrollSnapshotRef.current = snapshotSymTableAppendScroll(scroll)
-    }
     setVisibleCount(target)
-  }, [scrollMetrics, hasMoreRows, filteredCatalog.length, visibleCount])
+  }, [scrollMetrics, filteredCatalog.length])
+
+  useEffect(() => {
+    if (appendingRowIds.size === 0) return
+    const durationMs = 280
+    const timer = window.setTimeout(() => setAppendingRowIds(new Set()), durationMs)
+    return () => window.clearTimeout(timer)
+  }, [appendingRowIds])
 
   useLayoutEffect(() => {
     const scroll = tableScrollRef.current
     const snapshot = appendScrollSnapshotRef.current
     appendScrollSnapshotRef.current = null
 
-    if (scroll && snapshot) {
-      restoreSymTableAppendScroll(scroll, snapshot)
+    const releaseLoadMore = () => {
+      requestAnimationFrame(() => {
+        suppressScrollLoadRef.current = false
+        loadMoreInFlightRef.current = false
+      })
     }
 
-    requestAnimationFrame(() => {
-      loadMoreInFlightRef.current = false
-    })
-
-    const rowId = pendingFocusRowIdRef.current
-    pendingFocusRowIdRef.current = null
-    if (!rowId || !scroll) return
-    const row = scroll.querySelector<HTMLElement>(`[data-row-id="${rowId}"]`)
-    row?.focus({ preventScroll: true })
+    if (scroll && pinScrollTopRef.current) {
+      pinScrollTopRef.current = false
+      scroll.scrollTop = 0
+      releaseLoadMore()
+    } else if (scroll && snapshot) {
+      suppressScrollLoadRef.current = true
+      restoreSymTableAppendScroll(scroll, snapshot, releaseLoadMore)
+    } else {
+      releaseLoadMore()
+    }
   }, [visibleCount])
 
   const handleLoadMore = useCallback(() => {
@@ -167,32 +188,36 @@ export function ResourceInventoryShowcase() {
     const count = visibleCountRef.current
     if (count >= filteredCatalog.length) return
 
+    const nextCount = Math.min(filteredCatalog.length, count + RESOURCE_INVENTORY_PAGE_SIZE)
+    userExpandedRef.current = true
     loadMoreInFlightRef.current = true
+    scrollLoadArmedRef.current = false
+    setAppendingRowIds(
+      new Set(filteredCatalog.slice(count, nextCount).map((row) => row.id)),
+    )
     const scroll = tableScrollRef.current
     if (scroll) {
-      appendScrollSnapshotRef.current = snapshotSymTableAppendScroll(scroll)
+      appendScrollSnapshotRef.current = snapshotSymTableAppendScroll(scroll, { animate: true })
     }
-    const firstNewRow = filteredCatalog[count]
-    if (firstNewRow) {
-      pendingFocusRowIdRef.current = firstNewRow.id
-    }
-    setVisibleCount(Math.min(filteredCatalog.length, count + RESOURCE_INVENTORY_LOAD_MORE_BATCH))
-  }, [filteredCatalog.length])
+    setVisibleCount(nextCount)
+  }, [filteredCatalog])
 
-  useEffect(() => {
+  const tryLoadMoreFromScroll = useCallback(() => {
+    if (suppressScrollLoadRef.current) return
+    if (!hasMoreRows || loadMoreInFlightRef.current) return
     const root = tableScrollRef.current
-    if (!root || !hasMoreRows) return
+    if (!root) return
 
-    const onScroll = () => {
-      if (loadMoreInFlightRef.current) return
-      if (root.scrollHeight <= root.clientHeight + 1) return
-      const distanceFromBottom = root.scrollHeight - root.scrollTop - root.clientHeight
-      if (distanceFromBottom > 96) return
-      handleLoadMore()
+    const distanceFromBottom = root.scrollHeight - root.scrollTop - root.clientHeight
+    if (distanceFromBottom > RESOURCE_INVENTORY_SCROLL_LOAD_REARM_PX) {
+      scrollLoadArmedRef.current = true
     }
+    if (!scrollLoadArmedRef.current) return
+    if (root.scrollHeight <= root.clientHeight + 1) return
+    if (distanceFromBottom > RESOURCE_INVENTORY_SCROLL_LOAD_THRESHOLD_PX) return
 
-    root.addEventListener('scroll', onScroll, { passive: true })
-    return () => root.removeEventListener('scroll', onScroll)
+    scrollLoadArmedRef.current = false
+    handleLoadMore()
   }, [hasMoreRows, handleLoadMore])
 
   const allVisibleSelected =
@@ -250,7 +275,13 @@ export function ResourceInventoryShowcase() {
 
   return (
     <div className="sym-page sym-resource-inventory sym-page--table-dashboard">
-      <div className="sym-page__dashboard-stack">
+      <div
+        className={
+          hasMoreRows
+            ? 'sym-page__dashboard-stack sym-page__dashboard-stack--table-fill'
+            : 'sym-page__dashboard-stack'
+        }
+      >
       <article className="sym-card-primary sym-card-primary--section-sticky sym-no-hover">
         <header className="sym-card-header">
           <div className="sym-card-header__top">
@@ -380,6 +411,8 @@ export function ResourceInventoryShowcase() {
           totalCount={filteredCatalog.length}
           hasMoreRows={hasMoreRows}
           onLoadMore={handleLoadMore}
+          onBodyScroll={tryLoadMoreFromScroll}
+          appendingRowIds={appendingRowIds}
           selectedIds={selectedIds}
           allVisibleSelected={allVisibleSelected}
           someVisibleSelected={someVisibleSelected}
@@ -433,6 +466,8 @@ function ResourceInventoryTable({
   totalCount,
   hasMoreRows,
   onLoadMore,
+  onBodyScroll,
+  appendingRowIds,
   selectedIds,
   allVisibleSelected,
   someVisibleSelected,
@@ -450,6 +485,8 @@ function ResourceInventoryTable({
   totalCount: number
   hasMoreRows: boolean
   onLoadMore: () => void
+  onBodyScroll?: () => void
+  appendingRowIds: ReadonlySet<string>
   selectedIds: Set<string>
   allVisibleSelected: boolean
   someVisibleSelected: boolean
@@ -478,6 +515,7 @@ function ResourceInventoryTable({
     <>
       <SymTableCardSplitScroll
         scrollRef={scrollRef}
+        onBodyScroll={onBodyScroll}
         headerTable={
           <SymTable className="sym-table--header-pane">
             <thead>
@@ -522,7 +560,12 @@ function ResourceInventoryTable({
           <SymTable aria-label="Resource inventory">
             <tbody>
           {rows.map((row) => (
-            <tr key={row.id} data-row-id={row.id} tabIndex={-1}>
+            <tr
+              key={row.id}
+              data-row-id={row.id}
+              tabIndex={-1}
+              className={appendingRowIds.has(row.id) ? 'sym-table__row--append-in' : undefined}
+            >
               <td className="sym-table__cell--checkbox">
                 <div className="form-check sym-table__checkbox">
                   <input

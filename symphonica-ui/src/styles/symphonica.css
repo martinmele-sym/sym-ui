@@ -106,6 +106,16 @@
   grid-template-rows: auto minmax(min-content, 1fr);
   gap: var(--layout-body-section-gap);
   width: 100%;
+  align-content: start;
+}
+
+.sym-page__dashboard-stack--table-fill {
+  grid-template-rows: auto 1fr;
+}
+
+.sym-page__dashboard-stack:not(.sym-page__dashboard-stack--table-fill)
+  .sym-card-primary--table-panel {
+  align-self: start;
 }
 
 .sym-card-primary.sym-card-primary--table-panel {
@@ -1100,6 +1110,29 @@
 
 .sym-table tbody tr.sym-table__row--interactive {
   cursor: pointer;
+}
+
+@keyframes sym-table-row-append-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sym-table tbody tr.sym-table__row--append-in {
+  animation: sym-table-row-append-in var(--core-motion-duration-slow)
+    var(--core-motion-easing-standard) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sym-table tbody tr.sym-table__row--append-in {
+    animation: none;
+  }
 }
 
 .sym-detail-drawer {
